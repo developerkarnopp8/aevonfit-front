@@ -1,0 +1,102 @@
+<div class="px-5 py-2 animate-fade-in">
+
+  <!-- Greeting -->
+  <div class="mb-6">
+    <h2 class="font-display font-black text-3xl text-white leading-tight">
+      {{ greeting() }}, <span class="text-primary">{{ (auth.currentUser()?.name?.split(' ') || [])[0] }}</span>
+    </h2>
+    <p class="text-text-secondary text-sm mt-1">Você tem {{ todaySessions().length }} atividades programadas para hoje.</p>
+  </div>
+
+  <!-- Daily Goal Circle -->
+  <div class="bg-surface rounded-xl p-5 mb-4">
+    <p class="text-text-secondary text-xs uppercase tracking-widest mb-1">Meta Diária</p>
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="font-display font-black text-5xl text-white">{{ dailyGoalPercent() }}%</p>
+        <p class="text-text-secondary text-xs mt-1">Completo</p>
+        <p class="text-text-muted text-xs mt-3">Semana 2 · {{ getWeekDay() | titlecase }} · {{ todaySessions().length }} sessões</p>
+        <button class="mt-4 bg-primary hover:bg-primary-hover text-white font-bold px-5 py-2.5 rounded text-sm transition-colors">
+          Continuar Treino
+        </button>
+      </div>
+      <!-- Circular progress mock -->
+      <div class="relative w-24 h-24">
+        <svg class="w-24 h-24 -rotate-90" viewBox="0 0 36 36">
+          <circle cx="18" cy="18" r="15" fill="none" stroke="#2A2A2A" stroke-width="3"/>
+          <circle cx="18" cy="18" r="15" fill="none" stroke="#FF6B00" stroke-width="3"
+            [attr.stroke-dasharray]="dailyGoalPercent() * 0.94 + ', 94'"
+            stroke-linecap="round"/>
+        </svg>
+        <span class="absolute inset-0 flex items-center justify-center text-primary text-xl">⚡</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="grid grid-cols-2 gap-3 mb-5">
+    <div class="bg-surface rounded-xl p-4">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-blue-400">💧</span>
+        <span class="text-text-secondary text-xs">META 3L</span>
+      </div>
+      <p class="font-display font-bold text-2xl text-white">{{ hydration() }} <span class="text-sm font-normal text-text-secondary">L</span></p>
+      <p class="text-text-muted text-xs">Hidratação</p>
+    </div>
+    <div class="bg-surface rounded-xl p-4">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-primary">🔥</span>
+        <span class="text-text-secondary text-xs">META 2500</span>
+      </div>
+      <p class="font-display font-bold text-2xl text-white">{{ calories() }} <span class="text-sm font-normal text-text-secondary">Kcal</span></p>
+      <p class="text-text-muted text-xs">Calorias</p>
+    </div>
+  </div>
+
+  <!-- Today's Sessions -->
+  <div class="mb-4">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-white font-semibold text-sm uppercase tracking-wide">Cronograma de Hoje</h3>
+      <a routerLink="/athlete/weekly" class="text-primary text-xs hover:underline">Ver Tudo</a>
+    </div>
+
+    @for (session of todaySessions(); track session.id; let i = $index) {
+      <a [routerLink]="['/athlete/session', session.id]"
+        class="flex items-center gap-4 p-4 rounded-xl mb-2 transition-all group"
+        [class.bg-primary]="i === 1"
+        [class.bg-surface]="i !== 1">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+          [class.bg-white/20]="i === 1"
+          [class.bg-surface-high]="i !== 1">
+          <span class="text-base">{{ typeIcons[session.type] ?? '🏋️' }}</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-sm truncate" [class.text-white]="true">{{ session.name }}</p>
+          <p class="text-xs mt-0.5"
+            [class.text-white/70]="i === 1"
+            [class.text-text-muted]="i !== 1">
+            @if (i === 0) { <span>07:00 • CONCLUÍDO</span> }
+            @else if (i === 1) { <span>17:30 • PRÓXIMO</span> }
+            @else { <span>Agendado</span> }
+          </p>
+        </div>
+        @if (i === 1) {
+          <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </div>
+        }
+      </a>
+    }
+  </div>
+
+  <!-- AI Tip -->
+  <div class="bg-surface rounded-xl p-4 border-l-4 border-tertiary mb-4">
+    <p class="text-tertiary text-xs font-semibold uppercase tracking-wide mb-1">Dica de Elite</p>
+    <p class="text-white text-sm leading-relaxed">
+      Seu sono atingiu 8h15min ontem. A recuperação muscular está otimizada para o treino de pernas de hoje. Aumente a carga em 5% se sentir confiança.
+    </p>
+  </div>
+
+</div>

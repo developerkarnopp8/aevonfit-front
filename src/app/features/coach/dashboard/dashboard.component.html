@@ -1,0 +1,129 @@
+<div class="flex flex-col h-full overflow-y-auto animate-fade-in">
+
+  <!-- Header -->
+  <header class="px-8 py-5 flex items-center justify-between border-b border-border flex-shrink-0">
+    <div>
+      <p class="text-text-secondary text-xs tracking-widest uppercase mb-0.5">Coach Premium</p>
+      <h2 class="font-display font-black text-2xl text-white tracking-wide">PERFORMANCE HUB</h2>
+    </div>
+    <div class="flex items-center gap-4">
+      <input
+        type="search"
+        placeholder="Buscar aluno..."
+        class="bg-surface border-0 text-white placeholder-text-muted rounded px-4 py-2 text-sm w-48"/>
+      <button class="relative text-text-secondary hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+        </svg>
+        <span class="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></span>
+      </button>
+      <button class="text-text-secondary hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="flex flex-1 overflow-hidden">
+
+    <!-- Left: Main -->
+    <section class="flex-1 px-8 py-6 overflow-y-auto">
+      <div class="mb-6">
+        <h3 class="font-display font-black text-4xl text-white leading-none">PROGRESSO</h3>
+        <h3 class="font-display font-black text-4xl text-primary leading-none">DA EQUIPE</h3>
+        <p class="text-text-secondary text-sm mt-2">Análise em tempo real de retenção, completude e engajamento dos seus atletas.</p>
+      </div>
+
+      <!-- Chart placeholder -->
+      <div class="bg-surface rounded-lg p-5 mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-text-secondary text-sm">Taxa de Conclusão</p>
+          <div class="flex gap-2 text-xs text-text-muted">
+            <span class="px-2 py-0.5 bg-surface-high rounded">70</span>
+            <span class="px-2 py-0.5 bg-surface-high rounded">100</span>
+          </div>
+        </div>
+        <!-- Bar chart mock -->
+        <div class="flex items-end gap-2 h-32">
+          @for (bar of [40, 55, 70, 45, 88, 65, 80]; track $index) {
+            <div
+              class="flex-1 rounded-sm transition-all"
+              [style.height.%]="bar"
+              [class.bg-primary]="$index === 4"
+              [class.bg-surface-high]="$index !== 4">
+            </div>
+          }
+        </div>
+        <div class="flex justify-between text-text-muted text-xs mt-2">
+          @for (d of ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom']; track d) {
+            <span>{{ d }}</span>
+          }
+        </div>
+      </div>
+
+      <!-- Weekly Activity -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="text-white font-semibold text-sm tracking-wider uppercase">Atividade Semanal</h4>
+          <button class="text-primary text-xs hover:underline">Ver Tudo</button>
+        </div>
+
+        @for (student of students(); track student.id) {
+          <div class="bg-surface rounded-lg px-5 py-4 mb-2 flex items-center gap-4 hover:bg-surface-high transition-colors">
+            <div class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
+              {{ getInitials(student.name) }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-white text-sm font-medium truncate">{{ student.name }}</p>
+              <p class="text-text-muted text-xs">Semana {{ student.currentWeek }} — Mês {{ student.currentMonth }}</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="text-right">
+                <p class="text-white text-sm font-bold">{{ student.completionPercent }}%</p>
+                <p class="text-text-muted text-xs">conclusão</p>
+              </div>
+              <a [routerLink]="['/coach/plan-builder', student.id]"
+                class="text-xs bg-primary/10 text-primary hover:bg-primary hover:text-white px-3 py-1.5 rounded transition-all">
+                Ver Plano
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Right: Stats sidebar -->
+    <aside class="w-56 px-5 py-6 border-l border-border flex-shrink-0 overflow-y-auto">
+      <div class="bg-surface rounded-lg p-4 mb-4 text-center">
+        <p class="text-text-secondary text-xs mb-1">Média Semanal</p>
+        <p class="font-display font-black text-4xl text-white">{{ weeklyAvg() }}%</p>
+        <p class="text-success text-xs mt-1">+4.1 ↑</p>
+      </div>
+
+      <div class="bg-surface rounded-lg p-4">
+        <p class="text-text-secondary text-xs font-semibold uppercase tracking-wide mb-3">Recordistas de Streak</p>
+        @for (student of students(); track student.id) {
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-7 h-7 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
+              {{ getInitials(student.name) }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-white text-xs font-medium truncate">{{ student.name.split(' ')[0] }}</p>
+              <p class="text-text-muted text-xs">{{ student.goal }}</p>
+            </div>
+            <span class="text-primary text-xs font-bold">🔥 24</span>
+          </div>
+        }
+      </div>
+
+      <!-- New Training FAB -->
+      <a routerLink="/coach/plan-builder/athlete-001"
+        class="mt-4 w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded transition-colors text-sm">
+        + NOVO TREINO
+      </a>
+    </aside>
+
+  </div>
+</div>

@@ -1,0 +1,130 @@
+<div class="min-h-screen bg-bg-base flex flex-col items-center justify-center px-4 animate-fade-in">
+
+  <!-- Logo -->
+  <div class="mb-10 text-center">
+    <h1 class="font-display text-3xl font-black tracking-widest text-white">AEVONFIT</h1>
+    <p class="text-text-secondary text-xs tracking-[0.3em] mt-1">PERFORMANCE DASHBOARD</p>
+  </div>
+
+  <!-- Card -->
+  <div class="w-full max-w-sm bg-surface rounded-lg p-8">
+    <h2 class="text-white font-semibold text-lg mb-1">Acesso do Treinador</h2>
+    <p class="text-text-secondary text-sm mb-6">Insira suas credenciais para gerenciar seus atletas.</p>
+
+    <!-- Role Toggle -->
+    <div class="flex bg-surface-low rounded-md p-1 mb-6">
+      <button
+        (click)="setRole('coach')"
+        [class.bg-primary]="selectedRole() === 'coach'"
+        [class.text-white]="selectedRole() === 'coach'"
+        [class.text-text-secondary]="selectedRole() !== 'coach'"
+        class="flex-1 py-2 rounded text-sm font-medium transition-all duration-200">
+        Coach
+      </button>
+      <button
+        (click)="setRole('athlete')"
+        [class.bg-primary]="selectedRole() === 'athlete'"
+        [class.text-white]="selectedRole() === 'athlete'"
+        [class.text-text-secondary]="selectedRole() !== 'athlete'"
+        class="flex-1 py-2 rounded text-sm font-medium transition-all duration-200">
+        Atleta
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+
+      <!-- Email -->
+      <div class="mb-4">
+        <label class="block text-text-secondary text-xs mb-1 tracking-wide uppercase">E-mail Profissional</label>
+        <input
+          formControlName="email"
+          type="email"
+          placeholder="coach@aevonfit.com"
+          class="w-full bg-surface-low text-white placeholder-text-muted rounded px-4 py-3 text-sm border-b-2 transition-all duration-200"
+          class="border-transparent focus:border-primary"
+        />
+        @if (hasError('email')) {
+          <p class="text-danger text-xs mt-1">E-mail inválido.</p>
+        }
+      </div>
+
+      <!-- Password -->
+      <div class="mb-6">
+        <div class="flex justify-between items-center mb-1">
+          <label class="text-text-secondary text-xs tracking-wide uppercase">Senha</label>
+          <button type="button" class="text-text-secondary text-xs hover:text-primary transition-colors">
+            Esqueceu a senha?
+          </button>
+        </div>
+        <div class="relative">
+          <input
+            formControlName="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            placeholder="••••••••"
+            class="w-full bg-surface-low text-white placeholder-text-muted rounded px-4 py-3 text-sm border-b-2 border-transparent pr-10"
+          />
+          <button
+            type="button"
+            aria-label="Mostrar ou ocultar senha"
+            (click)="showPassword.set(!showPassword())"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              @if (showPassword()) {
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+              } @else {
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              }
+            </svg>
+          </button>
+        </div>
+        @if (hasError('password')) {
+          <p class="text-danger text-xs mt-1">Senha obrigatória.</p>
+        }
+      </div>
+
+      <!-- Remember -->
+      <label class="flex items-center gap-2 mb-6 cursor-pointer">
+        <input type="checkbox" class="accent-primary w-4 h-4" />
+        <span class="text-text-secondary text-sm">Manter conectado neste dispositivo</span>
+      </label>
+
+      <!-- Error -->
+      @if (error()) {
+        <div class="bg-danger/10 border border-danger/30 rounded px-4 py-2 text-danger text-sm mb-4 animate-fade-in">
+          {{ error() }}
+        </div>
+      }
+
+      <!-- Submit -->
+      <button
+        type="submit"
+        [disabled]="loading()"
+        class="w-full bg-primary hover:bg-primary-hover disabled:opacity-60 text-white font-bold py-3 rounded flex items-center justify-center gap-2 transition-colors duration-200">
+        @if (loading()) {
+          <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+        }
+        ENTRAR →
+      </button>
+    </form>
+
+    <p class="text-center text-text-muted text-xs mt-6">
+      Ainda não possui conta Coach?
+      <button class="text-primary hover:underline ml-1">Solicitar Acesso</button>
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <div class="mt-8 flex gap-6 text-text-muted text-xs">
+    <span>● SISTEMAS ONLINE</span>
+    <span>CRIPTOGRAFIA SSL</span>
+    <span>V2.0</span>
+  </div>
+
+</div>

@@ -4,105 +4,114 @@
 
 ## Visão Geral
 
-**AEVONFIT** é uma plataforma SaaS para gestão de academias. O frontend é construído em Angular 21 e consome a API REST do backend NestJS.
+**AEVONFIT** é uma plataforma SaaS para gestão de academias. O frontend é construído em Angular 21 e consome dados mock (json-server) — o backend real NestJS será integrado posteriormente.
 
 ## Tech Stack
 
 | Camada | Tecnologia |
 |--------|------------|
-| Framework | Angular 21 |
-| Linguagem | TypeScript |
-| Estilos | SCSS |
-| Componentes UI | Angular CDK + componentes próprios |
-| Gráficos | Chart.js + ng2-charts |
+| Framework | Angular 21 (standalone components, signals) |
+| Linguagem | TypeScript 5.9 |
+| Estilos | TailwindCSS v4 + SCSS |
 | HTTP | HttpClient (Angular) |
-| Roteamento | Angular Router |
+| Roteamento | Angular Router (lazy-loaded) |
 | Formulários | Reactive Forms |
 | Notificações | ngx-toastr |
+| Mock backend | json-server (porta 3001) |
+| Build | @angular/build (esbuild) |
 | Gerenciador de pacotes | npm |
+
+## Configuração Tailwind v4
+
+> **Importante:** Angular 21 só lê `postcss.config.json` (JSON, não `.js`). O Tailwind v4 não usa `tailwind.config.js` — a configuração de tema fica em `src/styles.scss` via `@theme {}`. Não criar `tailwind.config.js` pois o Angular build detecta e tenta usar `tailwindcss` como plugin PostCSS (comportamento v3), o que quebra o build.
+
+- Configuração PostCSS: `postcss.config.json` → `@tailwindcss/postcss`
+- Tokens de tema: `src/styles.scss` no bloco `@theme {}`
 
 ## Estrutura de Diretórios
 
 ```
-frontend/
-├── src/
-│   ├── index.html
-│   ├── main.ts
-│   ├── styles.scss          # Estilos globais
-│   ├── environments/        # environment.ts / environment.prod.ts
-│   └── app/
-│       ├── app.ts           # Componente raiz
-│       ├── app-module.ts    # Módulo raiz
-│       ├── app-routing-module.ts
-│       ├── core/            # Serviços singleton, interceptors, guards
-│       ├── features/        # Módulos de funcionalidades (lazy loaded)
-│       ├── layout/          # Componentes de layout (sidebar, navbar, footer)
-│       └── shared/          # Componentes, pipes e diretivas reutilizáveis
-├── public/                  # Assets estáticos
-├── angular.json
-├── tsconfig.json
-└── CLAUDE.md                # Este arquivo
+src/
+├── app/
+│   ├── app.ts / app.config.ts / app.routes.ts
+│   ├── core/
+│   │   ├── models/          # User, Student, TrainingPlan, Session, Exercise...
+│   │   ├── services/
+│   │   │   ├── auth.service.ts       # Auth mock (signal currentUser)
+│   │   │   └── mock-data.service.ts  # Dados do db.json via HttpClient
+│   │   └── guards/
+│   │       └── auth.guard.ts  # authGuard, coachGuard, athleteGuard
+│   ├── features/
+│   │   ├── auth/login/              # /login — toggle Coach/Atleta
+│   │   ├── coach/
+│   │   │   ├── dashboard/           # /coach/dashboard
+│   │   │   ├── students/            # /coach/students
+│   │   │   └── plan-builder/        # /coach/plan-builder/:studentId
+│   │   └── athlete/
+│   │       ├── home/                # /athlete/home
+│   │       ├── weekly-view/         # /athlete/weekly
+│   │       ├── session-detail/      # /athlete/session/:sessionId
+│   │       ├── active-workout/      # /athlete/active/:sessionId
+│   │       └── history/             # /athlete/history
+│   └── layout/
+│       ├── coach-shell/    # Sidebar + router-outlet (desktop)
+│       └── athlete-shell/  # Header + bottom nav + router-outlet (mobile)
+└── assets/mock/
+    └── db.json             # Dados mock completos (usuários, planos, treinos)
 ```
 
 ## Comandos Principais
 
 ```bash
 # Desenvolvimento
-npm start                    # ng serve (http://localhost:4200)
+npm start                      # ng serve → http://localhost:4200
 
-# Build
-npm run build                # Build de produção
-npm run watch                # Build em modo watch (desenvolvimento)
+# Mock backend (porta 3001, necessário para dados)
+npm run mock:server            # json-server com db.json
+
+# Build de produção
+npm run build
 
 # Testes
-npm test                     # ng test (Karma + Jasmine)
-
-# Lint
-ng lint
+npm test
 ```
 
-## Configuração de Ambiente
+## Credenciais Mock
 
-Edite `src/environments/environment.ts` para desenvolvimento local:
-
-```typescript
-export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:3000/api'
-};
-```
-
-## Módulos de Funcionalidades (Features)
-
-> Atualizar esta seção conforme novos módulos forem criados.
-
-| Módulo | Rota | Descrição |
-|--------|------|-----------|
-| auth | `/auth` | Login, cadastro, recuperação de senha |
+| Perfil | Email | Senha |
+|--------|-------|-------|
+| Coach | luan@aevonfit.com | coach123 |
+| Atleta | gustavo@aevonfit.com | athlete123 |
 
 ## Decisões Arquiteturais
 
-- **Lazy loading**: todos os módulos de features são carregados sob demanda
-- **Standalone components**: preferir componentes standalone (Angular 17+) em novos módulos
-- **Auth guard**: rotas protegidas usam `AuthGuard` em `core/guards/`
-- **HTTP Interceptors**: token JWT injetado automaticamente em todas as requisições autenticadas via interceptor em `core/interceptors/`
-- **State local**: estado gerenciado localmente nos services (sem NgRx por enquanto); reavaliar se a complexidade crescer
-- **Design responsivo**: mobile-first, breakpoints padrão (sm, md, lg, xl)
+- **Standalone components**: todos os componentes são standalone (sem NgModules)
+- **Signals**: estado local via `signal()` e `computed()` do Angular 17+
+- **Lazy loading**: todas as rotas carregam componentes com `loadComponent`
+- **Guards funcionais**: `authGuard`, `coachGuard`, `athleteGuard` como `CanActivateFn`
+- **MockDataService**: retorna `Observable<T>` lendo `assets/mock/db.json` — troca 1:1 por HttpClient real quando o backend estiver pronto
+- **AuthService**: mock com `sessionStorage` — sem backend; troca por JWT interceptor depois
+- **Design**: tema "Brutalismo Cinético" — dark, laranja elétrico, tipografia Lexend + Inter
+- **Mobile-first**: AthleteShell limitado a `max-w-md` centralizado; CoachShell é desktop com sidebar
+
+## Paleta de Cores
+
+| Token CSS | Valor | Uso |
+|-----------|-------|-----|
+| `--color-bg` | `#0D0D0D` | Fundo principal |
+| `--color-surface` | `#1A1A1A` | Cards, panels |
+| `--color-primary` | `#FF6B00` | Laranja elétrico — CTAs, destaques |
+| `--color-text` | `#FFFFFF` | Texto principal |
+| `--color-text-secondary` | `#A0A0A0` | Labels, descrições |
+| `--color-tertiary` | `#A855F7` | Insights de IA (roxo) |
 
 ## Convenções de Código
 
-- Um módulo Angular por domínio em `src/app/features/<nome>/`
-- Componentes: `nome.component.ts` / `nome.component.html` / `nome.component.scss`
-- Services singleton declarados em `core/services/`
-- Interfaces e tipos em `shared/models/` ou dentro do módulo de domínio
-- Imports absolutos via paths configurados em `tsconfig.json` (`@core/`, `@shared/`, etc.)
-
-## Integração com Backend
-
-- API base: `http://localhost:3000/api` (local) / `https://api.aevonfit.com/api` (produção)
-- Autenticação: Bearer token JWT no header `Authorization`
-- Refresh token: armazenado em cookie `HttpOnly` (a definir conforme implementação do backend)
+- Formulários: sempre inicializar no `constructor()`, nunca como class field usando `this.fb` (TS2729)
+- SVG binding: usar `[attr.stroke-dasharray]` em vez de interpolação `{{ }}`
+- Array indexing em templates: usar `.at(i)` em vez de `[i]` para evitar `Object possibly undefined`
+- Botões fora de form: sempre `type="button"` para acessibilidade
 
 ---
 
-_Última atualização: 2026-04-14 — Inicialização do projeto_
+_Última atualização: 2026-04-14 — Bootstrap completo: 9 telas, mock data, auth, rotas lazy-loaded_

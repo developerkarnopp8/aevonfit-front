@@ -1,0 +1,68 @@
+<div class="px-5 py-4 animate-fade-in">
+  <h2 class="font-display font-black text-2xl text-white mb-1">Semana {{ plan()?.weeks?.at(selectedWeek())?.weekNumber ?? 1 }}</h2>
+  <p class="text-text-secondary text-sm mb-4">{{ plan()?.title }}</p>
+
+  <!-- Week Selector -->
+  <div class="flex gap-2 mb-5 overflow-x-auto pb-1">
+    @for (week of plan()?.weeks ?? []; track week.id; let i = $index) {
+      <button
+        (click)="selectedWeek.set(i); selectedDay.set(plan()!.weeks[i].days[0] ?? null)"
+        [class.bg-primary]="selectedWeek() === i"
+        [class.text-white]="selectedWeek() === i"
+        [class.bg-surface]="selectedWeek() !== i"
+        [class.text-text-secondary]="selectedWeek() !== i"
+        class="flex-shrink-0 px-4 py-2 rounded text-sm font-medium transition-all">
+        S{{ week.weekNumber }}
+      </button>
+    }
+  </div>
+
+  <!-- Day Tabs (horizontal scroll) -->
+  <div class="flex gap-2 overflow-x-auto pb-2 mb-5">
+    @for (day of plan()?.weeks?.at(selectedWeek())?.days ?? []; track day.id) {
+      <button
+        (click)="selectDay(day)"
+        [class.border-primary]="selectedDay()?.id === day.id"
+        [class.text-white]="selectedDay()?.id === day.id"
+        [class.border-border]="selectedDay()?.id !== day.id"
+        [class.text-text-secondary]="selectedDay()?.id !== day.id"
+        class="flex-shrink-0 flex flex-col items-center px-4 py-2.5 rounded-lg border bg-surface transition-all min-w-[72px]">
+        <span class="text-xs font-medium">{{ day.dayOfWeek.slice(0,3) }}</span>
+        <div class="flex gap-0.5 mt-1.5">
+          @for (s of day.sessions; track s.id) {
+            <div class="w-1.5 h-1.5 rounded-full"
+              [class.bg-primary]="s.exercises.every(e => e.completed)"
+              [class.bg-border]="!s.exercises.every(e => e.completed)">
+            </div>
+          }
+        </div>
+        <span class="text-xs mt-1 text-text-muted">{{ day.sessions.length }} sess.</span>
+      </button>
+    }
+  </div>
+
+  <!-- Selected Day Sessions -->
+  @if (selectedDay()) {
+    <div class="animate-fade-in">
+      @for (session of selectedDay()!.sessions; track session.id) {
+        <a [routerLink]="['/athlete/session', session.id]"
+          class="block bg-surface rounded-xl p-4 mb-3 hover:bg-surface-high transition-colors">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-white font-semibold text-sm">{{ session.name }}</p>
+              <p class="text-text-muted text-xs mt-0.5">{{ session.exercises.length }} exercícios</p>
+            </div>
+            <svg class="w-4 h-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
+          <!-- Mini progress -->
+          <div class="mt-3 w-full bg-surface-low rounded-full h-1">
+            <div class="bg-primary rounded-full h-1 transition-all"
+              [style.width.%]="getCompletionForDay(selectedDay()!)"></div>
+          </div>
+        </a>
+      }
+    </div>
+  }
+</div>

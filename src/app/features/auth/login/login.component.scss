@@ -1,0 +1,5 @@
+// Input focus: bottom border via JS class binding handled in template
+input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}

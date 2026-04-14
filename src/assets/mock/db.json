@@ -1,0 +1,1109 @@
+{
+  "users": [
+    {
+      "id": "coach-001",
+      "name": "Luan Silveira",
+      "email": "luan@aevonfit.com",
+      "role": "coach",
+      "avatarUrl": ""
+    },
+    {
+      "id": "athlete-001",
+      "name": "Gustavo Karnopp",
+      "email": "gustavo@aevonfit.com",
+      "role": "athlete",
+      "avatarUrl": ""
+    }
+  ],
+  "students": [
+    {
+      "id": "athlete-001",
+      "name": "Gustavo Karnopp",
+      "email": "gustavo@aevonfit.com",
+      "goal": "Competição CrossFit",
+      "currentMonth": 1,
+      "currentWeek": 1,
+      "avatarUrl": "",
+      "coachId": "coach-001",
+      "completionPercent": 68
+    }
+  ],
+  "trainingPlans": [
+    {
+      "id": "plan-001",
+      "studentId": "athlete-001",
+      "coachId": "coach-001",
+      "month": 1,
+      "title": "Mês 1/2 — Programação Gustavo",
+      "published": true,
+      "weeks": [
+        {
+          "id": "week-1",
+          "weekNumber": 1,
+          "days": [
+            {
+              "id": "w1-terca",
+              "dayOfWeek": "Terça",
+              "dayIndex": 2,
+              "sessions": [
+                {
+                  "id": "w1-terca-mob",
+                  "name": "Mobilidade",
+                  "type": "Mobility",
+                  "order": 1,
+                  "exercises": [
+                    {
+                      "id": "e001",
+                      "name": "Prayer Stretch",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=prayer+stretch+crossfit",
+                      "sets": 4,
+                      "reps": null,
+                      "duration": "45 segundos",
+                      "restSeconds": 60,
+                      "loadPercent": null,
+                      "coachNotes": "4x a cada 60\" — 45\" de trabalho",
+                      "completed": false
+                    },
+                    {
+                      "id": "e002",
+                      "name": "90/90 On The Box",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=90+90+hip+stretch+box",
+                      "sets": 4,
+                      "reps": null,
+                      "duration": "45 segundos",
+                      "restSeconds": 60,
+                      "loadPercent": null,
+                      "coachNotes": "4x a cada 60\" — 45\" de trabalho",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w1-terca-s1",
+                  "name": "Sessão 1 — LPO (Snatch)",
+                  "type": "LPO",
+                  "order": 2,
+                  "exercises": [
+                    {
+                      "id": "e003",
+                      "name": "Snatch Complex",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=snatch+complex+crossfit",
+                      "sets": 6,
+                      "reps": "2 Hang Snatch + 1 Power Snatch + 1 Squat Snatch",
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "6 sets — Rest 1'30\"",
+                      "completed": false
+                    },
+                    {
+                      "id": "e004",
+                      "name": "Squat Snatch",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=squat+snatch+technique",
+                      "sets": 5,
+                      "reps": 2,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": 75,
+                      "coachNotes": "5x2 @ 75%",
+                      "completed": false
+                    },
+                    {
+                      "id": "e005",
+                      "name": "Snatch Pull",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=snatch+pull+weightlifting",
+                      "sets": 4,
+                      "reps": 3,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "4x3",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w1-terca-s2",
+                  "name": "Sessão 2 — Força Lower",
+                  "type": "Strength",
+                  "order": 3,
+                  "exercises": [
+                    {
+                      "id": "e006",
+                      "name": "Back Squat",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=back+squat+technique",
+                      "sets": 5,
+                      "reps": 5,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": 75,
+                      "coachNotes": "5x5 @ 75%",
+                      "completed": false
+                    },
+                    {
+                      "id": "e007",
+                      "name": "Bulgarian Split Squat",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=bulgarian+split+squat",
+                      "sets": 4,
+                      "reps": "8 cada perna",
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "4x8 cada perna",
+                      "completed": false
+                    },
+                    {
+                      "id": "e008",
+                      "name": "Hip Thrust",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=hip+thrust+barbell",
+                      "sets": 4,
+                      "reps": 10,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "4x10",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w1-terca-s3",
+                  "name": "Sessão 3 — Metcon",
+                  "type": "Metcon",
+                  "order": 4,
+                  "exercises": [
+                    {
+                      "id": "e012",
+                      "name": "AMRAP 15 — Wall Balls / T2B / Power Snatch / Run",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=wall+balls+crossfit",
+                      "sets": null,
+                      "reps": "15 Wall Balls + 12 T2B + 9 Power Snatch (60kg) + 200m Run",
+                      "duration": "AMRAP 15 minutos",
+                      "restSeconds": 0,
+                      "loadPercent": null,
+                      "coachNotes": "AMRAP 15' — 15 Wall Balls / 12 T2B / 9 Power Snatch (60kg) / 200m Run",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w1-terca-end",
+                  "name": "Endurance — Running Z2",
+                  "type": "Endurance",
+                  "order": 5,
+                  "exercises": [
+                    {
+                      "id": "e013",
+                      "name": "Running Z2",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=zone+2+running+training",
+                      "sets": 1,
+                      "reps": null,
+                      "duration": "45 minutos",
+                      "restSeconds": 0,
+                      "loadPercent": null,
+                      "coachNotes": "45 min ritmo confortável — Zona 2",
+                      "completed": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "w1-quarta",
+              "dayOfWeek": "Quarta",
+              "dayIndex": 3,
+              "sessions": [
+                {
+                  "id": "w1-quarta-s1",
+                  "name": "Sessão 1 — Força Upper",
+                  "type": "Strength",
+                  "order": 1,
+                  "exercises": [
+                    {
+                      "id": "e014",
+                      "name": "Strict Press",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=strict+press+overhead+technique",
+                      "sets": 5,
+                      "reps": 5,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "5x5",
+                      "completed": false
+                    },
+                    {
+                      "id": "e015",
+                      "name": "Bench Press",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=bench+press+technique",
+                      "sets": 4,
+                      "reps": 6,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "4x6",
+                      "completed": false
+                    },
+                    {
+                      "id": "e016",
+                      "name": "Pendlay Row",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=pendlay+row+technique",
+                      "sets": 4,
+                      "reps": 8,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "4x8",
+                      "completed": false
+                    },
+                    {
+                      "id": "e017",
+                      "name": "Ring Dips",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=ring+dips+crossfit",
+                      "sets": 4,
+                      "reps": 10,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "4x10",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w1-quarta-s2",
+                  "name": "Sessão 2 — Ginástico",
+                  "type": "Gymnastics",
+                  "order": 2,
+                  "exercises": [
+                    {
+                      "id": "e018",
+                      "name": "EMOM 18 — Chest to Bar / Pistols / HSPU",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=chest+to+bar+pull+ups",
+                      "sets": 18,
+                      "reps": "Min1: 8 C2B | Min2: 10 Pistols | Min3: 10 HSPU",
+                      "duration": "EMOM 18 minutos",
+                      "restSeconds": 0,
+                      "loadPercent": null,
+                      "coachNotes": "EMOM 18: Min1 - 8 C2B / Min2 - 10 Pistols / Min3 - 10 HSPU",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w1-quarta-s3",
+                  "name": "Sessão 3 — Metcon",
+                  "type": "Metcon",
+                  "order": 3,
+                  "exercises": [
+                    {
+                      "id": "e019",
+                      "name": "4 Rounds — Run / Thrusters / Pull-Ups",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=thrusters+crossfit+technique",
+                      "sets": 4,
+                      "reps": "400m Run + 15 Thrusters (40kg) + 12 Pull-Ups",
+                      "duration": null,
+                      "restSeconds": 0,
+                      "loadPercent": null,
+                      "coachNotes": "4 Rounds: 400m Run / 15 Thrusters (40kg) / 12 Pull-Ups",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w1-quarta-end",
+                  "name": "Endurance — Row",
+                  "type": "Endurance",
+                  "order": 4,
+                  "exercises": [
+                    {
+                      "id": "e020",
+                      "name": "Row — 8 Rounds x 500m",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=rowing+machine+technique+crossfit",
+                      "sets": 8,
+                      "reps": "500m",
+                      "duration": null,
+                      "restSeconds": 60,
+                      "loadPercent": null,
+                      "coachNotes": "8 rounds x 500m — Rest 1 min entre cada",
+                      "completed": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "w1-quinta",
+              "dayOfWeek": "Quinta",
+              "dayIndex": 4,
+              "sessions": [
+                {
+                  "id": "w1-quinta-s1",
+                  "name": "Sessão 1 — LPO (Clean)",
+                  "type": "LPO",
+                  "order": 1,
+                  "exercises": [
+                    {
+                      "id": "e021",
+                      "name": "Clean Complex",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=clean+complex+weightlifting",
+                      "sets": 6,
+                      "reps": "1 Hang Clean + 1 Power Clean + 1 Squat Clean",
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "6 sets — Rest 1'30\"",
+                      "completed": false
+                    },
+                    {
+                      "id": "e022",
+                      "name": "Squat Clean Singles",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=squat+clean+singles",
+                      "sets": 6,
+                      "reps": "6 singles @ 80%",
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": 80,
+                      "coachNotes": "Every 1'30\" — 6x @ 80%",
+                      "completed": false
+                    },
+                    {
+                      "id": "e023",
+                      "name": "Front Squat",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=front+squat+technique",
+                      "sets": 4,
+                      "reps": 4,
+                      "duration": null,
+                      "restSeconds": 73,
+                      "loadPercent": null,
+                      "coachNotes": "4x4 — Rest 1'13\"",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w1-quinta-s2",
+                  "name": "Sessão 2 — Metcon",
+                  "type": "Metcon",
+                  "order": 2,
+                  "exercises": [
+                    {
+                      "id": "e024",
+                      "name": "AMRAP 18 — Wall Balls / T2B / Row",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=toes+to+bar+crossfit",
+                      "sets": null,
+                      "reps": "20 Wall Balls + 15 T2B + 250m Row",
+                      "duration": "AMRAP 18 minutos",
+                      "restSeconds": 0,
+                      "loadPercent": null,
+                      "coachNotes": "AMRAP 18': 20 WB / 15 T2B / 250m Row",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w1-quinta-end",
+                  "name": "Endurance — Bike Z2",
+                  "type": "Endurance",
+                  "order": 3,
+                  "exercises": [
+                    {
+                      "id": "e025",
+                      "name": "Bike Z2",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=zone+2+bike+training",
+                      "sets": 1,
+                      "reps": null,
+                      "duration": "50 minutos",
+                      "restSeconds": 0,
+                      "loadPercent": null,
+                      "coachNotes": "50 min Z2 — ritmo confortável",
+                      "completed": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "w1-sexta",
+              "dayOfWeek": "Sexta",
+              "dayIndex": 5,
+              "sessions": [
+                {
+                  "id": "w1-sexta-s1",
+                  "name": "Sessão 1 — LPO (Snatch)",
+                  "type": "LPO",
+                  "order": 1,
+                  "exercises": [
+                    {
+                      "id": "e026",
+                      "name": "Snatch",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=snatch+technique+weightlifting",
+                      "sets": 6,
+                      "reps": 2,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": 80,
+                      "coachNotes": "6x2 @ 80%",
+                      "completed": false
+                    },
+                    {
+                      "id": "e027",
+                      "name": "Overhead Squat",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=overhead+squat+technique",
+                      "sets": 4,
+                      "reps": 5,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "4x5 — Não precisa colocar muito peso",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w1-sexta-s2",
+                  "name": "Sessão 2 — Força Lower",
+                  "type": "Strength",
+                  "order": 2,
+                  "exercises": [
+                    {
+                      "id": "e028",
+                      "name": "Back Squat",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=back+squat+technique",
+                      "sets": 5,
+                      "reps": 3,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": 75,
+                      "coachNotes": "5x3 @ 75%",
+                      "completed": false
+                    },
+                    {
+                      "id": "e029",
+                      "name": "Romanian Deadlift",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=romanian+deadlift+technique",
+                      "sets": 4,
+                      "reps": 8,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "4x8",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w1-sexta-s3",
+                  "name": "Sessão 3 — Metcon (Sprint)",
+                  "type": "Metcon",
+                  "order": 3,
+                  "exercises": [
+                    {
+                      "id": "e031",
+                      "name": "5 Rounds — Power Snatch / Burpees Over Bar",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=power+snatch+crossfit",
+                      "sets": 5,
+                      "reps": "12 Power Snatch (50kg) + 12 Burpees Over Bar",
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "5 Rounds: 12 Power Snatch (50kg) / 12 Burpees Over Bar — Rest 90s",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w1-sexta-end",
+                  "name": "Endurance — Run Intervals",
+                  "type": "Endurance",
+                  "order": 4,
+                  "exercises": [
+                    {
+                      "id": "e032",
+                      "name": "Run Intervals 8x400m",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=running+intervals+400m+training",
+                      "sets": 8,
+                      "reps": "400m",
+                      "duration": null,
+                      "restSeconds": 60,
+                      "loadPercent": null,
+                      "coachNotes": "8 rounds x 400m — Rest 1 min",
+                      "completed": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "w1-sabado",
+              "dayOfWeek": "Sábado",
+              "dayIndex": 6,
+              "sessions": [
+                {
+                  "id": "w1-sabado-s1",
+                  "name": "Sessão 1 — Força Posterior",
+                  "type": "Strength",
+                  "order": 1,
+                  "exercises": [
+                    {
+                      "id": "e033",
+                      "name": "Deadlift",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=deadlift+technique+crossfit",
+                      "sets": 5,
+                      "reps": 3,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": 80,
+                      "coachNotes": "5x3 @ 80%",
+                      "completed": false
+                    },
+                    {
+                      "id": "e034",
+                      "name": "Hip Thrust",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=hip+thrust+barbell",
+                      "sets": 4,
+                      "reps": 10,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "4x10",
+                      "completed": false
+                    },
+                    {
+                      "id": "e035",
+                      "name": "Strict Press",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=strict+press+overhead+technique",
+                      "sets": 4,
+                      "reps": 6,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "4x6",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w1-sabado-s2",
+                  "name": "Sessão 2 — Ginástico Avançado",
+                  "type": "Gymnastics",
+                  "order": 2,
+                  "exercises": [
+                    {
+                      "id": "e036",
+                      "name": "5 Rounds — Bar Muscle Ups / Pistols / HSPU",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=bar+muscle+up+crossfit",
+                      "sets": 5,
+                      "reps": "6 Bar Muscle Ups + 12 Pistols + 12 HSPU",
+                      "duration": null,
+                      "restSeconds": 60,
+                      "loadPercent": null,
+                      "coachNotes": "5 Rounds: 6 BMU / 12 Pistols / 12 HSPU",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w1-sabado-s3",
+                  "name": "Sessão 3 — Metcon Clássico",
+                  "type": "Metcon",
+                  "order": 3,
+                  "exercises": [
+                    {
+                      "id": "e037",
+                      "name": "For Time 21-15-9 — Thruster / Chest to Bar",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=fran+crossfit+thruster+pull+up",
+                      "sets": null,
+                      "reps": "21-15-9 Thruster (43kg) + Chest to Bar",
+                      "duration": "For Time",
+                      "restSeconds": 0,
+                      "loadPercent": null,
+                      "coachNotes": "For Time 21-15-9: Thruster (43kg) / Chest to Bar",
+                      "completed": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "week-2",
+          "weekNumber": 2,
+          "days": [
+            {
+              "id": "w2-segunda",
+              "dayOfWeek": "Segunda",
+              "dayIndex": 1,
+              "sessions": [
+                {
+                  "id": "w2-segunda-s1",
+                  "name": "Sessão 1 — LPO (Snatch)",
+                  "type": "LPO",
+                  "order": 1,
+                  "exercises": [
+                    {
+                      "id": "e039",
+                      "name": "Snatch Complex",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=snatch+complex+crossfit",
+                      "sets": 6,
+                      "reps": "2 Hang Snatch + 1 Power Snatch + 1 Squat Snatch",
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "6 sets — Rest 1'30\"",
+                      "completed": false
+                    },
+                    {
+                      "id": "e040",
+                      "name": "Snatch",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=snatch+technique+weightlifting",
+                      "sets": 6,
+                      "reps": 2,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": 79,
+                      "coachNotes": "6x2 @ 77–80% — Rest 1'30\"",
+                      "completed": false
+                    },
+                    {
+                      "id": "e041",
+                      "name": "Snatch Pull",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=snatch+pull+weightlifting",
+                      "sets": 4,
+                      "reps": 4,
+                      "duration": null,
+                      "restSeconds": 60,
+                      "loadPercent": null,
+                      "coachNotes": "4x4 Rest 1'",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w2-segunda-s2",
+                  "name": "Sessão 2 — Força Lower",
+                  "type": "Strength",
+                  "order": 2,
+                  "exercises": [
+                    {
+                      "id": "e042",
+                      "name": "Back Squat",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=back+squat+technique",
+                      "sets": 5,
+                      "reps": 5,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": 77,
+                      "coachNotes": "5x5 @ 77% — Rest 1'30\"",
+                      "completed": false
+                    },
+                    {
+                      "id": "e043",
+                      "name": "Bulgarian Split Squat",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=bulgarian+split+squat",
+                      "sets": 4,
+                      "reps": 10,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "4x10 — Rest 1'30\"",
+                      "completed": false
+                    },
+                    {
+                      "id": "e044",
+                      "name": "Hip Thrust",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=hip+thrust+barbell",
+                      "sets": 4,
+                      "reps": 10,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "4x10 — Rest 1'30\"",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w2-segunda-s3",
+                  "name": "Sessão 3 — Metcon",
+                  "type": "Metcon",
+                  "order": 3,
+                  "exercises": [
+                    {
+                      "id": "e045",
+                      "name": "AMRAP 15 — WB / T2B / Power Snatch / Box Jump",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=box+jump+over+crossfit",
+                      "sets": null,
+                      "reps": "15 WB + 12 T2B + 9 Power Snatch (65kg) + 6 Box Jump Over",
+                      "duration": "AMRAP 15 minutos",
+                      "restSeconds": 0,
+                      "loadPercent": null,
+                      "coachNotes": "AMRAP 15': 15 WB / 12 T2B / 9 Power Snatch (65kg) / 6 Box Jump Over",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w2-segunda-end",
+                  "name": "Endurance — Run Z2",
+                  "type": "Endurance",
+                  "order": 4,
+                  "exercises": [
+                    {
+                      "id": "e046",
+                      "name": "Run Z2",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=zone+2+running+training",
+                      "sets": 1,
+                      "reps": null,
+                      "duration": "45 minutos",
+                      "restSeconds": 0,
+                      "loadPercent": null,
+                      "coachNotes": "45 min Z2",
+                      "completed": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "w2-terca",
+              "dayOfWeek": "Terça",
+              "dayIndex": 2,
+              "sessions": [
+                {
+                  "id": "w2-terca-s1",
+                  "name": "Sessão 1 — Upper Strength",
+                  "type": "Strength",
+                  "order": 1,
+                  "exercises": [
+                    {
+                      "id": "e047",
+                      "name": "Strict Press",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=strict+press+overhead+technique",
+                      "sets": 5,
+                      "reps": 5,
+                      "duration": null,
+                      "restSeconds": 60,
+                      "loadPercent": null,
+                      "coachNotes": "5x5 — Rest 1'",
+                      "completed": false
+                    },
+                    {
+                      "id": "e048",
+                      "name": "Bench Press",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=bench+press+technique",
+                      "sets": 4,
+                      "reps": 6,
+                      "duration": null,
+                      "restSeconds": 60,
+                      "loadPercent": null,
+                      "coachNotes": "4x6 — Rest 1'",
+                      "completed": false
+                    },
+                    {
+                      "id": "e049",
+                      "name": "Pendlay Row",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=pendlay+row+technique",
+                      "sets": 4,
+                      "reps": 8,
+                      "duration": null,
+                      "restSeconds": 60,
+                      "loadPercent": null,
+                      "coachNotes": "4x8 — Rest 1'",
+                      "completed": false
+                    },
+                    {
+                      "id": "e050",
+                      "name": "Ring Dips",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=ring+dips+crossfit",
+                      "sets": 4,
+                      "reps": 12,
+                      "duration": null,
+                      "restSeconds": 60,
+                      "loadPercent": null,
+                      "coachNotes": "4x12 — Rest 1'",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w2-terca-s2",
+                  "name": "Sessão 2 — Ginástico Skills",
+                  "type": "Gymnastics",
+                  "order": 2,
+                  "exercises": [
+                    {
+                      "id": "e051",
+                      "name": "Handstand Walk Practice",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=handstand+walk+crossfit+practice",
+                      "sets": 1,
+                      "reps": null,
+                      "duration": "10 minutos",
+                      "restSeconds": 0,
+                      "loadPercent": null,
+                      "coachNotes": "10 min de prática",
+                      "completed": false
+                    },
+                    {
+                      "id": "e052",
+                      "name": "EMOM 15 — C2B / Pistols / HSPU",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=HSPU+handstand+push+up+crossfit",
+                      "sets": 15,
+                      "reps": "Min1: 8 C2B | Min2: 10 Pistols | Min3: 10 HSPU",
+                      "duration": "EMOM 15 minutos",
+                      "restSeconds": 0,
+                      "loadPercent": null,
+                      "coachNotes": "EMOM 15: Min1 - 8 C2B / Min2 - 10 Pistols / Min3 - 10 HSPU",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w2-terca-s3",
+                  "name": "Sessão 3 — Metcon",
+                  "type": "Metcon",
+                  "order": 3,
+                  "exercises": [
+                    {
+                      "id": "e053",
+                      "name": "6 Rounds — Run / Thrusters / Pull-Ups / Box Jumps",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=thrusters+crossfit+technique",
+                      "sets": 6,
+                      "reps": "400m Run + 15 Thrusters + 12 Pull-Ups + 15 Box Jumps",
+                      "duration": null,
+                      "restSeconds": 0,
+                      "loadPercent": null,
+                      "coachNotes": "6 Rounds: 400m Run / 15 Thrusters / 12 Pull-Ups / 15 Box Jumps",
+                      "completed": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "w2-quarta",
+              "dayOfWeek": "Quarta",
+              "dayIndex": 3,
+              "sessions": [
+                {
+                  "id": "w2-quarta-s1",
+                  "name": "Sessão 1 — LPO (Clean)",
+                  "type": "LPO",
+                  "order": 1,
+                  "exercises": [
+                    {
+                      "id": "e054",
+                      "name": "Clean Complex",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=clean+complex+weightlifting",
+                      "sets": 6,
+                      "reps": "1 Hang Clean + 1 Power Clean + 1 Squat Clean",
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "6 rounds — Rest 1'30\"",
+                      "completed": false
+                    },
+                    {
+                      "id": "e055",
+                      "name": "Squat Clean Singles",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=squat+clean+singles",
+                      "sets": 6,
+                      "reps": "1 @ 82%",
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": 82,
+                      "coachNotes": "6 rounds — Rest 1'30\" — @ 82%",
+                      "completed": false
+                    },
+                    {
+                      "id": "e056",
+                      "name": "Front Squat",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=front+squat+technique",
+                      "sets": 5,
+                      "reps": 4,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "5x4",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w2-quarta-s2",
+                  "name": "Sessão 2 — Metcon",
+                  "type": "Metcon",
+                  "order": 2,
+                  "exercises": [
+                    {
+                      "id": "e058",
+                      "name": "AMRAP 18 — WB / T2B / Row / Box Jump Over",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=toes+to+bar+crossfit",
+                      "sets": null,
+                      "reps": "20 WB + 15 T2B + 250m Row + 10 Box Jump Over",
+                      "duration": "AMRAP 18 minutos",
+                      "restSeconds": 0,
+                      "loadPercent": null,
+                      "coachNotes": "AMRAP 18: 20 WB / 15 T2B / 250m Row / 10 Box Jump Over",
+                      "completed": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "w2-sexta",
+              "dayOfWeek": "Sexta",
+              "dayIndex": 5,
+              "sessions": [
+                {
+                  "id": "w2-sexta-s1",
+                  "name": "Sessão 1 — Posterior Chain",
+                  "type": "Strength",
+                  "order": 1,
+                  "exercises": [
+                    {
+                      "id": "e059",
+                      "name": "Deadlift",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=deadlift+technique+crossfit",
+                      "sets": 5,
+                      "reps": 3,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": 82,
+                      "coachNotes": "5x3 @ 82%",
+                      "completed": false
+                    },
+                    {
+                      "id": "e060",
+                      "name": "Hip Thrust",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=hip+thrust+barbell",
+                      "sets": 4,
+                      "reps": 10,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "4x10",
+                      "completed": false
+                    },
+                    {
+                      "id": "e061",
+                      "name": "Strict Press",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=strict+press+overhead+technique",
+                      "sets": 4,
+                      "reps": 6,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": null,
+                      "coachNotes": "4x6",
+                      "completed": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "week-3",
+          "weekNumber": 3,
+          "days": [
+            {
+              "id": "w3-segunda",
+              "dayOfWeek": "Segunda",
+              "dayIndex": 1,
+              "sessions": [
+                {
+                  "id": "w3-segunda-s1",
+                  "name": "Sessão 1 — LPO Peak",
+                  "type": "LPO",
+                  "order": 1,
+                  "exercises": [
+                    {
+                      "id": "e070",
+                      "name": "Snatch",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=snatch+technique+weightlifting",
+                      "sets": 5,
+                      "reps": 2,
+                      "duration": null,
+                      "restSeconds": 120,
+                      "loadPercent": 85,
+                      "coachNotes": "5x2 @ 85% — Peak week",
+                      "completed": false
+                    },
+                    {
+                      "id": "e071",
+                      "name": "Clean & Jerk",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=clean+and+jerk+technique",
+                      "sets": 5,
+                      "reps": 1,
+                      "duration": null,
+                      "restSeconds": 120,
+                      "loadPercent": 87,
+                      "coachNotes": "5x1 @ 87% — Foco técnico",
+                      "completed": false
+                    }
+                  ]
+                },
+                {
+                  "id": "w3-segunda-s2",
+                  "name": "Sessão 2 — Metcon Heavy",
+                  "type": "Metcon",
+                  "order": 2,
+                  "exercises": [
+                    {
+                      "id": "e072",
+                      "name": "AMRAP 20 — Snatch / C2B / Box Jump / Run",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=power+snatch+crossfit",
+                      "sets": null,
+                      "reps": "5 Snatch (70kg) + 10 C2B + 15 Box Jumps + 200m Run",
+                      "duration": "AMRAP 20 minutos",
+                      "restSeconds": 0,
+                      "loadPercent": null,
+                      "coachNotes": "AMRAP 20': 5 Snatch (70kg) / 10 C2B / 15 Box Jumps / 200m Run",
+                      "completed": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "week-4",
+          "weekNumber": 4,
+          "days": [
+            {
+              "id": "w4-segunda",
+              "dayOfWeek": "Segunda",
+              "dayIndex": 1,
+              "sessions": [
+                {
+                  "id": "w4-segunda-s1",
+                  "name": "Sessão 1 — Deload LPO",
+                  "type": "LPO",
+                  "order": 1,
+                  "exercises": [
+                    {
+                      "id": "e080",
+                      "name": "Snatch Técnico",
+                      "youtubeUrl": "https://www.youtube.com/results?search_query=snatch+technique+weightlifting",
+                      "sets": 5,
+                      "reps": 3,
+                      "duration": null,
+                      "restSeconds": 90,
+                      "loadPercent": 65,
+                      "coachNotes": "5x3 @ 65% — Deload, foco em técnica",
+                      "completed": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "workoutLogs": []
+}
