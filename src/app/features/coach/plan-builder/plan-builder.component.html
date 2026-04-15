@@ -4,8 +4,12 @@
   <header class="px-8 py-5 flex items-center justify-between flex-shrink-0">
     <div class="flex items-center gap-4">
       <div>
-        <p class="text-outline text-[10px] font-headline uppercase tracking-widest mb-0.5">Atleta</p>
-        <p class="text-on-surface font-headline font-bold text-base">{{ plan()?.title ?? 'Carregando...' }}</p>
+        <p class="text-outline text-[10px] font-headline uppercase tracking-widest mb-0.5">Plano de Treino</p>
+        @if (loading()) {
+          <div class="h-4 w-40 bg-surface-container rounded-sm animate-pulse"></div>
+        } @else {
+          <p class="text-on-surface font-headline font-bold text-base">{{ plan()?.title ?? 'Sem plano ativo' }}</p>
+        }
       </div>
       @if (plan()) {
         <div class="flex items-center gap-2 text-on-surface-variant">
@@ -14,21 +18,59 @@
         </div>
       }
     </div>
-    <div class="flex gap-2">
-      <button type="button"
-        class="px-4 py-2 rounded-sm border border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:border-outline font-headline text-xs uppercase tracking-wider transition-all">
+    <div class="flex items-center gap-2">
+      @if (plan()?.published) {
+        <span class="flex items-center gap-1.5 text-green-400 font-headline text-xs uppercase tracking-wider">
+          <span class="material-symbols-outlined text-[14px]">check_circle</span>
+          Publicado
+        </span>
+      }
+      <button type="button" (click)="saveDraft()" [disabled]="!plan()"
+        class="px-4 py-2 rounded-sm border border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:border-outline font-headline text-xs uppercase tracking-wider transition-all disabled:opacity-40">
         Salvar Rascunho
       </button>
-      <button type="button"
-        class="px-4 py-2 rounded-sm bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black text-xs uppercase tracking-tighter transition-all">
-        Publicar Plano
+      <button type="button" (click)="publish()" [disabled]="!plan() || plan()!.published || publishing()"
+        class="px-4 py-2 rounded-sm bg-primary-fixed hover:bg-primary-dim disabled:opacity-40 text-on-primary-fixed font-headline font-black text-xs uppercase tracking-tighter transition-all flex items-center gap-1.5">
+        @if (publishing()) {
+          <span class="material-symbols-outlined text-[14px]">progress_activity</span>
+        }
+        {{ plan()?.published ? 'Publicado' : (publishing() ? 'Publicando...' : 'Publicar Plano') }}
       </button>
     </div>
   </header>
 
-  @if (!plan()) {
+  @if (loading()) {
     <div class="flex-1 flex items-center justify-center">
-      <p class="text-on-surface-variant font-headline">Nenhum plano encontrado para este atleta.</p>
+      <span class="material-symbols-outlined text-outline text-[40px] animate-pulse-subtle">fitness_center</span>
+    </div>
+  } @else if (!plan()) {
+    <div class="flex-1 flex flex-col items-center justify-center gap-4">
+      <span class="material-symbols-outlined text-outline text-[56px]">fitness_center</span>
+      <div class="text-center">
+        <p class="text-on-surface font-headline font-bold">Nenhum plano criado ainda</p>
+        <p class="text-on-surface-variant text-sm mt-1">Use o botão <strong class="text-primary-fixed">+ Novo Treino</strong> na barra lateral para criar o primeiro plano.</p>
+      </div>
+    </div>
+  } @else {
+
+  @if (plan()!.weeks.length === 0) {
+    <!-- Empty weeks state -->
+    <div class="flex-1 flex flex-col items-center justify-center gap-4">
+      <span class="material-symbols-outlined text-outline text-[56px]">calendar_month</span>
+      <div class="text-center">
+        <p class="text-on-surface font-headline font-bold">Plano sem estrutura de semanas</p>
+        <p class="text-on-surface-variant text-sm mt-1 max-w-xs">Este plano foi criado sem as semanas e dias de treino. Clique abaixo para inicializar a estrutura padrão (4 semanas × 6 dias).</p>
+      </div>
+      <button type="button" (click)="initializePlan()" [disabled]="initializingPlan()"
+        class="flex items-center gap-2 bg-primary-fixed hover:bg-primary-dim disabled:opacity-60 text-on-primary-fixed font-headline font-black px-6 py-3 rounded-sm uppercase tracking-tighter text-sm transition-all">
+        @if (initializingPlan()) {
+          <span class="material-symbols-outlined text-[18px]">progress_activity</span>
+          Inicializando...
+        } @else {
+          <span class="material-symbols-outlined text-[18px]">auto_fix_high</span>
+          Inicializar Estrutura
+        }
+      </button>
     </div>
   } @else {
 
@@ -61,7 +103,48 @@
               {{ day.dayOfWeek }}
             </h3>
             <div class="flex-1 h-px bg-outline-variant/10"></div>
+            <button type="button" (click)="openAddSession(day.id)"
+              class="flex items-center gap-1 text-[10px] font-headline font-bold text-outline hover:text-primary-fixed uppercase tracking-wider transition-colors">
+              <span class="material-symbols-outlined text-[14px]">add</span>
+              Sessão
+            </button>
           </div>
+
+          <!-- Inline: Add Session Form -->
+          @if (showAddSession() === day.id) {
+            <div class="pl-5 mb-3">
+              <form [formGroup]="sessionForm" (ngSubmit)="saveSession()"
+                class="bg-surface-container-low rounded-md p-4 border border-primary-fixed/20 animate-fade-in">
+                <p class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-3">Nova Sessão</p>
+                <div class="flex gap-2 mb-3">
+                  <input formControlName="name" type="text" placeholder="Nome da sessão"
+                    class="flex-1 bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-3 py-2 text-sm" />
+                  <select formControlName="type" title="Tipo de sessão"
+                    class="bg-surface-container text-on-surface rounded-sm px-3 py-2 text-sm appearance-none cursor-pointer">
+                    @for (t of sessionTypes; track t) {
+                      <option [value]="t">{{ t }}</option>
+                    }
+                  </select>
+                </div>
+                @if (sessionForm.get('name')?.invalid && sessionForm.get('name')?.touched) {
+                  <p class="text-error text-xs mb-2">Nome obrigatório.</p>
+                }
+                <div class="flex gap-2">
+                  <button type="button" (click)="showAddSession.set(null)"
+                    class="flex-1 py-2 rounded-sm border border-outline-variant/30 text-on-surface-variant hover:text-on-surface font-headline text-xs uppercase tracking-wider transition-all">
+                    Cancelar
+                  </button>
+                  <button type="submit" [disabled]="savingSession()"
+                    class="flex-1 py-2 rounded-sm bg-primary-fixed hover:bg-primary-dim disabled:opacity-60 text-on-primary-fixed font-headline font-black text-xs uppercase tracking-tighter transition-all flex items-center justify-center gap-1">
+                    @if (savingSession()) {
+                      <span class="material-symbols-outlined text-[14px]">progress_activity</span>
+                    }
+                    {{ savingSession() ? 'Salvando...' : 'Criar Sessão' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+          }
 
           <!-- Session cards -->
           <div class="pl-5 grid grid-cols-1 lg:grid-cols-2 gap-3">
@@ -69,20 +152,24 @@
               <div class="bg-surface-container-low rounded-md overflow-hidden">
 
                 <!-- Session header -->
-                <div
-                  (click)="toggleSession(session.id)"
-                  class="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-surface-container transition-colors">
-                  <div class="flex items-center gap-2">
+                <div class="flex items-center justify-between px-4 py-3">
+                  <div class="flex items-center gap-2 flex-1 cursor-pointer" (click)="toggleSession(session.id)">
                     <span class="text-[10px] font-headline font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider"
                       [class]="getTypeColor(session.type)">
                       {{ session.type }}
                     </span>
                     <span class="text-on-surface text-sm font-headline font-bold">{{ session.name }}</span>
                   </div>
-                  <div class="flex items-center gap-2">
-                    <span class="text-outline text-[10px] font-headline">{{ session.exercises.length }} exerc.</span>
-                    <span class="material-symbols-outlined text-outline text-[18px] transition-transform"
-                      [class.rotate-180]="isExpanded(session.id)">expand_more</span>
+                  <div class="flex items-center gap-1">
+                    <span class="text-outline text-[10px] font-headline mr-1">{{ session.exercises.length }} exerc.</span>
+                    <button type="button" (click)="deleteSession(session.id)"
+                      class="w-6 h-6 flex items-center justify-center text-outline hover:text-error transition-colors rounded-sm hover:bg-error/10"
+                      title="Remover sessão">
+                      <span class="material-symbols-outlined text-[16px]">delete</span>
+                    </button>
+                    <span class="material-symbols-outlined text-outline text-[18px] transition-transform cursor-pointer"
+                      [class.rotate-180]="isExpanded(session.id)"
+                      (click)="toggleSession(session.id)">expand_more</span>
                   </div>
                 </div>
 
@@ -102,12 +189,24 @@
                             <p class="text-outline text-xs mt-1 italic border-l-2 border-primary-fixed/40 pl-2">{{ ex.coachNotes }}</p>
                           }
                         </div>
-                        @if (ex.youtubeUrl) {
-                          <a [href]="ex.youtubeUrl" target="_blank" rel="noopener"
-                            class="text-primary-fixed hover:text-primary flex-shrink-0 transition-colors">
-                            <span class="material-symbols-outlined text-[18px]">play_circle</span>
-                          </a>
-                        }
+                        <div class="flex items-center gap-1 flex-shrink-0">
+                          @if (ex.youtubeUrl) {
+                            <a [href]="ex.youtubeUrl" target="_blank" rel="noopener"
+                              class="w-6 h-6 flex items-center justify-center text-primary-fixed hover:text-primary transition-colors">
+                              <span class="material-symbols-outlined text-[18px]">play_circle</span>
+                            </a>
+                          }
+                          <button type="button" (click)="openEditExercise(ex, session.id)"
+                            class="w-6 h-6 flex items-center justify-center text-outline hover:text-on-surface transition-colors rounded-sm hover:bg-surface-container"
+                            title="Editar exercício">
+                            <span class="material-symbols-outlined text-[16px]">edit</span>
+                          </button>
+                          <button type="button" (click)="deleteExercise(ex, session.id)"
+                            class="w-6 h-6 flex items-center justify-center text-outline hover:text-error transition-colors rounded-sm hover:bg-error/10"
+                            title="Remover exercício">
+                            <span class="material-symbols-outlined text-[16px]">delete</span>
+                          </button>
+                        </div>
                       </div>
                     }
 
@@ -121,6 +220,15 @@
 
               </div>
             }
+
+            <!-- Empty day: shortcut to add first session -->
+            @if (day.sessions.length === 0 && showAddSession() !== day.id) {
+              <button type="button" (click)="openAddSession(day.id)"
+                class="col-span-2 py-4 rounded-md border border-dashed border-outline-variant/20 text-outline hover:text-on-surface-variant hover:border-outline-variant/40 font-headline text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[16px]">add</span>
+                Adicionar primeira sessão
+              </button>
+            }
           </div>
         </div>
 
@@ -129,21 +237,45 @@
 
   </div>
   }
+  }
 </div>
+
+<!-- Toast -->
+@if (toastMsg()) {
+  <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] animate-slide-up">
+    <div class="bg-surface-container-high text-on-surface font-headline text-sm px-5 py-3 rounded-sm shadow-xl border border-outline-variant/20 flex items-center gap-2 whitespace-nowrap">
+      <span class="material-symbols-outlined text-primary-fixed text-[18px]">check_circle</span>
+      {{ toastMsg() }}
+    </div>
+  </div>
+}
 
 <!-- Exercise Drawer -->
 @if (showExerciseDrawer()) {
   <div class="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center z-50 animate-fade-in"
-    (click)="showExerciseDrawer.set(false)">
+    (click)="closeDrawer()">
     <div class="bg-surface-container-low rounded-t-md sm:rounded-md w-full sm:max-w-lg p-6 animate-slide-up"
       (click)="$event.stopPropagation()">
-      <h3 class="font-headline font-black text-xl text-on-surface tracking-tighter mb-5">Adicionar Exercício</h3>
+
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="font-headline font-black text-xl text-on-surface tracking-tighter">
+          {{ drawerMode() === 'add' ? 'Adicionar Exercício' : 'Editar Exercício' }}
+        </h3>
+        <button type="button" (click)="closeDrawer()"
+          class="w-8 h-8 rounded-sm bg-surface-container flex items-center justify-center text-outline hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+
       <form [formGroup]="exerciseForm" (ngSubmit)="saveExercise()">
         <div class="grid grid-cols-2 gap-3 mb-3">
           <div class="col-span-2">
             <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">Nome *</label>
             <input formControlName="name" type="text" placeholder="Ex: Squat Snatch"
               class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-3 py-2.5 text-sm"/>
+            @if (exerciseForm.get('name')?.invalid && exerciseForm.get('name')?.touched) {
+              <p class="text-error text-xs mt-1">Nome obrigatório.</p>
+            }
           </div>
           <div class="col-span-2">
             <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">Link YouTube</label>
@@ -152,7 +284,7 @@
           </div>
           <div>
             <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">Séries</label>
-            <input formControlName="sets" type="number"
+            <input formControlName="sets" type="number" title="Número de séries"
               class="w-full bg-surface-container text-on-surface rounded-sm px-3 py-2.5 text-sm"/>
           </div>
           <div>
@@ -161,13 +293,18 @@
               class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-3 py-2.5 text-sm"/>
           </div>
           <div>
-            <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">Carga %</label>
-            <input formControlName="loadPercent" type="number" placeholder="Ex: 75"
+            <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">Duração</label>
+            <input formControlName="duration" type="text" placeholder="Ex: 30s ou 2min"
               class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-3 py-2.5 text-sm"/>
           </div>
           <div>
+            <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">Carga %</label>
+            <input formControlName="loadPercent" type="number" placeholder="Ex: 75" title="Percentual de carga"
+              class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-3 py-2.5 text-sm"/>
+          </div>
+          <div class="col-span-2">
             <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">Descanso (seg)</label>
-            <input formControlName="restSeconds" type="number"
+            <input formControlName="restSeconds" type="number" title="Descanso em segundos"
               class="w-full bg-surface-container text-on-surface rounded-sm px-3 py-2.5 text-sm"/>
           </div>
           <div class="col-span-2">
@@ -177,13 +314,16 @@
           </div>
         </div>
         <div class="flex gap-3 pt-2">
-          <button type="button" (click)="showExerciseDrawer.set(false)"
+          <button type="button" (click)="closeDrawer()"
             class="flex-1 py-3 rounded-sm border border-outline-variant/30 text-on-surface-variant hover:text-on-surface font-headline text-xs uppercase tracking-wider transition-all">
             Cancelar
           </button>
-          <button type="submit"
-            class="flex-1 py-3 rounded-sm bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black text-xs uppercase tracking-tighter transition-all">
-            Salvar
+          <button type="submit" [disabled]="savingExercise()"
+            class="flex-1 py-3 rounded-sm bg-primary-fixed hover:bg-primary-dim disabled:opacity-60 text-on-primary-fixed font-headline font-black text-xs uppercase tracking-tighter transition-all flex items-center justify-center gap-2">
+            @if (savingExercise()) {
+              <span class="material-symbols-outlined text-[16px]">progress_activity</span>
+            }
+            {{ savingExercise() ? 'Salvando...' : (drawerMode() === 'add' ? 'Adicionar' : 'Salvar') }}
           </button>
         </div>
       </form>

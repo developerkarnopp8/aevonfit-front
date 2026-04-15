@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import {
   Student, TrainingPlan, Session, Exercise, WorkoutLog,
+  ExerciseLibraryItem, Payment, PaymentSummary,
 } from '../models';
 import { environment } from '../../../environments/environment';
 
@@ -69,6 +70,36 @@ interface RawPlan {
   weeks: RawWeek[];
 }
 
+interface RawWorkoutLog {
+  id: string;
+  exerciseId: string;
+  athleteId: string;
+  setsCompleted: number;
+  notes?: string | null;
+  completedAt: string;
+  exercise?: {
+    id: string;
+    name: string;
+    session?: {
+      id: string;
+      name: string;
+      type: string;
+      day?: { dayOfWeek: string; week?: { weekNumber: number } };
+    };
+  };
+}
+
+export interface WorkoutLogEntry {
+  id: string;
+  exerciseId: string;
+  exerciseName: string;
+  sessionName: string;
+  sessionType: string;
+  completedAt: Date;
+  setsCompleted: number;
+  notes?: string;
+}
+
 // ── Service ─────────────────────────────────────────────────────────────────
 
 @Injectable({ providedIn: 'root' })
@@ -79,6 +110,24 @@ export class ApiService {
 
   // ── Students ──────────────────────────────────────────────────────────────
 
+  /** Coach: cria conta de atleta + perfil de aluno em uma única chamada */
+  createStudent(dto: { name: string; email: string; password: string; goal: string }): Observable<Student> {
+    return this.http
+      .post<{ id: string; user: { name: string; email: string }; goal: string; currentWeek: number; currentMonth: number; completionPercent?: number }>(
+        `${this.base}/students`, dto,
+      )
+      .pipe(map(s => ({
+        id:                s.id,
+        name:              s.user.name,
+        email:             s.user.email,
+        goal:              s.goal,
+        currentWeek:       s.currentWeek,
+        currentMonth:      s.currentMonth,
+        coachId:           '',
+        completionPercent: s.completionPercent,
+      })));
+  }
+
   /** Coach: lista todos os alunos */
   getStudents(coachId?: string): Observable<Student[]> {
     const url = coachId
@@ -87,6 +136,18 @@ export class ApiService {
     return this.http
       .get<RawStudent[]>(url)
       .pipe(map(list => list.map(s => this.mapStudent(s))));
+  }
+
+  /** Coach: atualiza objetivo/progresso do aluno */
+  updateStudent(id: string, dto: { goal?: string; currentWeek?: number; currentMonth?: number }): Observable<Student> {
+    return this.http
+      .patch<RawStudent>(`${this.base}/students/${id}`, dto)
+      .pipe(map(s => this.mapStudent(s)));
+  }
+
+  /** Coach: remove aluno e conta de usuário */
+  deleteStudent(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/students/${id}`);
   }
 
   /** Atleta: retorna o próprio perfil de aluno */
@@ -117,6 +178,20 @@ export class ApiService {
       .pipe(map(p => this.mapPlan(p)));
   }
 
+  /** Inicializa 4 semanas × 6 dias para um plano sem semanas */
+  initializePlan(planId: string): Observable<TrainingPlan> {
+    return this.http
+      .post<RawPlan>(`${this.base}/training-plans/${planId}/initialize`, {})
+      .pipe(map(p => this.mapPlan(p)));
+  }
+
+  /** Publica o plano para o atleta */
+  publishPlan(planId: string): Observable<TrainingPlan> {
+    return this.http
+      .patch<RawPlan>(`${this.base}/training-plans/${planId}/publish`, {})
+      .pipe(map(p => this.mapPlan(p)));
+  }
+
   /** Retorna todos os planos de um aluno */
   getPlansByStudent(studentId: string): Observable<TrainingPlan[]> {
     return this.http
@@ -124,11 +199,48 @@ export class ApiService {
       .pipe(map(list => list.map(p => this.mapPlan(p))));
   }
 
+  /** Cria novo plano de treino para um aluno */
+  createPlan(studentId: string, title: string, month: number): Observable<TrainingPlan> {
+    return this.http
+      .post<RawPlan>(`${this.base}/training-plans`, { studentId, title, month })
+      .pipe(map(p => this.mapPlan(p)));
+  }
+
   /** Retorna o primeiro plano do aluno (mais usado no front) */
   getFirstPlanByStudent(studentId: string): Observable<TrainingPlan | null> {
     return this.getPlansByStudent(studentId).pipe(
       map(plans => plans[0] ?? null),
     );
+  }
+
+  // ── Sessions (plan-builder) ───────────────────────────────────────────────
+
+  addSession(dayId: string, name: string, type: string): Observable<Session> {
+    return this.http
+      .post<RawSession>(`${this.base}/training-plans/days/${dayId}/sessions`, { name, type, order: 0 })
+      .pipe(map(s => this.mapSession(s)));
+  }
+
+  deleteSession(sessionId: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/training-plans/sessions/${sessionId}`);
+  }
+
+  // ── Exercises (plan-builder) ──────────────────────────────────────────────
+
+  addExercise(sessionId: string, dto: Partial<RawExercise>): Observable<Exercise> {
+    return this.http
+      .post<RawExercise>(`${this.base}/training-plans/sessions/${sessionId}/exercises`, dto)
+      .pipe(map(e => this.mapExercise(e)));
+  }
+
+  updateExercise(exerciseId: string, dto: Partial<RawExercise>): Observable<Exercise> {
+    return this.http
+      .patch<RawExercise>(`${this.base}/training-plans/exercises/${exerciseId}`, dto)
+      .pipe(map(e => this.mapExercise(e)));
+  }
+
+  deleteExercise(exerciseId: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/training-plans/exercises/${exerciseId}`);
   }
 
   // ── Sessions ──────────────────────────────────────────────────────────────
@@ -139,6 +251,46 @@ export class ApiService {
       .pipe(map(s => this.mapSession(s)));
   }
 
+  // ── Exercise Library ─────────────────────────────────────────────────────
+
+  getLibrary(): Observable<ExerciseLibraryItem[]> {
+    return this.http.get<ExerciseLibraryItem[]>(`${this.base}/exercise-library`);
+  }
+
+  createLibraryItem(dto: Partial<ExerciseLibraryItem>): Observable<ExerciseLibraryItem> {
+    return this.http.post<ExerciseLibraryItem>(`${this.base}/exercise-library`, dto);
+  }
+
+  updateLibraryItem(id: string, dto: Partial<ExerciseLibraryItem>): Observable<ExerciseLibraryItem> {
+    return this.http.patch<ExerciseLibraryItem>(`${this.base}/exercise-library/${id}`, dto);
+  }
+
+  deleteLibraryItem(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/exercise-library/${id}`);
+  }
+
+  // ── Payments ──────────────────────────────────────────────────────────────
+
+  getPayments(): Observable<Payment[]> {
+    return this.http.get<Payment[]>(`${this.base}/payments`);
+  }
+
+  getPaymentSummary(): Observable<PaymentSummary> {
+    return this.http.get<PaymentSummary>(`${this.base}/payments/summary`);
+  }
+
+  createPayment(dto: { studentId: string; amount: number; dueDate: string; description?: string }): Observable<Payment> {
+    return this.http.post<Payment>(`${this.base}/payments`, dto);
+  }
+
+  markPaymentPaid(id: string): Observable<Payment> {
+    return this.http.patch<Payment>(`${this.base}/payments/${id}/pay`, {});
+  }
+
+  deletePayment(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/payments/${id}`);
+  }
+
   // ── Workout Logs ──────────────────────────────────────────────────────────
 
   logExercise(exerciseId: string, setsCompleted: number, notes?: string): Observable<WorkoutLog> {
@@ -147,6 +299,22 @@ export class ApiService {
       setsCompleted,
       notes,
     });
+  }
+
+  /** Atleta: histórico completo de treinos */
+  getWorkoutHistory(limit = 200): Observable<WorkoutLogEntry[]> {
+    return this.http
+      .get<RawWorkoutLog[]>(`${this.base}/workout-logs/history?limit=${limit}`)
+      .pipe(map(list => list.map(l => ({
+        id:           l.id,
+        exerciseId:   l.exerciseId,
+        exerciseName: l.exercise?.name ?? '',
+        sessionName:  l.exercise?.session?.name ?? '',
+        sessionType:  l.exercise?.session?.type ?? '',
+        completedAt:  new Date(l.completedAt),
+        setsCompleted: l.setsCompleted,
+        notes:        l.notes ?? undefined,
+      }))));
   }
 
   // ── Mappers ───────────────────────────────────────────────────────────────

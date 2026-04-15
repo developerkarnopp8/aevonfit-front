@@ -98,7 +98,7 @@
       <div class="bg-surface-container-low rounded-md p-5 mb-4 text-center">
         <p class="text-outline text-[10px] font-headline uppercase tracking-widest mb-2">Média Semanal</p>
         <p class="font-headline font-black text-5xl text-on-surface tracking-tighter leading-none">{{ weeklyAvg() }}%</p>
-        <p class="text-on-surface-variant text-xs mt-2 font-headline">+4.1 ↑</p>
+        <p class="text-on-surface-variant text-xs mt-2 font-headline">Média do time</p>
       </div>
 
       <!-- Streak highlights -->
@@ -113,17 +113,12 @@
               <p class="text-on-surface text-xs font-headline font-bold truncate">{{ student.name.split(' ')[0] }}</p>
               <p class="text-outline text-[10px] truncate">{{ student.goal }}</p>
             </div>
-            <span class="text-primary-fixed text-xs font-headline font-bold">🔥 24</span>
+            <span class="text-primary-fixed text-xs font-headline font-bold">W{{ student.currentWeek }}</span>
           </div>
         }
       </div>
 
-      <!-- New training CTA -->
-      <a routerLink="/coach/plan-builder/athlete-001"
-        class="w-full flex items-center justify-center gap-2 bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black py-4 rounded-sm uppercase tracking-tighter text-sm transition-all">
-        <span class="material-symbols-outlined text-[18px]">add</span>
-        NOVO TREINO
-      </a>
+
     </aside>
 
   </div>

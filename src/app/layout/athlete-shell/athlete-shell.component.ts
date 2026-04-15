@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -11,5 +11,9 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrl: './athlete-shell.component.scss'
 })
 export class AthleteShellComponent {
+  menuOpen = signal(false);
+
   constructor(public auth: AuthService) {}
+
+  logout(): void { this.auth.logout(); }
 }

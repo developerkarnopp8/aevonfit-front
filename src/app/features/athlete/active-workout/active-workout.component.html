@@ -1,135 +1,253 @@
-<div class="fixed inset-0 bg-background flex flex-col animate-fade-in">
+<div class="fixed inset-0 bg-background flex flex-col animate-fade-in select-none">
 
   <!-- Header -->
   <div class="flex items-center justify-between px-5 py-4 flex-shrink-0">
-    <p class="text-outline text-[10px] font-headline uppercase tracking-widest">Exercício Atual</p>
-    <a [routerLink]="['/athlete/session', session()?.id ?? '']"
-      class="w-9 h-9 rounded-sm bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors">
+    <div>
+      <p class="text-outline text-[10px] font-headline uppercase tracking-widest">Treino Ativo</p>
+      <p class="text-on-surface-variant text-xs font-headline truncate max-w-[200px]">{{ session()?.name }}</p>
+    </div>
+    <button type="button" (click)="exitWorkout()"
+      class="w-9 h-9 rounded-sm bg-surface-container flex items-center justify-center text-on-surface-variant active:scale-95 transition-transform"
+      title="Sair">
       <span class="material-symbols-outlined text-[20px]">close</span>
-    </a>
+    </button>
   </div>
 
-  @if (restActive()) {
-    <!-- Rest Mode -->
-    <div class="flex-1 flex flex-col items-center justify-center px-5 animate-fade-in">
-      <p class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-4">Descanse</p>
-      <p class="font-headline font-black text-[96px] text-on-surface tracking-tighter leading-none timer-glow">
-        {{ formatTime(restSeconds()) }}
-      </p>
-      <!-- Progress bar -->
-      <div class="mt-8 w-full bg-surface-container rounded-full h-0.5">
-        <div class="bg-primary-fixed rounded-full h-0.5 transition-all duration-1000"
-          [style.width.%]="getProgress()"></div>
+  <!-- Progress segments -->
+  @if (session()?.exercises?.length) {
+    <div class="px-5 mb-1 flex-shrink-0">
+      <div class="flex gap-1">
+        @for (ex of session()!.exercises; track ex.id; let i = $index) {
+          <div class="h-1 rounded-full transition-all flex-1"
+            [class.bg-primary-fixed]="i === currentIndex()"
+            [class.bg-green-500]="ex.completed && i !== currentIndex()"
+            [class.bg-surface-container-high]="!ex.completed && i !== currentIndex()">
+          </div>
+        }
       </div>
-      <button type="button" (click)="restActive.set(false); next()"
-        class="mt-8 px-8 py-3 rounded-sm border border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:border-outline font-headline text-xs uppercase tracking-wider transition-all">
-        Pular Descanso
-      </button>
+      <p class="text-outline text-[10px] font-headline mt-1">
+        {{ currentIndex() + 1 }}&nbsp;/&nbsp;{{ session()!.exercises.length }}
+        @if (phase() === 'rest') { <span class="text-primary-fixed">· Descansando</span> }
+      </p>
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════════
+       FASE: DESCANSO
+       ═══════════════════════════════════════════ -->
+  @if (phase() === 'rest') {
+    <div class="flex-1 flex flex-col items-center justify-center px-5 gap-4 animate-fade-in">
+
+      <p class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest">Descanse</p>
+
+      <!-- Big countdown -->
+      <p class="font-headline font-black leading-none tracking-tighter"
+        class="timer-fluid"
+        [class.opacity-40]="restPaused()">
+        {{ formatTime(restSecs()) }}
+      </p>
+
+      <!-- Depleting bar -->
+      <div class="w-full bg-surface-container rounded-full h-1.5">
+        <div class="bg-primary-fixed rounded-full h-1.5 transition-all duration-1000"
+          [style.width.%]="restProgress()"></div>
+      </div>
+
+      <!-- Next exercise preview -->
+      @if (nextExercise()) {
+        <div class="w-full bg-surface-container-low rounded-md px-4 py-3 flex items-center gap-3">
+          <span class="material-symbols-outlined text-outline text-[18px]">fitness_center</span>
+          <div>
+            <p class="text-outline text-[9px] font-headline uppercase tracking-widest">A seguir</p>
+            <p class="text-on-surface text-sm font-headline font-bold">{{ nextExercise()!.name }}</p>
+          </div>
+        </div>
+      }
+
+      <!-- Controls -->
+      <div class="flex gap-3 w-full">
+        <button type="button" (click)="toggleRestPause()"
+          class="flex-1 flex items-center justify-center gap-2 border border-outline-variant/30 text-on-surface-variant font-headline py-4 rounded-sm active:scale-95 transition-all text-xs uppercase tracking-wider">
+          <span class="material-symbols-outlined text-[20px]">{{ restPaused() ? 'play_arrow' : 'pause' }}</span>
+          {{ restPaused() ? 'Retomar' : 'Pausar' }}
+        </button>
+        <button type="button" (click)="skipRest()"
+          class="flex-1 flex items-center justify-center gap-2 bg-surface-container-high text-on-surface font-headline font-bold py-4 rounded-sm active:scale-95 transition-all text-xs uppercase tracking-wider">
+          <span class="material-symbols-outlined text-[20px]">skip_next</span>
+          Pular
+        </button>
+      </div>
+
     </div>
 
-  } @else if (currentExercise()) {
+  <!-- ═══════════════════════════════════════════
+       FASE: EXERCÍCIO
+       ═══════════════════════════════════════════ -->
+  } @else if (phase() === 'exercise' && currentExercise()) {
+    <div class="flex-1 flex flex-col overflow-y-auto">
 
-    <!-- Exercise Mode -->
-    <div class="flex-1 flex flex-col overflow-hidden">
-
-      <!-- Exercise Name -->
-      <div class="px-5 py-2 flex-shrink-0">
-        <h2 class="font-headline font-black text-2xl text-on-surface uppercase leading-tight tracking-tighter">
+      <!-- Exercise name -->
+      <div class="px-5 pt-2 pb-1 flex-shrink-0">
+        <h2 class="font-headline font-black text-[22px] text-on-surface uppercase leading-tight tracking-tighter">
           {{ currentExercise()!.name }}
         </h2>
       </div>
 
-      <!-- Giant timer display -->
-      <div class="flex-1 flex items-center justify-center px-5">
-        <div class="text-center">
-          <p class="font-headline font-black text-[88px] text-on-surface tracking-tighter leading-none timer-glow italic">
-            {{ formatTime(currentExercise()!.restSeconds ?? 0) }}
-          </p>
-          <p class="text-outline text-xs font-headline uppercase tracking-widest mt-2">tempo de descanso</p>
-        </div>
-      </div>
+      <!-- ── COM DURAÇÃO: timer central ── -->
+      @if (hasDuration()) {
+        <div class="flex-shrink-0 flex flex-col items-center justify-center px-5 py-5">
 
-      <!-- Progress segments bar -->
-      <div class="px-5 mb-4 flex-shrink-0">
-        <div class="flex gap-1">
-          @for (ex of session()?.exercises ?? []; track ex.id; let i = $index) {
-            <div class="flex-1 h-0.5 rounded-full transition-all"
-              [class.bg-primary-fixed]="i === currentIndex()"
-              [class.bg-on-surface-variant]="ex.completed && i !== currentIndex()"
-              [class.bg-surface-container]="!ex.completed && i !== currentIndex()">
+          <!-- Timer display -->
+          <p class="font-headline font-black leading-none tracking-tighter italic"
+            class="timer-fluid"
+            [class.text-primary-fixed]="exRunning() && !exPaused()"
+            [class.opacity-40]="exPaused()">
+            {{ formatTime(exSecs()) }}
+          </p>
+
+          <!-- Status label -->
+          <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">
+            @if (!exRunning()) { Duração do exercício }
+            @else if (exPaused()) { Pausado }
+            @else { Contando... }
+          </p>
+
+          <!-- Depleting bar (visible when running) -->
+          @if (exRunning()) {
+            <div class="w-full bg-surface-container rounded-full h-1 mt-3">
+              <div class="bg-primary-fixed rounded-full h-1 transition-all duration-1000"
+                [style.width.%]="exProgress()"></div>
             </div>
           }
-        </div>
-        <div class="flex justify-between mt-1.5">
-          <span class="text-outline text-[10px] font-headline uppercase tracking-widest">
-            {{ currentIndex() + 1 }} / {{ session()?.exercises?.length ?? 0 }}
-          </span>
-        </div>
-      </div>
 
-      <!-- Stats bento -->
-      <div class="px-5 flex-shrink-0">
-        <div class="grid grid-cols-3 gap-2 mb-4">
-          <div class="bg-surface-container-low rounded-md p-3 text-center">
-            <p class="text-outline text-[9px] font-headline uppercase tracking-wider mb-0.5">Série</p>
-            <p class="font-headline font-black text-xl text-on-surface tracking-tighter">
-              {{ (currentIndex() + 1).toString().padStart(2,'0') }}
-            </p>
+          <!-- Start / Pause button -->
+          <div class="flex gap-3 mt-5 w-full">
+            @if (!exRunning()) {
+              <button type="button" (click)="startTimer()"
+                class="flex-1 flex items-center justify-center gap-2 bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black py-5 rounded-sm active:scale-95 transition-all text-base uppercase tracking-tighter">
+                <span class="material-symbols-outlined text-[24px]">play_arrow</span>
+                Iniciar
+              </button>
+            } @else {
+              <button type="button" (click)="toggleExPause()"
+                class="flex-1 flex items-center justify-center gap-2 border border-outline-variant/30 text-on-surface-variant font-headline py-4 rounded-sm active:scale-95 transition-all text-xs uppercase tracking-wider">
+                <span class="material-symbols-outlined text-[20px]">{{ exPaused() ? 'play_arrow' : 'pause' }}</span>
+                {{ exPaused() ? 'Retomar' : 'Pausar' }}
+              </button>
+              <button type="button" (click)="checkin()"
+                class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-headline font-bold py-4 rounded-sm active:scale-95 transition-all text-xs uppercase tracking-wider">
+                <span class="material-symbols-outlined text-[20px]">check</span>
+                Concluir
+              </button>
+            }
           </div>
-          <div class="bg-surface-container-low rounded-md p-3 text-center">
-            <p class="text-outline text-[9px] font-headline uppercase tracking-wider mb-0.5">Reps</p>
-            <p class="font-headline font-black text-xl text-on-surface tracking-tighter">{{ currentExercise()!.reps ?? '—' }}</p>
-          </div>
-          <div class="bg-surface-container-low rounded-md p-3 text-center">
-            <p class="text-outline text-[9px] font-headline uppercase tracking-wider mb-0.5">Carga</p>
-            <p class="font-headline font-black text-xl text-primary-fixed tracking-tighter">
-              {{ currentExercise()!.loadPercent ? currentExercise()!.loadPercent + '%' : '—' }}
-            </p>
-          </div>
+
+          <!-- Pular -->
+          <button type="button" (click)="skipExercise()"
+            class="mt-2 w-full flex items-center justify-center gap-1 text-outline hover:text-on-surface-variant font-headline py-3 text-xs uppercase tracking-wider transition-colors">
+            <span class="material-symbols-outlined text-[16px]">skip_next</span>
+            Pular exercício
+          </button>
+
         </div>
 
-        <!-- Coach note -->
+      <!-- ── SEM DURAÇÃO: sets / reps ── -->
+      } @else {
+        <div class="flex-shrink-0 px-5 py-4">
+
+          <!-- Big reps display -->
+          <div class="flex items-center justify-center gap-6 py-4">
+            @if (currentExercise()!.sets) {
+              <div class="text-center">
+                <p class="font-headline font-black text-[64px] text-on-surface leading-none tracking-tighter">{{ currentExercise()!.sets }}</p>
+                <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">Séries</p>
+              </div>
+            }
+            @if (currentExercise()!.sets && currentExercise()!.reps) {
+              <p class="text-outline font-headline text-3xl">×</p>
+            }
+            @if (currentExercise()!.reps) {
+              <div class="text-center">
+                <p class="font-headline font-black text-[64px] text-on-surface leading-none tracking-tighter">{{ currentExercise()!.reps }}</p>
+                <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">Reps</p>
+              </div>
+            }
+            @if (currentExercise()!.loadPercent) {
+              <div class="text-center">
+                <p class="font-headline font-black text-[40px] text-primary-fixed leading-none tracking-tighter">{{ currentExercise()!.loadPercent }}%</p>
+                <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">Carga</p>
+              </div>
+            }
+          </div>
+
+        </div>
+      }
+
+      <!-- ── Info extra (coach notes, youtube) ── -->
+      <div class="px-5 flex-1">
+
         @if (currentExercise()!.coachNotes) {
-          <div class="bg-surface-container-low rounded-md p-4 mb-4 border-l-2 border-primary-fixed">
-            <p class="text-outline text-[9px] font-headline uppercase tracking-wider mb-1">Dica de Execução</p>
+          <div class="bg-surface-container-low rounded-md p-4 mb-3 border-l-2 border-primary-fixed">
+            <p class="text-outline text-[9px] font-headline uppercase tracking-wider mb-1">Dica do Coach</p>
             <p class="text-on-surface text-xs leading-relaxed">{{ currentExercise()!.coachNotes }}</p>
           </div>
         }
 
-        <!-- YouTube -->
         @if (currentExercise()!.youtubeUrl) {
           <a [href]="currentExercise()!.youtubeUrl" target="_blank" rel="noopener"
-            class="flex items-center gap-2 text-primary-fixed hover:text-primary text-xs font-headline mb-4 transition-colors">
+            class="flex items-center gap-2 text-primary-fixed text-xs font-headline mb-3 transition-opacity active:opacity-60">
             <span class="material-symbols-outlined text-[16px]">play_circle</span>
             Ver demonstração
           </a>
         }
 
-        <!-- Action buttons -->
-        <div class="flex gap-3 pb-4">
-          <button type="button" (click)="skip()"
-            class="flex-1 flex items-center justify-center gap-2 border border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:border-outline font-headline font-bold py-4 rounded-sm transition-all text-xs uppercase tracking-wider">
-            <span class="material-symbols-outlined text-[16px]">skip_next</span>
-            PULAR
+        <!-- Rest info -->
+        @if (currentExercise()!.restSeconds) {
+          <p class="text-outline text-[10px] font-headline flex items-center gap-1 mb-3">
+            <span class="material-symbols-outlined text-[14px]">timer</span>
+            Descanso após: {{ formatTime(currentExercise()!.restSeconds!) }}
+          </p>
+        } @else {
+          <p class="text-outline text-[10px] font-headline flex items-center gap-1 mb-3">
+            <span class="material-symbols-outlined text-[14px]">bolt</span>
+            Sem descanso — vai direto para o próximo
+          </p>
+        }
+
+      </div>
+
+      <!-- ── Bottom action buttons (sem duração) ── -->
+      @if (!hasDuration()) {
+        <div class="px-5 pb-6 flex gap-3 flex-shrink-0">
+          <button type="button" (click)="skipExercise()"
+            class="flex-1 flex items-center justify-center gap-2 border border-outline-variant/30 text-on-surface-variant font-headline py-4 rounded-sm active:scale-95 transition-all text-xs uppercase tracking-wider">
+            <span class="material-symbols-outlined text-[18px]">skip_next</span>
+            Pular
           </button>
-          <button type="button" (click)="complete()"
-            class="flex-[2] flex items-center justify-center gap-2 bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black py-4 rounded-sm transition-all text-sm uppercase tracking-tighter">
-            CONCLUIR
-            <span class="material-symbols-outlined text-[18px]">check</span>
+          <button type="button" (click)="checkin()"
+            class="flex-[2] flex items-center justify-center gap-2 bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black py-4 rounded-sm active:scale-95 transition-all text-sm uppercase tracking-tighter">
+            Check-in
+            <span class="material-symbols-outlined text-[20px]">check_circle</span>
           </button>
         </div>
-      </div>
+      }
+
     </div>
 
-  } @else {
-    <div class="flex-1 flex flex-col items-center justify-center px-5 text-center">
-      <span class="material-symbols-outlined text-primary-fixed text-[64px] mb-4">emoji_events</span>
-      <h2 class="font-headline font-black text-2xl text-on-surface tracking-tighter mb-2">Sessão Concluída!</h2>
-      <p class="text-on-surface-variant text-sm mb-8">Excelente trabalho. Descanse e recupere.</p>
-      <a routerLink="/athlete/home"
-        class="px-8 py-4 bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black rounded-sm uppercase tracking-tighter text-sm transition-all">
+  <!-- ═══════════════════════════════════════════
+       FASE: CONCLUÍDO
+       ═══════════════════════════════════════════ -->
+  } @else if (phase() === 'done') {
+    <div class="flex-1 flex flex-col items-center justify-center px-5 text-center gap-4">
+      <span class="material-symbols-outlined text-primary-fixed text-[72px]">emoji_events</span>
+      <div>
+        <h2 class="font-headline font-black text-2xl text-on-surface tracking-tighter">Sessão Concluída!</h2>
+        <p class="text-on-surface-variant text-sm mt-1">Excelente trabalho. Descanse bem.</p>
+      </div>
+      <button type="button" (click)="exitWorkout()"
+        class="mt-4 px-8 py-4 bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black rounded-sm uppercase tracking-tighter text-sm active:scale-95 transition-all">
         Voltar ao Início
-      </a>
+      </button>
     </div>
   }
 

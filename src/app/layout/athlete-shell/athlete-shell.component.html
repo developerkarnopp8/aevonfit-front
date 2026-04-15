@@ -3,16 +3,33 @@
   <!-- Top bar -->
   <header class="top-bar fixed top-0 left-0 right-0 max-w-md mx-auto z-50 flex items-center justify-between px-6 py-4">
     <h1 class="font-headline font-black text-xl tracking-tighter text-primary-fixed italic uppercase">AevonFit</h1>
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-3 relative">
       <button type="button" class="text-on-surface-variant hover:text-primary-fixed transition-colors">
         <span class="material-symbols-outlined text-[22px]">notifications</span>
       </button>
-      <button type="button" class="text-on-surface-variant hover:text-primary-fixed transition-colors">
-        <span class="material-symbols-outlined text-[22px]">settings</span>
-      </button>
-      <div class="w-8 h-8 rounded-full bg-primary-fixed/20 border border-primary-fixed/30 flex items-center justify-center text-xs font-bold text-primary-fixed font-headline">
+      <!-- Avatar / menu trigger -->
+      <button type="button" (click)="menuOpen.update(v => !v)"
+        class="w-8 h-8 rounded-full bg-primary-fixed/20 border border-primary-fixed/30 flex items-center justify-center text-xs font-bold text-primary-fixed font-headline active:scale-95 transition-transform">
         {{ auth.currentUser()?.name?.charAt(0) ?? 'A' }}
-      </div>
+      </button>
+
+      <!-- Dropdown -->
+      @if (menuOpen()) {
+        <!-- Backdrop -->
+        <div class="fixed inset-0 z-[55]" (click)="menuOpen.set(false)"></div>
+        <!-- Menu -->
+        <div class="absolute top-11 right-0 w-52 bg-surface-container-low border border-outline-variant/20 rounded-md shadow-xl z-[60] animate-fade-in">
+          <div class="px-4 py-3 border-b border-outline-variant/10">
+            <p class="text-on-surface text-xs font-headline font-bold truncate">{{ auth.currentUser()?.name }}</p>
+            <p class="text-outline text-[10px] truncate">{{ auth.currentUser()?.email }}</p>
+          </div>
+          <button type="button" (click)="logout()"
+            class="w-full flex items-center gap-3 px-4 py-3 text-error hover:bg-error/10 font-headline text-sm transition-colors">
+            <span class="material-symbols-outlined text-[18px]">logout</span>
+            Sair
+          </button>
+        </div>
+      }
     </div>
   </header>
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
@@ -13,8 +13,13 @@ import { Student } from '../../../core/models';
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit {
-  students = signal<Student[]>([]);
-  weeklyAvg = signal(88);
+  students  = signal<Student[]>([]);
+  weeklyAvg = computed(() => {
+    const list = this.students();
+    if (!list.length) return 0;
+    const total = list.reduce((sum, s) => sum + (s.completionPercent ?? 0), 0);
+    return Math.round(total / list.length);
+  });
 
   constructor(private api: ApiService, public auth: AuthService) {}
 

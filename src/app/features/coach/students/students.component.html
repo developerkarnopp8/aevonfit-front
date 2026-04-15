@@ -7,7 +7,7 @@
       <h2 class="font-headline font-black text-3xl text-on-surface tracking-tighter leading-none">GESTÃO DE ATLETAS</h2>
       <p class="text-on-surface-variant text-sm mt-1">Performance e evolução técnica dos seus alunos elite.</p>
     </div>
-    <button type="button" (click)="showModal.set(true)"
+    <button type="button" (click)="openModal()"
       class="flex items-center gap-2 bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black px-5 py-3 rounded-sm uppercase tracking-tighter text-xs transition-all">
       <span class="material-symbols-outlined text-[16px]">person_add</span>
       Adicionar Atleta
@@ -25,8 +25,8 @@
       <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">Ativos</p>
     </div>
     <div class="bg-surface-container-low rounded-md px-5 py-3 flex-1 text-center">
-      <p class="font-headline font-black text-3xl text-tertiary tracking-tighter leading-none">05</p>
-      <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">Avaliações</p>
+      <p class="font-headline font-black text-3xl text-tertiary tracking-tighter leading-none">{{ filtered().length }}</p>
+      <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">Filtrados</p>
     </div>
   </div>
 
@@ -46,12 +46,13 @@
   <div class="flex-1 px-8 pb-8 overflow-y-auto">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       @for (student of filtered(); track student.id) {
-        <div class="bg-surface-container-low rounded-md overflow-hidden hover:bg-surface-container transition-colors group">
+        <div class="bg-surface-container-low rounded-md overflow-hidden hover:bg-surface-container transition-colors group"
+          [class.opacity-50]="deleting() === student.id">
 
           <!-- Card gradient header -->
           <div class="h-28 bg-gradient-to-b from-primary-fixed/15 to-transparent flex items-end justify-center pb-4 relative">
             @if (student.avatarUrl) {
-              <img [src]="student.avatarUrl" [alt]="student.name" [title]="student.name" class="w-16 h-16 rounded-sm object-cover"/>
+              <img [src]="student.avatarUrl" [attr.alt]="student.name" [attr.title]="student.name" class="w-16 h-16 rounded-sm object-cover"/>
             } @else {
               <div class="w-16 h-16 rounded-sm bg-surface-container flex items-center justify-center text-xl font-headline font-black text-primary-fixed">
                 {{ getInitials(student.name) }}
@@ -59,6 +60,19 @@
             }
             <!-- Active badge -->
             <span class="absolute top-3 right-3 text-[9px] font-headline font-bold text-primary-fixed bg-primary-fixed/15 px-2 py-0.5 rounded-sm uppercase tracking-wider">Ativo</span>
+            <!-- Edit / Delete actions (visible on hover) -->
+            <div class="absolute top-3 left-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button type="button" (click)="openEditModal(student)"
+                title="Editar objetivo"
+                class="w-6 h-6 rounded-sm bg-surface-container/80 flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors">
+                <span class="material-symbols-outlined text-[14px]">edit</span>
+              </button>
+              <button type="button" (click)="deleteStudent(student)"
+                title="Remover atleta"
+                class="w-6 h-6 rounded-sm bg-surface-container/80 flex items-center justify-center text-error hover:bg-error/20 transition-colors">
+                <span class="material-symbols-outlined text-[14px]">delete</span>
+              </button>
+            </div>
           </div>
 
           <!-- Card body -->
@@ -100,37 +114,136 @@
 </div>
 
 <!-- Add Student Modal -->
-@if (showModal()) {
+@if (showModal() && modalMode() === 'add') {
   <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 animate-fade-in"
-    (click)="showModal.set(false)">
-    <div class="bg-surface-container-low rounded-md p-6 w-full max-w-md animate-slide-up" (click)="$event.stopPropagation()">
-      <h3 class="font-headline font-black text-xl text-on-surface tracking-tighter mb-5">Novo Atleta</h3>
-      <form [formGroup]="form" (ngSubmit)="saveStudent()">
-        <div class="mb-3">
-          <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">Nome</label>
-          <input formControlName="name" type="text" placeholder="Nome completo"
-            class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-4 py-3 text-sm"/>
+    (click)="closeModal()">
+    <div class="bg-surface-container-low rounded-md p-6 w-full max-w-md animate-slide-up mx-4" (click)="$event.stopPropagation()">
+
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h3 class="font-headline font-black text-xl text-on-surface tracking-tighter">Novo Atleta</h3>
+          <p class="text-outline text-xs mt-0.5">Cria a conta de acesso do atleta ao app.</p>
         </div>
+        <button type="button" (click)="closeModal()"
+          class="w-8 h-8 rounded-sm bg-surface-container flex items-center justify-center text-outline hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="saveStudent()" novalidate>
+
+        <!-- Nome -->
         <div class="mb-3">
-          <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">E-mail</label>
+          <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">Nome completo *</label>
+          <input formControlName="name" type="text" placeholder="Ex: Gustavo Karnopp"
+            class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-4 py-3 text-sm"/>
+          @if (form.get('name')?.invalid && form.get('name')?.touched) {
+            <p class="text-error text-xs mt-1">Nome obrigatório.</p>
+          }
+        </div>
+
+        <!-- E-mail -->
+        <div class="mb-3">
+          <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">E-mail *</label>
           <input formControlName="email" type="email" placeholder="atleta@email.com"
             class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-4 py-3 text-sm"/>
+          @if (form.get('email')?.invalid && form.get('email')?.touched) {
+            <p class="text-error text-xs mt-1">E-mail inválido.</p>
+          }
         </div>
-        <div class="mb-6">
-          <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">Objetivo</label>
+
+        <!-- Senha -->
+        <div class="mb-3">
+          <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">Senha de acesso *</label>
+          <input formControlName="password" type="password" placeholder="Mínimo 6 caracteres"
+            class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-4 py-3 text-sm"/>
+          @if (form.get('password')?.invalid && form.get('password')?.touched) {
+            <p class="text-error text-xs mt-1">Senha deve ter pelo menos 6 caracteres.</p>
+          }
+          <p class="text-outline text-[10px] mt-1">O atleta usará esta senha para fazer login no app.</p>
+        </div>
+
+        <!-- Objetivo -->
+        <div class="mb-5">
+          <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">Objetivo *</label>
           <input formControlName="goal" type="text" placeholder="Ex: Competição CrossFit"
             class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-4 py-3 text-sm"/>
+          @if (form.get('goal')?.invalid && form.get('goal')?.touched) {
+            <p class="text-error text-xs mt-1">Objetivo obrigatório.</p>
+          }
         </div>
+
+        <!-- Erro geral -->
+        @if (errorMsg()) {
+          <div class="mb-4 px-4 py-3 bg-error/10 border border-error/30 rounded-sm">
+            <p class="text-error text-xs font-headline">{{ errorMsg() }}</p>
+          </div>
+        }
+
         <div class="flex gap-3">
-          <button type="button" (click)="showModal.set(false)"
-            class="flex-1 py-3 rounded-sm border border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:border-outline font-headline text-xs uppercase tracking-wider transition-all">
+          <button type="button" (click)="closeModal()"
+            class="flex-1 py-3 rounded-sm border border-outline-variant/30 text-on-surface-variant hover:text-on-surface font-headline text-xs uppercase tracking-wider transition-all">
             Cancelar
           </button>
-          <button type="submit"
-            class="flex-1 py-3 rounded-sm bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black text-xs uppercase tracking-tighter transition-all">
-            Adicionar
+          <button type="submit" [disabled]="saving()"
+            class="flex-1 py-3 rounded-sm bg-primary-fixed hover:bg-primary-dim disabled:opacity-60 text-on-primary-fixed font-headline font-black text-xs uppercase tracking-tighter transition-all flex items-center justify-center gap-2">
+            @if (saving()) { <span class="material-symbols-outlined text-[16px]">progress_activity</span> }
+            {{ saving() ? 'Criando...' : 'Criar Atleta' }}
           </button>
         </div>
+
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Edit Student Modal -->
+@if (showModal() && modalMode() === 'edit') {
+  <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 animate-fade-in"
+    (click)="closeModal()">
+    <div class="bg-surface-container-low rounded-md p-6 w-full max-w-sm animate-slide-up mx-4" (click)="$event.stopPropagation()">
+
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h3 class="font-headline font-black text-xl text-on-surface tracking-tighter">Editar Atleta</h3>
+          <p class="text-outline text-xs mt-0.5">Atualize o objetivo de treinamento.</p>
+        </div>
+        <button type="button" (click)="closeModal()"
+          class="w-8 h-8 rounded-sm bg-surface-container flex items-center justify-center text-outline hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+
+      <form [formGroup]="editForm" (ngSubmit)="saveEdit()" novalidate>
+
+        <!-- Objetivo -->
+        <div class="mb-5">
+          <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">Objetivo *</label>
+          <input formControlName="goal" type="text" placeholder="Ex: Competição CrossFit"
+            class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-4 py-3 text-sm"/>
+          @if (editForm.get('goal')?.invalid && editForm.get('goal')?.touched) {
+            <p class="text-error text-xs mt-1">Objetivo obrigatório.</p>
+          }
+        </div>
+
+        @if (errorMsg()) {
+          <div class="mb-4 px-4 py-3 bg-error/10 border border-error/30 rounded-sm">
+            <p class="text-error text-xs font-headline">{{ errorMsg() }}</p>
+          </div>
+        }
+
+        <div class="flex gap-3">
+          <button type="button" (click)="closeModal()"
+            class="flex-1 py-3 rounded-sm border border-outline-variant/30 text-on-surface-variant hover:text-on-surface font-headline text-xs uppercase tracking-wider transition-all">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="saving()"
+            class="flex-1 py-3 rounded-sm bg-primary-fixed hover:bg-primary-dim disabled:opacity-60 text-on-primary-fixed font-headline font-black text-xs uppercase tracking-tighter transition-all flex items-center justify-center gap-2">
+            @if (saving()) { <span class="material-symbols-outlined text-[16px]">progress_activity</span> }
+            {{ saving() ? 'Salvando...' : 'Salvar' }}
+          </button>
+        </div>
+
       </form>
     </div>
   </div>

@@ -1,0 +1,124 @@
+import { Component, OnInit, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ApiService } from '../../../core/services/api.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { Payment, PaymentSummary, Student } from '../../../core/models';
+
+@Component({
+  selector: 'app-financial',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './financial.component.html',
+})
+export class FinancialComponent implements OnInit {
+  payments    = signal<Payment[]>([]);
+  summary     = signal<PaymentSummary | null>(null);
+  students    = signal<Student[]>([]);
+  loading     = signal(true);
+  showModal   = signal(false);
+  saving      = signal(false);
+
+  form!: FormGroup;
+
+  statusFilter = signal<'all' | 'pending' | 'paid' | 'overdue'>('all');
+
+  filtered = computed(() => {
+    const f = this.statusFilter();
+    if (f === 'all') return this.payments();
+    return this.payments().filter(p => p.status === f);
+  });
+
+  constructor(
+    private api: ApiService,
+    private auth: AuthService,
+    private fb: FormBuilder,
+  ) {
+    this.form = this.fb.group({
+      studentId:   ['', Validators.required],
+      amount:      [null, [Validators.required, Validators.min(0.01)]],
+      dueDate:     ['', Validators.required],
+      description: [''],
+    });
+  }
+
+  ngOnInit(): void {
+    const coach = this.auth.currentUser();
+    if (!coach) return;
+    this.api.getStudents(coach.id).subscribe(s => this.students.set(s));
+    this.loadData();
+  }
+
+  private loadData(): void {
+    this.api.getPaymentSummary().subscribe(s => this.summary.set(s));
+    this.api.getPayments().subscribe({
+      next: p => { this.payments.set(p); this.loading.set(false); },
+      error: () => this.loading.set(false),
+    });
+  }
+
+  openModal(): void {
+    this.form.reset();
+    this.showModal.set(true);
+  }
+
+  closeModal(): void {
+    this.showModal.set(false);
+    this.saving.set(false);
+  }
+
+  createPayment(): void {
+    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    this.saving.set(true);
+    const { studentId, amount, dueDate, description } = this.form.value as {
+      studentId: string; amount: number; dueDate: string; description: string;
+    };
+    this.api.createPayment({ studentId, amount: Number(amount), dueDate, description: description || undefined }).subscribe({
+      next: () => { this.closeModal(); this.loadData(); },
+      error: () => this.saving.set(false),
+    });
+  }
+
+  markPaid(payment: Payment): void {
+    this.api.markPaymentPaid(payment.id).subscribe({
+      next: updated => this.payments.update(list => list.map(p => p.id === updated.id ? updated : p)),
+    });
+    this.api.getPaymentSummary().subscribe(s => this.summary.set(s));
+  }
+
+  deletePayment(payment: Payment): void {
+    if (!confirm('Remover este lançamento?')) return;
+    this.api.deletePayment(payment.id).subscribe({
+      next: () => {
+        this.payments.update(list => list.filter(p => p.id !== payment.id));
+        this.api.getPaymentSummary().subscribe(s => this.summary.set(s));
+      },
+    });
+  }
+
+  getStudentName(payment: Payment): string {
+    return payment.student?.user.name
+      ?? this.students().find(s => s.id === payment.studentId)?.name
+      ?? '—';
+  }
+
+  statusLabel(status: string): string {
+    return { pending: 'Pendente', paid: 'Pago', overdue: 'Atrasado' }[status] ?? status;
+  }
+
+  statusClass(status: string): string {
+    return {
+      pending: 'bg-yellow-500/20 text-yellow-400',
+      paid:    'bg-green-500/20 text-green-400',
+      overdue: 'bg-error/20 text-error',
+    }[status] ?? 'bg-surface-container text-outline';
+  }
+
+  formatCurrency(value: number): string {
+    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  formatDate(date: string): string {
+    return new Date(date).toLocaleDateString('pt-BR');
+  }
+}

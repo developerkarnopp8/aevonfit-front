@@ -1,3 +1,13 @@
+<!-- Toast -->
+@if (toast()) {
+  <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] animate-slide-up">
+    <div class="bg-surface-container-high text-on-surface font-headline text-sm px-5 py-3 rounded-sm shadow-xl border border-outline-variant/20 flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary-fixed text-[18px]">check_circle</span>
+      {{ toast() }}
+    </div>
+  </div>
+}
+
 <div class="flex h-screen bg-background overflow-hidden">
 
   <!-- Sidebar -->
@@ -10,23 +20,52 @@
 
     <!-- Nav -->
     <nav class="flex-1 px-4 space-y-1">
-      @for (item of navItems; track item.route) {
-        <a [routerLink]="item.route"
-           routerLinkActive="bg-surface-container-high text-primary-fixed font-bold rounded-r-full"
-           [routerLinkActiveOptions]="{ exact: false }"
-           class="flex items-center gap-3 px-4 py-3 text-outline hover:bg-surface-container/50 hover:text-on-surface transition-all duration-200 font-headline">
-          <span class="material-symbols-outlined text-[22px]">{{ item.icon }}</span>
-          <span>{{ item.label }}</span>
-        </a>
+      @for (item of navItems; track item.label) {
+        @if (item.soon) {
+          <span class="flex items-center gap-3 px-4 py-3 font-headline text-outline/40 cursor-not-allowed select-none">
+            <span class="material-symbols-outlined text-[22px]">{{ item.icon }}</span>
+            <span class="flex-1">{{ item.label }}</span>
+            <span class="text-[9px] font-headline uppercase tracking-widest bg-surface-container px-1.5 py-0.5 rounded-sm">em breve</span>
+          </span>
+        } @else {
+          <a [routerLink]="item.route"
+             class="flex items-center gap-3 px-4 py-3 transition-all duration-200 font-headline hover:bg-surface-container/50 hover:text-on-surface"
+             [class.bg-surface-container-high]="isNavActive(item.route)"
+             [class.text-primary-fixed]="isNavActive(item.route)"
+             [class.font-bold]="isNavActive(item.route)"
+             [class.rounded-r-full]="isNavActive(item.route)"
+             [class.text-outline]="!isNavActive(item.route)">
+            <span class="material-symbols-outlined text-[22px]">{{ item.icon }}</span>
+            <span>{{ item.label }}</span>
+          </a>
+        }
       }
     </nav>
 
     <!-- Novo Treino CTA -->
     <div class="px-6 pt-6">
-      <button type="button"
+      <button type="button" (click)="openModal()"
               class="w-full bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black py-4 rounded-md uppercase tracking-tighter transition-all flex items-center justify-center gap-2">
         <span class="material-symbols-outlined text-[20px]">add</span>
         Novo Treino
+      </button>
+    </div>
+
+    <!-- User + Logout -->
+    <div class="px-6 pt-4 pb-2 border-t border-outline-variant/10 mt-4">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-8 h-8 rounded-sm bg-primary-fixed/20 text-primary-fixed flex items-center justify-center text-xs font-headline font-black flex-shrink-0">
+          {{ auth.currentUser()?.name?.charAt(0)?.toUpperCase() ?? 'C' }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-on-surface text-xs font-headline font-bold truncate">{{ auth.currentUser()?.name ?? 'Coach' }}</p>
+          <p class="text-outline text-[10px] truncate">{{ auth.currentUser()?.email }}</p>
+        </div>
+      </div>
+      <button type="button" (click)="logout()"
+        class="w-full flex items-center gap-2 px-3 py-2 rounded-sm text-outline hover:text-error hover:bg-error/10 font-headline text-xs uppercase tracking-wider transition-all">
+        <span class="material-symbols-outlined text-[18px]">logout</span>
+        Sair
       </button>
     </div>
   </aside>
@@ -37,3 +76,93 @@
   </main>
 
 </div>
+
+<!-- Modal: Novo Treino -->
+@if (showNewPlanModal()) {
+  <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 animate-fade-in"
+       (click)="closeModal()">
+    <div class="bg-surface-container-low rounded-md w-full max-w-md p-6 animate-slide-up mx-4"
+         (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h3 class="font-headline font-black text-xl text-on-surface tracking-tighter">Novo Treino</h3>
+          <p class="text-outline text-xs mt-0.5">Cria um plano mensal para o atleta.</p>
+        </div>
+        <button type="button" (click)="closeModal()"
+          class="w-8 h-8 rounded-sm bg-surface-container flex items-center justify-center text-outline hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="createPlan()" novalidate>
+
+        <!-- Atleta -->
+        <div class="mb-4">
+          <label class="block text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-1.5">
+            Atleta *
+          </label>
+          @if (students().length === 0) {
+            <p class="text-outline text-xs py-3">Nenhum atleta cadastrado ainda.</p>
+          } @else {
+            <select formControlName="studentId" title="Selecione um atleta"
+              class="w-full bg-surface-container text-on-surface rounded-sm px-4 py-3 text-sm appearance-none cursor-pointer">
+              <option value="" disabled>Selecione um atleta...</option>
+              @for (student of students(); track student.id) {
+                <option [value]="student.id">{{ student.name }}</option>
+              }
+            </select>
+            @if (form.get('studentId')?.invalid && form.get('studentId')?.touched) {
+              <p class="text-error text-xs mt-1">Selecione um atleta.</p>
+            }
+          }
+        </div>
+
+        <!-- Mês + Título lado a lado -->
+        <div class="grid grid-cols-[80px_1fr] gap-3 mb-6">
+          <div>
+            <label class="block text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-1.5">
+              Mês *
+            </label>
+            <input formControlName="month" type="number" min="1" max="12"
+              title="Número do mês"
+              class="w-full bg-surface-container text-on-surface rounded-sm px-3 py-3 text-sm text-center"/>
+            @if (form.get('month')?.invalid && form.get('month')?.touched) {
+              <p class="text-error text-[10px] mt-1">1–12</p>
+            }
+          </div>
+          <div>
+            <label class="block text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-1.5">
+              Título do Plano *
+            </label>
+            <input formControlName="title" type="text"
+              placeholder="Ex: Mês 1 — Base de Força"
+              class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-3 py-3 text-sm"/>
+            @if (form.get('title')?.invalid && form.get('title')?.touched) {
+              <p class="text-error text-xs mt-1">Título obrigatório.</p>
+            }
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-3">
+          <button type="button" (click)="closeModal()"
+            class="flex-1 py-3 rounded-sm border border-outline-variant/30 text-on-surface-variant hover:text-on-surface font-headline text-xs uppercase tracking-wider transition-all">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="saving()"
+            class="flex-1 py-3 rounded-sm bg-primary-fixed hover:bg-primary-dim disabled:opacity-60 text-on-primary-fixed font-headline font-black text-xs uppercase tracking-tighter transition-all flex items-center justify-center gap-2">
+            @if (saving()) {
+              <span class="material-symbols-outlined text-[16px]">progress_activity</span>
+            } @else {
+              <span class="material-symbols-outlined text-[16px]">add</span>
+            }
+            {{ saving() ? 'Criando...' : 'Criar Plano' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+}

@@ -28,9 +28,25 @@ export const routes: Routes = [
           import('./features/coach/students/students.component').then(m => m.StudentsComponent)
       },
       {
+        path: 'plans',
+        loadComponent: () =>
+          import('./features/coach/plans/plans.component').then(m => m.PlansComponent)
+      },
+      {
         path: 'plan-builder/:studentId',
         loadComponent: () =>
-          import('./features/coach/plan-builder/plan-builder.component').then(m => m.PlanBuilderComponent)
+          import('./features/coach/plan-builder/plan-builder.component').then(m => m.PlanBuilderComponent),
+        data: { queryParamsHandling: 'merge' },
+      },
+      {
+        path: 'library',
+        loadComponent: () =>
+          import('./features/coach/library/library.component').then(m => m.LibraryComponent)
+      },
+      {
+        path: 'financial',
+        loadComponent: () =>
+          import('./features/coach/financial/financial.component').then(m => m.FinancialComponent)
       }
     ]
   },

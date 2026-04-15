@@ -1,0 +1,221 @@
+<div class="flex flex-col h-full overflow-hidden animate-fade-in">
+
+  <!-- Header -->
+  <header class="px-8 py-6 flex items-center justify-between flex-shrink-0">
+    <div>
+      <p class="text-outline text-[10px] font-headline uppercase tracking-widest mb-1">Coach</p>
+      <h2 class="font-headline font-black text-3xl text-on-surface tracking-tighter leading-none">FINANCEIRO</h2>
+      <p class="text-on-surface-variant text-sm mt-1">Gerencie as cobranças dos seus atletas.</p>
+    </div>
+    <button type="button" (click)="openModal()"
+      class="flex items-center gap-2 bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black px-5 py-3 rounded-sm uppercase tracking-tighter text-xs transition-all">
+      <span class="material-symbols-outlined text-[16px]">add</span>
+      Nova Cobrança
+    </button>
+  </header>
+
+  <!-- Summary cards -->
+  @if (summary()) {
+    <div class="px-8 mb-6 grid grid-cols-2 lg:grid-cols-4 gap-3 flex-shrink-0">
+      <div class="bg-surface-container-low rounded-md p-4">
+        <p class="text-outline text-[9px] font-headline uppercase tracking-widest mb-1">Recebido</p>
+        <p class="text-green-400 font-headline font-black text-xl">{{ formatCurrency(summary()!.totalReceived) }}</p>
+      </div>
+      <div class="bg-surface-container-low rounded-md p-4">
+        <p class="text-outline text-[9px] font-headline uppercase tracking-widest mb-1">Pendente</p>
+        <p class="text-yellow-400 font-headline font-black text-xl">{{ formatCurrency(summary()!.totalPending) }}</p>
+      </div>
+      <div class="bg-surface-container-low rounded-md p-4">
+        <p class="text-outline text-[9px] font-headline uppercase tracking-widest mb-1">Atrasado</p>
+        <p class="text-error font-headline font-black text-xl">{{ formatCurrency(summary()!.totalOverdue) }}</p>
+      </div>
+      <div class="bg-surface-container-low rounded-md p-4">
+        <p class="text-outline text-[9px] font-headline uppercase tracking-widest mb-1">Cobranças atrasadas</p>
+        <p class="font-headline font-black text-xl"
+          [class.text-error]="summary()!.countOverdue > 0"
+          [class.text-on-surface]="summary()!.countOverdue === 0">
+          {{ summary()!.countOverdue }}
+        </p>
+      </div>
+    </div>
+  }
+
+  <!-- Filter tabs -->
+  <div class="px-8 mb-4 flex gap-2 flex-shrink-0">
+    @for (f of [['all','Todos'], ['pending','Pendentes'], ['paid','Pagos'], ['overdue','Atrasados']]; track f[0]) {
+      <button type="button" (click)="statusFilter.set($any(f[0]))"
+        class="px-3 py-1.5 rounded-sm text-[10px] font-headline font-bold uppercase tracking-wider transition-all"
+        [class.bg-primary-fixed]="statusFilter() === f[0]"
+        [class.text-on-primary-fixed]="statusFilter() === f[0]"
+        [class.bg-surface-container]="statusFilter() !== f[0]"
+        [class.text-outline]="statusFilter() !== f[0]">
+        {{ f[1] }}
+      </button>
+    }
+  </div>
+
+  <!-- Table -->
+  <div class="flex-1 px-8 pb-8 overflow-y-auto">
+
+    @if (loading()) {
+      <div class="flex items-center justify-center h-40">
+        <span class="material-symbols-outlined text-outline text-[40px] animate-pulse-subtle">payments</span>
+      </div>
+    } @else if (payments().length === 0) {
+      <div class="flex flex-col items-center justify-center h-64 gap-4">
+        <span class="material-symbols-outlined text-outline text-[56px]">payments</span>
+        <div class="text-center">
+          <p class="text-on-surface font-headline font-bold">Nenhuma cobrança ainda</p>
+          <p class="text-on-surface-variant text-sm mt-1">Crie cobranças para acompanhar os pagamentos dos atletas.</p>
+        </div>
+        <button type="button" (click)="openModal()"
+          class="flex items-center gap-2 bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black px-5 py-3 rounded-sm uppercase tracking-tighter text-xs transition-all">
+          <span class="material-symbols-outlined text-[16px]">add</span>
+          Nova Cobrança
+        </button>
+      </div>
+    } @else if (filtered().length === 0) {
+      <p class="text-outline text-sm font-headline text-center py-12">Nenhum resultado para este filtro.</p>
+    } @else {
+      <div class="bg-surface-container-low rounded-md overflow-hidden">
+        <!-- Table header -->
+        <div class="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-outline-variant/10">
+          <span class="text-outline text-[9px] font-headline uppercase tracking-widest">Atleta / Descrição</span>
+          <span class="text-outline text-[9px] font-headline uppercase tracking-widest">Valor</span>
+          <span class="text-outline text-[9px] font-headline uppercase tracking-widest">Vencimento</span>
+          <span class="text-outline text-[9px] font-headline uppercase tracking-widest">Status</span>
+          <span class="text-outline text-[9px] font-headline uppercase tracking-widest">Ações</span>
+        </div>
+
+        @for (payment of filtered(); track payment.id) {
+          <div class="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-5 py-4 border-b border-outline-variant/10 last:border-0 items-center hover:bg-surface-container transition-colors">
+
+            <!-- Atleta + descrição -->
+            <div>
+              <p class="text-on-surface font-headline font-bold text-sm">{{ getStudentName(payment) }}</p>
+              @if (payment.description) {
+                <p class="text-outline text-xs mt-0.5">{{ payment.description }}</p>
+              }
+            </div>
+
+            <!-- Valor -->
+            <p class="text-on-surface font-headline font-bold text-sm whitespace-nowrap">
+              {{ formatCurrency(payment.amount) }}
+            </p>
+
+            <!-- Vencimento -->
+            <div class="text-right">
+              <p class="text-on-surface-variant text-xs whitespace-nowrap">{{ formatDate(payment.dueDate) }}</p>
+              @if (payment.paidAt) {
+                <p class="text-green-400 text-[10px] whitespace-nowrap">Pago em {{ formatDate(payment.paidAt) }}</p>
+              }
+            </div>
+
+            <!-- Status badge -->
+            <span class="text-[10px] font-headline font-bold px-2 py-1 rounded-sm uppercase tracking-wider whitespace-nowrap"
+              [class]="statusClass(payment.status)">
+              {{ statusLabel(payment.status) }}
+            </span>
+
+            <!-- Ações -->
+            <div class="flex items-center gap-1">
+              @if (payment.status !== 'paid') {
+                <button type="button" (click)="markPaid(payment)"
+                  class="w-7 h-7 flex items-center justify-center text-outline hover:text-green-400 transition-colors rounded-sm hover:bg-green-500/10"
+                  title="Marcar como pago">
+                  <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                </button>
+              }
+              <button type="button" (click)="deletePayment(payment)"
+                class="w-7 h-7 flex items-center justify-center text-outline hover:text-error transition-colors rounded-sm hover:bg-error/10"
+                title="Remover">
+                <span class="material-symbols-outlined text-[16px]">delete</span>
+              </button>
+            </div>
+
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Modal: Nova Cobrança -->
+@if (showModal()) {
+  <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 animate-fade-in"
+    (click)="closeModal()">
+    <div class="bg-surface-container-low rounded-md w-full max-w-md p-6 animate-slide-up mx-4"
+      (click)="$event.stopPropagation()">
+
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h3 class="font-headline font-black text-xl text-on-surface tracking-tighter">Nova Cobrança</h3>
+          <p class="text-outline text-xs mt-0.5">Registre um pagamento para um atleta.</p>
+        </div>
+        <button type="button" (click)="closeModal()"
+          class="w-8 h-8 rounded-sm bg-surface-container flex items-center justify-center text-outline hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="createPayment()" novalidate>
+
+        <!-- Atleta -->
+        <div class="mb-4">
+          <label class="block text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-1.5">Atleta *</label>
+          <select formControlName="studentId" title="Selecione o atleta"
+            class="w-full bg-surface-container text-on-surface rounded-sm px-4 py-3 text-sm appearance-none cursor-pointer">
+            <option value="" disabled>Selecione...</option>
+            @for (s of students(); track s.id) {
+              <option [value]="s.id">{{ s.name }}</option>
+            }
+          </select>
+          @if (form.get('studentId')?.invalid && form.get('studentId')?.touched) {
+            <p class="text-error text-xs mt-1">Selecione um atleta.</p>
+          }
+        </div>
+
+        <!-- Valor -->
+        <div class="mb-4">
+          <label class="block text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-1.5">Valor (R$) *</label>
+          <input formControlName="amount" type="number" min="0.01" step="0.01" placeholder="Ex: 350.00" title="Valor"
+            class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-4 py-3 text-sm"/>
+          @if (form.get('amount')?.invalid && form.get('amount')?.touched) {
+            <p class="text-error text-xs mt-1">Informe um valor válido.</p>
+          }
+        </div>
+
+        <!-- Vencimento -->
+        <div class="mb-4">
+          <label class="block text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-1.5">Vencimento *</label>
+          <input formControlName="dueDate" type="date" title="Data de vencimento"
+            class="w-full bg-surface-container text-on-surface rounded-sm px-4 py-3 text-sm"/>
+          @if (form.get('dueDate')?.invalid && form.get('dueDate')?.touched) {
+            <p class="text-error text-xs mt-1">Informe a data de vencimento.</p>
+          }
+        </div>
+
+        <!-- Descrição -->
+        <div class="mb-6">
+          <label class="block text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-1.5">Descrição</label>
+          <input formControlName="description" type="text" placeholder="Ex: Mensalidade Abril"
+            class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-4 py-3 text-sm"/>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-3">
+          <button type="button" (click)="closeModal()"
+            class="flex-1 py-3 rounded-sm border border-outline-variant/30 text-on-surface-variant hover:text-on-surface font-headline text-xs uppercase tracking-wider transition-all">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="saving()"
+            class="flex-1 py-3 rounded-sm bg-primary-fixed hover:bg-primary-dim disabled:opacity-60 text-on-primary-fixed font-headline font-black text-xs uppercase tracking-tighter transition-all flex items-center justify-center gap-2">
+            @if (saving()) { <span class="material-symbols-outlined text-[16px]">progress_activity</span> }
+            {{ saving() ? 'Criando...' : 'Criar Cobrança' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+}
