@@ -1,0 +1,9 @@
+.top-bar {
+  background: linear-gradient(to bottom, #0e0e0e 60%, transparent);
+}
+
+.bottom-nav {
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  background: rgba(14, 14, 14, 0.9);
+}

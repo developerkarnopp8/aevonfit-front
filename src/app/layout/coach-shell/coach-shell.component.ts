@@ -20,11 +20,11 @@ export class CoachShellComponent {
   sidebarOpen = signal(false);
 
   navItems: NavItem[] = [
-    { label: 'Dashboard', route: '/coach/dashboard', icon: 'grid' },
-    { label: 'Alunos',    route: '/coach/students',  icon: 'users' },
-    { label: 'Planos',    route: '/coach/plan-builder', icon: 'clipboard' },
-    { label: 'Biblioteca',route: '/coach/dashboard', icon: 'book' },
-    { label: 'Financeiro',route: '/coach/dashboard', icon: 'dollar' },
+    { label: 'Dashboard', route: '/coach/dashboard',  icon: 'dashboard' },
+    { label: 'Alunos',    route: '/coach/students',   icon: 'group' },
+    { label: 'Planos',    route: '/coach/plan-builder', icon: 'fitness_center' },
+    { label: 'Biblioteca',route: '/coach/dashboard',  icon: 'menu_book' },
+    { label: 'Financeiro',route: '/coach/dashboard',  icon: 'payments' },
   ];
 
   constructor(public auth: AuthService) {}

@@ -1,99 +1,110 @@
 @if (session()) {
-<div class="px-5 py-4 animate-fade-in pb-6">
+<div class="px-5 py-4 animate-fade-in pb-8">
 
   <!-- Back + title -->
-  <div class="flex items-center gap-3 mb-5">
+  <div class="flex items-center gap-3 mb-6">
     <a routerLink="/athlete/home"
-      class="text-text-secondary hover:text-white transition-colors">
-      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-      </svg>
+      class="w-9 h-9 rounded-sm bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors">
+      <span class="material-symbols-outlined text-[20px]">arrow_back</span>
     </a>
     <div>
-      <p class="text-text-muted text-xs uppercase tracking-wide">Sessão do Dia</p>
-      <h2 class="font-display font-black text-xl text-white">{{ session()!.name }}</h2>
+      <p class="text-outline text-[10px] font-headline uppercase tracking-widest">Sessão do Dia</p>
+      <h2 class="font-headline font-black text-xl text-on-surface leading-tight tracking-tighter">{{ session()!.name }}</h2>
     </div>
   </div>
 
-  <!-- Stats row -->
+  <!-- Stats bento -->
   <div class="grid grid-cols-2 gap-3 mb-5">
-    <div class="bg-surface rounded-xl p-3">
-      <p class="text-text-muted text-xs mb-1">Exercícios</p>
-      <p class="font-display font-bold text-2xl text-white">{{ session()!.exercises.length.toString().padStart(2,'0') }}</p>
+    <div class="bg-surface-container-low rounded-md p-4">
+      <p class="text-outline text-[10px] font-headline uppercase tracking-widest mb-1">Exercícios</p>
+      <p class="font-headline font-black text-3xl text-on-surface tracking-tighter leading-none">
+        {{ session()!.exercises.length.toString().padStart(2,'0') }}
+      </p>
     </div>
-    <div class="bg-surface rounded-xl p-3">
-      <p class="text-text-muted text-xs mb-1">Intensidade</p>
-      <p class="font-display font-bold text-2xl text-primary">Alta</p>
+    <div class="bg-surface-container-low rounded-md p-4">
+      <p class="text-outline text-[10px] font-headline uppercase tracking-widest mb-1">Intensidade</p>
+      <p class="font-headline font-black text-3xl text-primary-fixed tracking-tighter leading-none">Alta</p>
+    </div>
+    <div class="bg-surface-container-low rounded-md p-4">
+      <p class="text-outline text-[10px] font-headline uppercase tracking-widest mb-1">Duração Est.</p>
+      <p class="font-headline font-black text-3xl text-on-surface tracking-tighter leading-none">60<span class="text-base font-normal text-on-surface-variant">min</span></p>
+    </div>
+    <div class="bg-surface-container-low rounded-md p-4">
+      <p class="text-outline text-[10px] font-headline uppercase tracking-widest mb-1">Volume</p>
+      <p class="font-headline font-black text-3xl text-on-surface tracking-tighter leading-none">Alto</p>
     </div>
   </div>
 
-  <!-- Start Workout Mode -->
+  <!-- Start CTA -->
   <a [routerLink]="['/athlete/active', session()!.id]"
-    class="flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-xl mb-5 transition-colors">
-    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-    </svg>
+    class="flex items-center justify-center gap-2 w-full bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black py-4 rounded-sm uppercase tracking-tighter mb-6 transition-all text-sm">
+    <span class="material-symbols-outlined text-[18px]">play_arrow</span>
     Iniciar Modo Treino
   </a>
 
   <!-- Exercise List -->
+  <h3 class="text-on-surface font-headline font-black text-xs uppercase tracking-widest mb-3">Exercícios</h3>
+
   @for (ex of session()!.exercises; track ex.id) {
-    <div class="bg-surface rounded-xl mb-3 overflow-hidden">
-      <!-- Exercise Header -->
+    <div class="bg-surface-container-low rounded-md mb-3 overflow-hidden">
       <div class="p-4">
-        <div class="flex items-start justify-between gap-2">
+
+        <div class="flex items-start justify-between gap-3">
           <div class="flex-1">
-            <div class="flex items-center gap-2 mb-1">
+            <div class="flex items-center gap-2 mb-1.5">
               @if (ex.youtubeUrl) {
                 <a [href]="ex.youtubeUrl" target="_blank" rel="noopener"
-                  class="text-primary hover:text-primary-hover">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                  </svg>
+                  class="text-primary-fixed hover:text-primary transition-colors">
+                  <span class="material-symbols-outlined text-[18px]">play_circle</span>
                 </a>
               }
-              <h3 class="text-white font-semibold text-sm">{{ ex.name }}</h3>
+              <h3 class="text-on-surface font-headline font-bold text-sm">{{ ex.name }}</h3>
             </div>
-            <div class="flex gap-4 text-xs mt-1">
-              @if (ex.sets) { <span class="text-text-secondary">{{ ex.sets }} séries</span> }
-              @if (ex.reps) { <span class="text-text-secondary">{{ ex.reps }} reps</span> }
-              @if (ex.loadPercent) { <span class="text-primary font-bold">{{ ex.loadPercent }}% RM</span> }
-              @if (ex.duration) { <span class="text-text-secondary">{{ ex.duration }}</span> }
+            <div class="flex flex-wrap gap-3 text-xs">
+              @if (ex.sets) {
+                <span class="text-on-surface-variant font-headline">{{ ex.sets }} séries</span>
+              }
+              @if (ex.reps) {
+                <span class="text-on-surface-variant font-headline">{{ ex.reps }} reps</span>
+              }
+              @if (ex.loadPercent) {
+                <span class="text-primary-fixed font-headline font-bold">{{ ex.loadPercent }}% RM</span>
+              }
+              @if (ex.duration) {
+                <span class="text-on-surface-variant font-headline">{{ ex.duration }}</span>
+              }
             </div>
           </div>
+
           <!-- Checkbox -->
-          <button (click)="toggleExercise(ex)"
-            class="w-7 h-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all"
-            [class.bg-primary]="ex.completed"
-            [class.border-primary]="ex.completed"
-            [class.border-border]="!ex.completed">
+          <button type="button" (click)="toggleExercise(ex)"
+            class="w-7 h-7 rounded-sm border flex items-center justify-center flex-shrink-0 transition-all"
+            [class.bg-primary-fixed]="ex.completed"
+            [class.border-primary-fixed]="ex.completed"
+            [class.border-outline-variant]="!ex.completed">
             @if (ex.completed) {
-              <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-              </svg>
+              <span class="material-symbols-outlined text-on-primary-fixed text-[16px]">check</span>
             }
           </button>
         </div>
 
-        <!-- Coach Notes -->
+        <!-- Coach Notes callout -->
         @if (ex.coachNotes) {
-          <div class="mt-3 border-l-2 border-primary pl-3">
-            <p class="text-xs text-text-secondary font-medium mb-0.5">Notas do Coach</p>
-            <p class="text-white text-xs leading-relaxed">{{ ex.coachNotes }}</p>
+          <div class="mt-3 border-l-2 border-primary-fixed pl-3">
+            <p class="text-[10px] text-on-surface-variant font-headline font-bold uppercase tracking-widest mb-0.5">Notas do Coach</p>
+            <p class="text-on-surface text-xs leading-relaxed">{{ ex.coachNotes }}</p>
           </div>
         }
 
-        <!-- Rest Timer Button -->
+        <!-- Rest timer button -->
         @if (ex.restSeconds && ex.restSeconds > 0) {
-          <button (click)="startTimer(ex)"
-            class="mt-3 flex items-center gap-2 text-xs text-text-secondary hover:text-primary border border-border hover:border-primary px-3 py-1.5 rounded-lg transition-all">
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
+          <button type="button" (click)="startTimer(ex)"
+            class="mt-3 flex items-center gap-2 text-xs text-on-surface-variant hover:text-primary-fixed border border-outline-variant/30 hover:border-primary-fixed px-3 py-1.5 rounded-sm transition-all font-headline">
+            <span class="material-symbols-outlined text-[14px]">timer</span>
             Descanso: {{ formatTime(ex.restSeconds) }}
           </button>
         }
+
       </div>
     </div>
   }
@@ -103,26 +114,26 @@
 
 <!-- Rest Timer Modal -->
 @if (timerActive()) {
-  <div class="fixed inset-0 bg-black/90 flex items-center justify-center z-50 animate-fade-in">
-    <div class="text-center animate-slide-up">
-      <p class="text-text-secondary text-sm uppercase tracking-widest mb-2">Descanso</p>
+  <div class="fixed inset-0 bg-black/95 flex items-center justify-center z-50 animate-fade-in">
+    <div class="text-center px-8 animate-slide-up">
+      <p class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-2">Descanso</p>
       @if (timerExercise()) {
-        <p class="text-white text-sm mb-4">{{ timerExercise()!.name }}</p>
+        <p class="text-on-surface-variant text-sm mb-6 font-headline">{{ timerExercise()!.name }}</p>
       }
-      <p class="font-display font-black text-8xl text-white tracking-tight">
+      <p class="font-headline font-black text-[96px] text-on-surface tracking-tighter leading-none timer-glow">
         {{ formatTime(timerSeconds()) }}
       </p>
       <!-- Progress ring -->
-      <div class="relative w-48 h-48 mx-auto mt-4">
+      <div class="relative w-48 h-48 mx-auto mt-6">
         <svg class="w-48 h-48 -rotate-90" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="45" fill="none" stroke="#2A2A2A" stroke-width="4"/>
-          <circle cx="50" cy="50" r="45" fill="none" stroke="#FF6B00" stroke-width="4"
+          <circle cx="50" cy="50" r="45" fill="none" stroke="#20201f" stroke-width="3"/>
+          <circle cx="50" cy="50" r="45" fill="none" stroke="#ff7948" stroke-width="3"
             [attr.stroke-dasharray]="getTimerProgress() * 2.83 + ', 283'"
             stroke-linecap="round"/>
         </svg>
       </div>
-      <button (click)="closeTimer()"
-        class="mt-8 px-8 py-3 rounded-xl border border-border text-white hover:bg-surface transition-colors">
+      <button type="button" (click)="closeTimer()"
+        class="mt-8 px-8 py-3 rounded-sm border border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:border-outline transition-all font-headline text-sm uppercase tracking-wider">
         Cancelar
       </button>
     </div>
