@@ -23,18 +23,17 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
   ) {
     this.form = this.fb.group({
-      email:    ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(4)]],
+      email:    ['luan@aevonfit.com',  [Validators.required, Validators.email]],
+      password: ['coach123', [Validators.required, Validators.minLength(4)]],
     });
   }
 
   setRole(role: UserRole): void {
     this.selectedRole.set(role);
     this.error.set('');
-    // prefill mock credentials
     if (role === 'coach') {
       this.form.patchValue({ email: 'luan@aevonfit.com', password: 'coach123' });
     } else {
@@ -46,14 +45,21 @@ export class LoginComponent {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.loading.set(true);
     this.error.set('');
-    const { email, password } = this.form.value;
-    const result = this.auth.login(email, password, this.selectedRole());
-    this.loading.set(false);
-    if (!result.success) {
-      this.error.set(result.error ?? 'Erro ao entrar.');
-      return;
-    }
-    this.router.navigate([this.selectedRole() === 'coach' ? '/coach/dashboard' : '/athlete/home']);
+
+    const { email, password } = this.form.value as { email: string; password: string };
+
+    this.auth.login(email, password, this.selectedRole()).subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.router.navigate([
+          this.selectedRole() === 'coach' ? '/coach/dashboard' : '/athlete/home',
+        ]);
+      },
+      error: (err: Error) => {
+        this.loading.set(false);
+        this.error.set(err.message ?? 'Erro ao entrar. Verifique suas credenciais.');
+      },
+    });
   }
 
   hasError(field: 'email' | 'password'): boolean {

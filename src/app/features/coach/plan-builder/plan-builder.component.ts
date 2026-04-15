@@ -1,8 +1,8 @@
 import { Component, OnInit, signal, computed, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MockDataService } from '../../../core/services/mock-data.service';
-import { TrainingPlan, Week, TrainingDay, Session, Exercise, SessionType } from '../../../core/models';
+import { ApiService } from '../../../core/services/api.service';
+import { TrainingPlan, Exercise, SessionType } from '../../../core/models';
 
 @Component({
   selector: 'app-plan-builder',
@@ -23,19 +23,19 @@ export class PlanBuilderComponent implements OnInit {
   sessionTypes: SessionType[] = ['LPO','Strength','Gymnastics','Metcon','Endurance','Mobility','Core'];
 
   typeColors: Record<SessionType, string> = {
-    LPO: 'bg-primary/20 text-primary',
-    Strength: 'bg-blue-500/20 text-blue-400',
-    Gymnastics: 'bg-purple-500/20 text-purple-400',
-    Metcon: 'bg-orange-500/20 text-orange-400',
-    Endurance: 'bg-green-500/20 text-green-400',
-    Mobility: 'bg-teal-500/20 text-teal-400',
-    Core: 'bg-yellow-500/20 text-yellow-400',
+    LPO:        'bg-primary-fixed/20 text-primary-fixed',
+    Strength:   'bg-blue-500/20 text-blue-400',
+    Gymnastics: 'bg-tertiary/20 text-tertiary',
+    Metcon:     'bg-primary/20 text-primary',
+    Endurance:  'bg-green-500/20 text-green-400',
+    Mobility:   'bg-teal-400/20 text-teal-400',
+    Core:       'bg-yellow-500/20 text-yellow-400',
   };
 
   exerciseForm!: FormGroup;
   currentWeek = computed(() => this.plan()?.weeks[this.selectedWeek()] ?? null);
 
-  constructor(private data: MockDataService, private fb: FormBuilder) {
+  constructor(private api: ApiService, private fb: FormBuilder) {
     this.exerciseForm = this.fb.group({
       name:        ['', Validators.required],
       youtubeUrl:  [''],
@@ -49,8 +49,9 @@ export class PlanBuilderComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.data.getPlanByStudentId(this.studentId).subscribe(p => {
-      if (p) this.plan.set(p);
+    if (!this.studentId) return;
+    this.api.getStudentWithPlan(this.studentId).subscribe({
+      next: ({ plan }) => { if (plan) this.plan.set(plan); },
     });
   }
 
@@ -73,23 +74,27 @@ export class PlanBuilderComponent implements OnInit {
   }
 
   saveExercise(): void {
-    if (this.exerciseForm.invalid || !this.plan()) return;
+    if (this.exerciseForm.invalid || !this.activeSessionId()) return;
     const v = this.exerciseForm.value as {
       name: string; youtubeUrl: string; sets: number; reps: string;
       duration: string; restSeconds: number; loadPercent: number | null; coachNotes: string;
     };
+
+    // TODO: call POST /api/training-plans/sessions/:id/exercises with real backend
+    // For now, append locally
     const newEx: Exercise = {
-      id: `ex-${Date.now()}`,
-      name: v.name,
-      youtubeUrl: v.youtubeUrl || undefined,
-      sets: v.sets,
-      reps: v.reps || null,
-      duration: v.duration || null,
-      restSeconds: v.restSeconds,
-      loadPercent: v.loadPercent,
-      coachNotes: v.coachNotes || undefined,
-      completed: false
+      id:           `ex-${Date.now()}`,
+      name:         v.name,
+      youtubeUrl:   v.youtubeUrl || undefined,
+      sets:         v.sets,
+      reps:         v.reps || null,
+      duration:     v.duration || null,
+      restSeconds:  v.restSeconds,
+      loadPercent:  v.loadPercent,
+      coachNotes:   v.coachNotes || undefined,
+      completed:    false,
     };
+
     this.plan.update(p => {
       if (!p) return p;
       const clone = JSON.parse(JSON.stringify(p)) as TrainingPlan;
@@ -104,11 +109,12 @@ export class PlanBuilderComponent implements OnInit {
       }
       return clone;
     });
+
     this.showExerciseDrawer.set(false);
   }
 
   getTypeColor(type: SessionType): string {
-    return this.typeColors[type] ?? 'bg-surface-high text-text-secondary';
+    return this.typeColors[type] ?? 'bg-surface-container text-on-surface-variant';
   }
 
   formatReps(ex: Exercise): string {

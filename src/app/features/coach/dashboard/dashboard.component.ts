@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { MockDataService } from '../../../core/services/mock-data.service';
+import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Student } from '../../../core/models';
 
@@ -16,15 +16,12 @@ export class DashboardComponent implements OnInit {
   students = signal<Student[]>([]);
   weeklyAvg = signal(88);
 
-  constructor(
-    private data: MockDataService,
-    public auth: AuthService
-  ) {}
+  constructor(private api: ApiService, public auth: AuthService) {}
 
   ngOnInit(): void {
     const coach = this.auth.currentUser();
     if (!coach) return;
-    this.data.getStudents(coach.id).subscribe(s => this.students.set(s));
+    this.api.getStudents(coach.id).subscribe(s => this.students.set(s));
   }
 
   getInitials(name: string): string {

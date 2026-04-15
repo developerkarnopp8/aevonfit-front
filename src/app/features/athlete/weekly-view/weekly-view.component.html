@@ -13,7 +13,7 @@
   <div class="flex gap-2 mb-5 overflow-x-auto pb-1 no-scrollbar">
     @for (week of plan()?.weeks ?? []; track week.id; let i = $index) {
       <button type="button"
-        (click)="selectedWeek.set(i); selectedDay.set(plan()!.weeks[i].days[0] ?? null)"
+        (click)="selectedWeek.set(i); selectedDay.set(plan()!.weeks[i].days.at(0) ?? null)"
         class="flex-shrink-0 px-4 py-2 rounded-sm text-xs font-headline font-bold uppercase tracking-wider transition-all duration-200"
         [class.bg-primary-fixed]="selectedWeek() === i"
         [class.text-on-primary-fixed]="selectedWeek() === i"

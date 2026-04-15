@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, computed, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { MockDataService } from '../../../core/services/mock-data.service';
+import { ApiService } from '../../../core/services/api.service';
 import { Session, Exercise } from '../../../core/models';
 import { Subject, interval, takeUntil } from 'rxjs';
 
@@ -27,11 +27,11 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
     return s.exercises[this.currentIndex()] ?? null;
   });
 
-  constructor(private route: ActivatedRoute, private data: MockDataService) {}
+  constructor(private route: ActivatedRoute, private api: ApiService) {}
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('sessionId') ?? '';
-    this.data.getSessionById(id).subscribe(s => { if (s) this.session.set(s); });
+    this.api.getSession(id).subscribe(s => this.session.set(s));
   }
 
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
@@ -40,6 +40,7 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
     const ex = this.currentExercise();
     if (!ex) return;
     ex.completed = true;
+    this.api.logExercise(ex.id, ex.sets ?? 1).subscribe();
     this.session.update(s => s ? { ...s } : null);
     this.startRest(ex.restSeconds ?? 90);
   }
@@ -52,10 +53,6 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
     if (this.currentIndex() < s.exercises.length - 1) {
       this.currentIndex.update(i => i + 1);
     }
-  }
-
-  prev(): void {
-    if (this.currentIndex() > 0) this.currentIndex.update(i => i - 1);
   }
 
   startRest(seconds: number): void {

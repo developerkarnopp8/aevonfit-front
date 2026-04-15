@@ -2,7 +2,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MockDataService } from '../../../core/services/mock-data.service';
+import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Student } from '../../../core/models';
 
@@ -28,9 +28,9 @@ export class StudentsComponent implements OnInit {
   form!: FormGroup;
 
   constructor(
-    private data: MockDataService,
+    private api: ApiService,
     private auth: AuthService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
   ) {
     this.form = this.fb.group({
       name:  ['', Validators.required],
@@ -42,7 +42,7 @@ export class StudentsComponent implements OnInit {
   ngOnInit(): void {
     const coach = this.auth.currentUser();
     if (!coach) return;
-    this.data.getStudents(coach.id).subscribe(s => this.students.set(s));
+    this.api.getStudents(coach.id).subscribe(s => this.students.set(s));
   }
 
   getInitials(name: string): string {
@@ -51,18 +51,7 @@ export class StudentsComponent implements OnInit {
 
   saveStudent(): void {
     if (this.form.invalid) return;
-    const v = this.form.value as { name: string; email: string; goal: string };
-    const newStudent: Student = {
-      id: `athlete-${Date.now()}`,
-      name: v.name,
-      email: v.email,
-      goal: v.goal,
-      currentMonth: 1,
-      currentWeek: 1,
-      coachId: this.auth.currentUser()?.id ?? '',
-      completionPercent: 0
-    };
-    this.students.update(s => [...s, newStudent]);
+    // TODO: integrar com POST /api/students quando o fluxo de criação de conta atleta estiver pronto
     this.showModal.set(false);
     this.form.reset();
   }

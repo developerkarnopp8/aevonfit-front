@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { MockDataService } from '../../../core/services/mock-data.service';
+import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { TrainingPlan, TrainingDay } from '../../../core/models';
 
@@ -17,13 +17,19 @@ export class WeeklyViewComponent implements OnInit {
   selectedWeek = signal(0);
   selectedDay = signal<TrainingDay | null>(null);
 
-  constructor(private data: MockDataService, private auth: AuthService) {}
+  constructor(private api: ApiService, private auth: AuthService) {}
 
   ngOnInit(): void {
-    const user = this.auth.currentUser();
-    if (!user) return;
-    this.data.getPlanByStudentId(user.id).subscribe(p => {
-      if (p) { this.plan.set(p); this.selectedDay.set(p.weeks[0]?.days[0] ?? null); }
+    this.api.getMyStudentProfile().subscribe({
+      next: student => {
+        this.api.getFirstPlanByStudent(student.id).subscribe({
+          next: plan => {
+            if (!plan) return;
+            this.plan.set(plan);
+            this.selectedDay.set(plan.weeks[0]?.days[0] ?? null);
+          },
+        });
+      },
     });
   }
 
