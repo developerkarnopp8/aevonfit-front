@@ -51,10 +51,15 @@
       <span class="material-symbols-outlined text-[24px]">insights</span>
       <span class="font-headline text-[10px] uppercase font-bold">Evolução</span>
     </a>
-    <a routerLink="/athlete/home" routerLinkActive=""
-       class="flex flex-col items-center gap-1 text-outline active:scale-95 transition-all">
+    <a routerLink="/athlete/messages" routerLinkActive="text-primary-fixed scale-110"
+       class="flex flex-col items-center gap-1 text-outline transition-all relative">
       <span class="material-symbols-outlined text-[24px]">chat</span>
       <span class="font-headline text-[10px] uppercase font-bold">Mensagens</span>
+      @if (unreadMsgs() > 0) {
+        <span class="absolute -top-1 -right-1 min-w-[16px] h-4 bg-error text-on-error text-[9px] font-bold rounded-full flex items-center justify-center px-1">
+          {{ unreadMsgs() > 9 ? '9+' : unreadMsgs() }}
+        </span>
+      }
     </a>
     <a routerLink="/athlete/history" routerLinkActive="text-primary-fixed scale-110"
        class="flex flex-col items-center gap-1 text-outline active:scale-95 transition-all">

@@ -26,10 +26,11 @@ export class CoachShellComponent implements OnInit {
   currentUrl = signal('');
 
   navItems: NavItem[] = [
-    { label: 'Dashboard', route: '/coach/dashboard', icon: 'dashboard' },
-    { label: 'Alunos',    route: '/coach/students',  icon: 'group' },
-    { label: 'Planos',    route: '/coach/plans',     icon: 'fitness_center' },
+    { label: 'Dashboard',  route: '/coach/dashboard', icon: 'dashboard' },
+    { label: 'Alunos',     route: '/coach/students',  icon: 'group' },
+    { label: 'Planos',     route: '/coach/plans',     icon: 'fitness_center' },
     { label: 'Biblioteca', route: '/coach/library',   icon: 'menu_book' },
+    { label: 'Mensagens',  route: '/coach/messages',  icon: 'chat' },
     { label: 'Financeiro', route: '/coach/financial', icon: 'payments'  },
   ];
 

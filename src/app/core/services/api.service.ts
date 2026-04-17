@@ -89,6 +89,17 @@ interface RawWorkoutLog {
   };
 }
 
+export interface ChatMessage {
+  id: string;
+  fromId: string;
+  toId: string;
+  content: string;
+  read: boolean;
+  createdAt: string;
+  from: { id: string; name: string; role: string };
+  to:   { id: string; name: string; role: string };
+}
+
 export interface WorkoutLogEntry {
   id: string;
   exerciseId: string;
@@ -299,6 +310,24 @@ export class ApiService {
       setsCompleted,
       notes,
     });
+  }
+
+  // ── Messages ──────────────────────────────────────────────────────────────
+
+  getInbox(): Observable<ChatMessage[]> {
+    return this.http.get<ChatMessage[]>(`${this.base}/messages/inbox`);
+  }
+
+  getConversation(otherId: string): Observable<ChatMessage[]> {
+    return this.http.get<ChatMessage[]>(`${this.base}/messages/${otherId}`);
+  }
+
+  sendMessage(toId: string, content: string): Observable<ChatMessage> {
+    return this.http.post<ChatMessage>(`${this.base}/messages`, { toId, content });
+  }
+
+  getUnreadCount(): Observable<{ count: number }> {
+    return this.http.get<{ count: number }>(`${this.base}/messages/unread`);
   }
 
   /** Atleta: histórico completo de treinos */

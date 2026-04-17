@@ -46,13 +46,15 @@ src/
 │   │   ├── coach/
 │   │   │   ├── dashboard/           # /coach/dashboard
 │   │   │   ├── students/            # /coach/students
+│   │   │   ├── messages/            # /coach/messages
 │   │   │   └── plan-builder/        # /coach/plan-builder/:studentId
 │   │   └── athlete/
 │   │       ├── home/                # /athlete/home
 │   │       ├── weekly-view/         # /athlete/weekly
 │   │       ├── session-detail/      # /athlete/session/:sessionId
 │   │       ├── active-workout/      # /athlete/active/:sessionId
-│   │       └── history/             # /athlete/history
+│   │       ├── history/             # /athlete/history
+│   │       └── messages/            # /athlete/messages
 │   └── layout/
 │       ├── coach-shell/    # Sidebar + router-outlet (desktop)
 │       └── athlete-shell/  # Header + bottom nav + router-outlet (mobile)
@@ -89,10 +91,12 @@ npm test
 - **Signals**: estado local via `signal()` e `computed()` do Angular 17+
 - **Lazy loading**: todas as rotas carregam componentes com `loadComponent`
 - **Guards funcionais**: `authGuard`, `coachGuard`, `athleteGuard` como `CanActivateFn`
-- **MockDataService**: retorna `Observable<T>` lendo `assets/mock/db.json` — troca 1:1 por HttpClient real quando o backend estiver pronto
-- **AuthService**: mock com `sessionStorage` — sem backend; troca por JWT interceptor depois
+- **ApiService**: HttpClient real apontando para `http://localhost:3000/api`
+- **AuthService**: JWT armazenado em `localStorage`; conecta `SocketService` no login e desconecta no logout; pede permissão de notificação do browser
+- **SocketService**: singleton, conecta ao namespace `/messages` via socket.io-client; expõe `newMessage$: Subject<ChatMessage>`; dispara Web Notification quando aba não está em foco
 - **Design**: tema "Brutalismo Cinético" — dark, laranja elétrico, tipografia Lexend + Inter
 - **Mobile-first**: AthleteShell limitado a `max-w-md` centralizado; CoachShell é desktop com sidebar
+- **Coach messages layout**: componente usa `:host { flex: 1 }` no SCSS para preencher o `<main>` do CoachShell
 
 ## Paleta de Cores
 
@@ -114,4 +118,4 @@ npm test
 
 ---
 
-_Última atualização: 2026-04-14 — Bootstrap completo: 9 telas, mock data, auth, rotas lazy-loaded_
+_Última atualização: 2026-04-17 — Mensagens real-time (WebSocket + notificações browser), badge de não lidas na nav_

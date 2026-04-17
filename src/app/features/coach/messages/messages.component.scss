@@ -1,0 +1,8 @@
+:host {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.auto-grow { field-sizing: content; }

@@ -1,0 +1,79 @@
+<div class="flex flex-col h-full animate-fade-in">
+
+  <!-- Header -->
+  <div class="px-5 pt-4 pb-3 flex-shrink-0 border-b border-outline-variant/10">
+    <p class="text-outline text-[10px] font-headline uppercase tracking-widest mb-0.5">Mensagens</p>
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full bg-primary-fixed/20 flex items-center justify-center text-sm font-headline font-black text-primary-fixed flex-shrink-0">
+        {{ coachName().charAt(0).toUpperCase() }}
+      </div>
+      <div>
+        <p class="text-on-surface font-headline font-bold text-sm">{{ coachName() }}</p>
+        <p class="text-outline text-[10px]">Coach · AevonFit</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="flex-1 overflow-y-auto px-4 py-3 space-y-1">
+
+    @if (loading()) {
+      <div class="flex items-center justify-center h-full">
+        <span class="material-symbols-outlined text-outline text-[32px] animate-pulse">chat</span>
+      </div>
+    } @else if (messages().length === 0) {
+      <div class="flex flex-col items-center justify-center h-full gap-3 text-center px-6">
+        <span class="material-symbols-outlined text-outline text-[48px]">chat_bubble</span>
+        <p class="text-on-surface font-headline font-bold">Nenhuma mensagem ainda</p>
+        <p class="text-on-surface-variant text-sm">Envie uma mensagem para seu coach.</p>
+      </div>
+    } @else {
+      @for (group of groupedMessages(); track group.date) {
+        <!-- Date divider -->
+        <div class="flex items-center gap-2 py-2">
+          <div class="flex-1 h-px bg-outline-variant/10"></div>
+          <span class="text-outline text-[10px] font-headline uppercase tracking-widest px-2">{{ group.date }}</span>
+          <div class="flex-1 h-px bg-outline-variant/10"></div>
+        </div>
+
+        @for (msg of group.messages; track msg.id) {
+          <div class="flex"
+            [class.justify-end]="msg.fromId === myId()"
+            [class.justify-start]="msg.fromId !== myId()">
+            <div class="max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed"
+              [class.bg-primary-fixed]="msg.fromId === myId()"
+              [class.text-on-primary-fixed]="msg.fromId === myId()"
+              [class.rounded-br-sm]="msg.fromId === myId()"
+              [class.bg-surface-container-low]="msg.fromId !== myId()"
+              [class.text-on-surface]="msg.fromId !== myId()"
+              [class.rounded-bl-sm]="msg.fromId !== myId()">
+              <p>{{ msg.content }}</p>
+              <p class="text-[10px] mt-1 opacity-60 text-right">{{ formatTime(msg.createdAt) }}</p>
+            </div>
+          </div>
+        }
+      }
+      <div #chatEnd></div>
+    }
+
+  </div>
+
+  <!-- Input -->
+  <div class="px-4 py-3 flex-shrink-0 border-t border-outline-variant/10 flex items-end gap-2">
+    <textarea
+      [(ngModel)]="newMsg"
+      (keydown)="onEnter($event)"
+      [disabled]="sending() || !coachId()"
+      placeholder="Mensagem..."
+      rows="1"
+      class="flex-1 bg-surface-container text-on-surface placeholder:text-outline rounded-2xl px-4 py-3 text-sm resize-none max-h-28 outline-none transition-all"
+      style="field-sizing: content">
+    </textarea>
+    <button type="button" (click)="send()"
+      [disabled]="!newMsg.trim() || sending() || !coachId()"
+      class="w-11 h-11 rounded-full bg-primary-fixed disabled:opacity-40 text-on-primary-fixed flex items-center justify-center flex-shrink-0 active:scale-95 transition-all">
+      <span class="material-symbols-outlined text-[20px]">send</span>
+    </button>
+  </div>
+
+</div>

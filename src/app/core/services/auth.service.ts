@@ -1,8 +1,9 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, map, catchError, throwError } from 'rxjs';
+import { Observable, tap, map } from 'rxjs';
 import { User, UserRole } from '../models';
+import { SocketService } from './socket.service';
 import { environment } from '../../../environments/environment';
 
 const TOKEN_KEY = 'aevonfit_token';
@@ -12,7 +13,15 @@ const USER_KEY  = 'aevonfit_user';
 export class AuthService {
   currentUser = signal<User | null>(this.loadUser());
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private socket: SocketService,
+  ) {
+    // Re-connect socket if already logged in (page refresh)
+    const token = this.getToken();
+    if (token) this.socket.connect(token);
+  }
 
   login(email: string, password: string, expectedRole: UserRole): Observable<void> {
     return this.http
@@ -25,6 +34,8 @@ export class AuthService {
           localStorage.setItem(TOKEN_KEY, res.access_token);
           localStorage.setItem(USER_KEY, JSON.stringify(res.user));
           this.currentUser.set(res.user);
+          this.socket.connect(res.access_token);
+          this.requestNotificationPermission();
         }),
         map(res => {
           if (res.user.role !== expectedRole) {
@@ -42,7 +53,14 @@ export class AuthService {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     this.currentUser.set(null);
+    this.socket.disconnect();
     this.router.navigate(['/login']);
+  }
+
+  private requestNotificationPermission(): void {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
   }
 
   getToken(): string | null {
