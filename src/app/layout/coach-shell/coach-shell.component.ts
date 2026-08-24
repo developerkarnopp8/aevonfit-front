@@ -6,13 +6,14 @@ import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import { Student } from '../../core/models';
+import { NotificationPermissionBannerComponent } from '../../shared/components/notification-permission-banner/notification-permission-banner.component';
 
 interface NavItem { label: string; route: string; icon: string; soon?: boolean; }
 
 @Component({
   selector: 'app-coach-shell',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterOutlet, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterOutlet, RouterLink, NotificationPermissionBannerComponent],
   templateUrl: './coach-shell.component.html',
   styleUrl: './coach-shell.component.scss'
 })

@@ -35,7 +35,6 @@ export class AuthService {
           localStorage.setItem(USER_KEY, JSON.stringify(res.user));
           this.currentUser.set(res.user);
           this.socket.connect(res.access_token);
-          this.requestNotificationPermission();
         }),
         map(res => {
           if (res.user.role !== expectedRole) {
@@ -55,12 +54,6 @@ export class AuthService {
     this.currentUser.set(null);
     this.socket.disconnect();
     this.router.navigate(['/login']);
-  }
-
-  private requestNotificationPermission(): void {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
   }
 
   getToken(): string | null {
