@@ -1,0 +1,58 @@
+@if (open) {
+  <div class="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center z-[70] animate-fade-in"
+       (click)="cancel()">
+    <div class="bg-surface-container-low rounded-t-md sm:rounded-md w-full sm:max-w-sm p-6 animate-slide-up"
+         (click)="$event.stopPropagation()">
+
+      <h3 class="font-headline font-black text-lg text-on-surface tracking-tighter mb-4">Por que vai pular?</h3>
+
+      <div class="grid grid-cols-2 gap-2 mb-4">
+        @for (r of reasons; track r.value) {
+          <button type="button" (click)="selectReason(r.value)"
+            class="px-3 py-2.5 rounded-sm text-xs font-headline font-bold uppercase tracking-wider transition-all"
+            [class.bg-primary-fixed]="selectedReason() === r.value"
+            [class.text-on-primary-fixed]="selectedReason() === r.value"
+            [class.bg-surface-container]="selectedReason() !== r.value"
+            [class.text-outline]="selectedReason() !== r.value">
+            {{ r.label }}
+          </button>
+        }
+      </div>
+
+      @if (noteRequired) {
+        <textarea [(ngModel)]="note" rows="2" placeholder="Descreva o motivo..."
+          class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-3 py-2.5 text-sm resize-none mb-4"></textarea>
+      }
+
+      <div class="flex gap-2 mb-5">
+        <button type="button" (click)="selectDecision('Postponed')"
+          class="flex-1 py-2.5 rounded-sm text-xs font-headline font-bold uppercase tracking-wider transition-all"
+          [class.bg-primary-fixed]="selectedDecision() === 'Postponed'"
+          [class.text-on-primary-fixed]="selectedDecision() === 'Postponed'"
+          [class.bg-surface-container]="selectedDecision() !== 'Postponed'"
+          [class.text-outline]="selectedDecision() !== 'Postponed'">
+          Vou fazer depois
+        </button>
+        <button type="button" (click)="selectDecision('Abandoned')"
+          class="flex-1 py-2.5 rounded-sm text-xs font-headline font-bold uppercase tracking-wider transition-all"
+          [class.bg-error]="selectedDecision() === 'Abandoned'"
+          [class.text-on-error]="selectedDecision() === 'Abandoned'"
+          [class.bg-surface-container]="selectedDecision() !== 'Abandoned'"
+          [class.text-outline]="selectedDecision() !== 'Abandoned'">
+          Finalizar
+        </button>
+      </div>
+
+      <div class="flex gap-3">
+        <button type="button" (click)="cancel()"
+          class="flex-1 py-3 rounded-sm border border-outline-variant/30 text-on-surface-variant font-headline text-xs uppercase tracking-wider">
+          Cancelar
+        </button>
+        <button type="button" (click)="confirm()" [disabled]="!canConfirm"
+          class="flex-1 py-3 rounded-sm bg-primary-fixed disabled:opacity-40 text-on-primary-fixed font-headline font-black text-xs uppercase tracking-tighter">
+          Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+}
