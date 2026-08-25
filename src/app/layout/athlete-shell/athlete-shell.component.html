@@ -1,6 +1,7 @@
 <div class="flex flex-col min-h-screen bg-background overflow-hidden max-w-md mx-auto relative">
 
   <!-- Top bar -->
+  @if (!fullScreen()) {
   <header class="top-bar fixed top-0 left-0 right-0 max-w-md mx-auto z-50 flex items-center justify-between px-6 py-4">
     <h1 class="font-headline font-black text-xl tracking-tighter text-primary-fixed italic uppercase">AevonFit</h1>
     <div class="flex items-center gap-3 relative">
@@ -32,14 +33,18 @@
       }
     </div>
   </header>
+  }
 
   <!-- Content -->
-  <main class="flex-1 pt-16 pb-24 overflow-y-auto">
-    <app-notification-permission-banner />
+  <main class="flex-1 overflow-y-auto" [class.pt-16]="!fullScreen()" [class.pb-24]="!fullScreen()">
+    @if (!fullScreen()) {
+      <app-notification-permission-banner />
+    }
     <router-outlet />
   </main>
 
   <!-- Bottom Nav -->
+  @if (!fullScreen()) {
   <nav class="bottom-nav fixed bottom-0 left-0 right-0 max-w-md mx-auto z-50 flex justify-around items-center px-6 pt-4 pb-8
               rounded-t-3xl shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
     <a routerLink="/athlete/home" routerLinkActive="text-primary-fixed scale-110" [routerLinkActiveOptions]="{exact:true}"
@@ -68,5 +73,6 @@
       <span class="font-headline text-[10px] uppercase font-bold">Perfil</span>
     </a>
   </nav>
+  }
 
 </div>
