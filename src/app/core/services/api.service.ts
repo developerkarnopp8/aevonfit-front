@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import {
   Student, TrainingPlan, Session, Exercise, WorkoutLog,
-  ExerciseLibraryItem, Payment, PaymentSummary,
+  ExerciseLibraryItem, Payment, PaymentSummary, SkipReason, SkipDecision,
 } from '../models';
 import { environment } from '../../../environments/environment';
 
@@ -34,6 +34,7 @@ interface RawExercise {
   coachNotes?: string | null;
   order: number;
   workoutLogs?: { id: string }[];
+  workoutSkips?: { decision: 'Postponed' | 'Abandoned' }[];
 }
 
 interface RawSession {
@@ -43,6 +44,7 @@ interface RawSession {
   type: string;
   order: number;
   exercises: RawExercise[];
+  workoutSkips?: { decision: 'Postponed' | 'Abandoned' }[];
 }
 
 interface RawDay {
@@ -346,6 +348,18 @@ export class ApiService {
       }))));
   }
 
+  // ── Workout Skips ─────────────────────────────────────────────────────────
+
+  /** Atleta: pula um exercicio ou uma sessao, com justificativa */
+  skip(target: { exerciseId?: string; sessionId?: string }, reason: SkipReason, decision: SkipDecision, note?: string): Observable<void> {
+    return this.http.post<void>(`${this.base}/workout-skips`, { ...target, reason, decision, note });
+  }
+
+  /** Coach: contagem de skips pendentes por aluno */
+  getPendingSkipCounts(): Observable<{ studentId: string; count: number }[]> {
+    return this.http.get<{ studentId: string; count: number }[]>(`${this.base}/workout-skips/pending-count`);
+  }
+
   // ── Mappers ───────────────────────────────────────────────────────────────
 
   private mapStudent(s: RawStudent): Student {
@@ -384,16 +398,19 @@ export class ApiService {
   }
 
   private mapSession(s: RawSession): Session {
+    const exercises = (s.exercises ?? []).map(e => this.mapExercise(e));
     return {
       id:        s.id,
       name:      s.name,
       type:      s.type as Session['type'],
       order:     s.order,
-      exercises: (s.exercises ?? []).map(e => this.mapExercise(e)),
+      exercises,
+      status:    this.computeStatus(false, s.workoutSkips),
     };
   }
 
   private mapExercise(e: RawExercise): Exercise {
+    const done = !!e.workoutLogs && e.workoutLogs.length > 0;
     return {
       id:           e.id,
       name:         e.name,
@@ -404,7 +421,19 @@ export class ApiService {
       restSeconds:  e.restSeconds ?? undefined,
       loadPercent:  e.loadPercent ?? undefined,
       coachNotes:   e.coachNotes ?? undefined,
-      completed:    e.workoutLogs ? e.workoutLogs.length > 0 : false,
+      completed:    done,
+      status:       this.computeStatus(done, e.workoutSkips),
     };
+  }
+
+  private computeStatus(
+    done: boolean,
+    skips?: { decision: 'Postponed' | 'Abandoned' }[],
+  ): 'done' | 'postponed' | 'abandoned' | 'none' {
+    if (done) return 'done';
+    const latest = skips?.[0];
+    if (latest?.decision === 'Postponed') return 'postponed';
+    if (latest?.decision === 'Abandoned') return 'abandoned';
+    return 'none';
   }
 }
