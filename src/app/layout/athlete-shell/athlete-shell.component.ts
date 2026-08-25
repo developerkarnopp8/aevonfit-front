@@ -29,6 +29,11 @@ export class AthleteShellComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Numa navegação direta pra URL (refresh, link direto), o NavigationEnd
+    // dessa mesma navegação pode já ter disparado antes desse subscribe —
+    // então também checamos a URL atual de cara, não só eventos futuros.
+    this.fullScreen.set(this.router.url.includes('/athlete/active/'));
+
     this.socket.newMessage$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
