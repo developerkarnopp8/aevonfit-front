@@ -27,11 +27,12 @@ export class HomeComponent implements OnInit {
 
     this.api.getMyStudentProfile().subscribe({
       next: student => {
-        this.api.getFirstPlanByStudent(student.id).subscribe({
-          next: plan => {
-            if (!plan) return;
+        this.api.getPlansByStudent(student.id).subscribe({
+          next: plans => {
+            if (!plans.length) return;
+            const plan = plans.find(p => p.month === student.currentMonth) ?? plans[0];
+            const week = plan.weeks.find(w => w.weekNumber === student.currentWeek) ?? plan.weeks[0];
             const dayIndex = new Date().getDay();
-            const week = plan.weeks[0];
             const day = week?.days.find(d => d.dayIndex === dayIndex) ?? week?.days[0];
             this.todaySessions.set(day?.sessions ?? []);
           },
