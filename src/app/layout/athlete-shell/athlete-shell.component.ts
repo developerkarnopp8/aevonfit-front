@@ -17,6 +17,8 @@ import { NotificationPermissionBannerComponent } from '../../shared/components/n
 export class AthleteShellComponent implements OnInit, OnDestroy {
   menuOpen     = signal(false);
   unreadMsgs   = signal(0);
+  /** Telas de tela-cheia (ex: treino ativo) escondem o header/nav fixos do shell. */
+  fullScreen   = signal(false);
 
   private destroy$ = new Subject<void>();
 
@@ -39,9 +41,11 @@ export class AthleteShellComponent implements OnInit, OnDestroy {
       filter(e => e instanceof NavigationEnd),
       takeUntil(this.destroy$),
     ).subscribe((e: any) => {
-      if ((e as NavigationEnd).urlAfterRedirects.includes('/athlete/messages')) {
+      const url = (e as NavigationEnd).urlAfterRedirects;
+      if (url.includes('/athlete/messages')) {
         this.unreadMsgs.set(0);
       }
+      this.fullScreen.set(url.includes('/athlete/active/'));
     });
   }
 

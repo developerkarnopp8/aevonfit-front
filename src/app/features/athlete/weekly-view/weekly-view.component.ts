@@ -22,11 +22,18 @@ export class WeeklyViewComponent implements OnInit {
   ngOnInit(): void {
     this.api.getMyStudentProfile().subscribe({
       next: student => {
-        this.api.getFirstPlanByStudent(student.id).subscribe({
-          next: plan => {
-            if (!plan) return;
+        this.api.getPlansByStudent(student.id).subscribe({
+          next: plans => {
+            if (!plans.length) return;
+            const plan = plans.find(p => p.month === student.currentMonth) ?? plans[0];
             this.plan.set(plan);
-            this.selectedDay.set(plan.weeks[0]?.days[0] ?? null);
+
+            const weekIndex = plan.weeks.findIndex(w => w.weekNumber === student.currentWeek);
+            this.selectedWeek.set(weekIndex >= 0 ? weekIndex : 0);
+
+            const week = plan.weeks.at(weekIndex >= 0 ? weekIndex : 0);
+            const today = week?.days.find(d => d.dayIndex === new Date().getDay());
+            this.selectedDay.set(today ?? week?.days[0] ?? null);
           },
         });
       },
