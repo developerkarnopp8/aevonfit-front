@@ -7,13 +7,25 @@
       <h2 class="font-headline font-black text-3xl text-on-surface tracking-tighter leading-none">
         Semana {{ plan()?.weeks?.at(selectedWeek())?.weekNumber ?? 1 }}
       </h2>
-      <p class="text-outline text-xs mt-1">{{ plan()?.title }}</p>
+      <p class="text-outline text-xs mt-1">
+        {{ plan()?.title }}
+        @if (plan()) {
+          <button type="button" (click)="exportCurrentMonthPdf()" class="text-primary-fixed underline ml-2">Exportar mês (PDF)</button>
+        }
+      </p>
     </div>
     @if (plan()) {
-      <button type="button" (click)="showCalendarModal.set(true)"
-        class="w-10 h-10 rounded-sm bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors flex-shrink-0">
-        <span class="material-symbols-outlined text-[20px]">calendar_month</span>
-      </button>
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <button type="button" (click)="exportCurrentWeekPdf()"
+          class="w-10 h-10 rounded-sm bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"
+          title="Exportar semana em PDF">
+          <span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+        </button>
+        <button type="button" (click)="showCalendarModal.set(true)"
+          class="w-10 h-10 rounded-sm bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined text-[20px]">calendar_month</span>
+        </button>
+      </div>
     }
   </div>
 

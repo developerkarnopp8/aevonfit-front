@@ -6,6 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { TrainingPlan, TrainingDay } from '../../../core/models';
 import { PlanCalendarModalComponent } from '../../../shared/components/plan-calendar-modal/plan-calendar-modal.component';
 import { toLocalDateKey } from '../../../shared/utils/date-key';
+import { exportWeekToPdf, exportMonthToPdf } from '../../../shared/utils/plan-pdf-export';
 
 @Component({
   selector: 'app-weekly-view',
@@ -53,6 +54,21 @@ export class WeeklyViewComponent implements OnInit {
   }
 
   selectDay(day: TrainingDay): void { this.selectedDay.set(day); }
+
+  exportCurrentWeekPdf(): void {
+    const p = this.plan();
+    const weekNumber = p?.weeks.at(this.selectedWeek())?.weekNumber;
+    if (!p || weekNumber == null) return;
+    this.api.getWorkoutHistory(500).subscribe(logs =>
+      exportWeekToPdf(p, weekNumber, this.auth.currentUser()?.name ?? '', logs));
+  }
+
+  exportCurrentMonthPdf(): void {
+    const p = this.plan();
+    if (!p) return;
+    this.api.getWorkoutHistory(500).subscribe(logs =>
+      exportMonthToPdf(p, this.auth.currentUser()?.name ?? '', logs));
+  }
 
   onCalendarDaySelected(sel: { planId: string; weekNumber: number }): void {
     this.showCalendarModal.set(false);
