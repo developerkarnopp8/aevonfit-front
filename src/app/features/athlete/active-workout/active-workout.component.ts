@@ -246,6 +246,20 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
     return 0;
   }
 
+  /**
+   * `reps` é texto livre (pode ser "4 reps", "21-15-9" ou uma descrição
+   * longa de complexo, ex: "2 Hang Snatch + 1 Power Snatch + 1 Squat
+   * Snatch") — reduz a fonte gigante conforme o tamanho pra nunca estourar
+   * a tela, em vez de assumir que sempre cabe um número curto.
+   */
+  repsFontSizeClass(reps: string | number): string {
+    const len = String(reps).length;
+    if (len <= 3)  return 'text-[64px]';
+    if (len <= 7)  return 'text-[40px]';
+    if (len <= 14) return 'text-2xl';
+    return 'text-base';
+  }
+
   formatReps(ex: Exercise): string {
     const parts: string[] = [];
     if (ex.sets)     parts.push(`${ex.sets}×`);
