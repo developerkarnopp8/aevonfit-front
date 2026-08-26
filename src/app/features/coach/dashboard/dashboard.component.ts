@@ -14,7 +14,8 @@ import { Student } from '../../../core/models';
 })
 export class DashboardComponent implements OnInit {
   students  = signal<Student[]>([]);
-  weeklyAvg = computed(() => {
+  /** Média do completionPercent (% do plano do MÊS atual, não da semana) entre os alunos do coach */
+  monthlyAvg = computed(() => {
     const list = this.students();
     if (!list.length) return 0;
     const total = list.reduce((sum, s) => sum + (s.completionPercent ?? 0), 0);
