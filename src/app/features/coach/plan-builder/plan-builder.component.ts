@@ -2,7 +2,7 @@ import { Component, OnInit, OnChanges, signal, computed, Input } from '@angular/
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
-import { TrainingPlan, Exercise, Session, SessionType, ExerciseLibraryItem, TrainingDay } from '../../../core/models';
+import { TrainingPlan, Exercise, Session, SessionType, ExerciseLibraryItem, TrainingDay, PersonalRecord } from '../../../core/models';
 
 type DrawerMode = 'add' | 'edit';
 
@@ -45,6 +45,49 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
   showIntakeChart = signal(false);
   maxHydrationMl = computed(() => Math.max(1000, ...this.intakeHistory().map(h => h.hydrationMl)));
   maxCalories    = computed(() => Math.max(500, ...this.intakeHistory().map(h => h.calories)));
+
+  // Recordes de força do aluno
+  prHistory = signal<PersonalRecord[]>([]);
+  showPRSection = signal(false);
+  selectedPRMovementId = signal<string | null>(null);
+
+  prByMovement = computed(() => {
+    const grouped = new Map<string, PersonalRecord[]>();
+    for (const r of this.prHistory()) {
+      const list = grouped.get(r.movementId) ?? [];
+      list.push(r);
+      grouped.set(r.movementId, list);
+    }
+    return Array.from(grouped.entries()).map(([movementId, records]) => {
+      const sorted = [...records].sort((a, b) => a.achievedAt.localeCompare(b.achievedAt));
+      const best = sorted.reduce((max, r) => Math.max(max, r.loadKg ?? r.reps ?? 0), 0);
+      const previous = sorted.length > 1 ? Math.max(...sorted.slice(0, -1).map(r => r.loadKg ?? r.reps ?? 0)) : null;
+      return {
+        movementId,
+        movementName: records[0].movement.name,
+        unit: records[0].loadKg != null ? 'kg' : 'reps',
+        best,
+        trend: previous == null ? 'new' : best > previous ? 'up' : best === previous ? 'same' : 'down',
+        history: sorted,
+      };
+    }).sort((a, b) => a.movementName.localeCompare(b.movementName));
+  });
+
+  selectedPRHistory = computed(() => {
+    const id = this.selectedPRMovementId();
+    if (!id) return null;
+    return this.prByMovement().find(m => m.movementId === id) ?? null;
+  });
+
+  prBarHeight(record: PersonalRecord, maxValue: number): number {
+    const value = record.loadKg ?? record.reps ?? 0;
+    return maxValue > 0 ? (value / maxValue) * 100 : 0;
+  }
+
+  formatPRDate(iso: string): string {
+    return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  }
+
   groupedLibraryItems = computed(() => {
     const grouped: Record<string, ExerciseLibraryItem[]> = {};
     for (const item of this.libraryItems()) {
@@ -124,6 +167,7 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
     this.loading.set(true);
     this.loadPlan();
     this.api.getStudentIntakeHistory(this.studentId).subscribe(h => this.intakeHistory.set(h));
+    this.api.getStudentPersonalRecordsHistory(this.studentId).subscribe(h => this.prHistory.set(h));
     this.api.getStudentWithPlan(this.studentId).subscribe(r => {
       this.studentCurrentWeek.set(r.student.currentWeek);
       this.applyDefaultWeek();

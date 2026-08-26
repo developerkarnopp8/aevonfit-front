@@ -89,6 +89,11 @@ export const routes: Routes = [
           import('./features/athlete/history/history.component').then(m => m.HistoryComponent)
       },
       {
+        path: 'records',
+        loadComponent: () =>
+          import('./features/athlete/records/records.component').then(m => m.RecordsComponent)
+      },
+      {
         path: 'messages',
         loadComponent: () =>
           import('./features/athlete/messages/messages.component').then(m => m.AthleteMessagesComponent)
