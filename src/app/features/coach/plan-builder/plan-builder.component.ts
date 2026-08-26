@@ -2,7 +2,7 @@ import { Component, OnInit, OnChanges, signal, computed, Input } from '@angular/
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
-import { TrainingPlan, Exercise, Session, SessionType, ExerciseLibraryItem } from '../../../core/models';
+import { TrainingPlan, Exercise, Session, SessionType, ExerciseLibraryItem, TrainingDay } from '../../../core/models';
 
 type DrawerMode = 'add' | 'edit';
 
@@ -39,8 +39,9 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
   libraryItems = signal<ExerciseLibraryItem[]>([]);
   selectedLibraryId = signal('');
 
-  // Hidratação/calorias do aluno (últimos 14 dias)
+  // Hidratação/calorias do aluno (últimos 14 dias) — recolhido por padrão, some espaço na dobra do plano
   intakeHistory = signal<{ date: string; hydrationMl: number; calories: number }[]>([]);
+  showIntakeChart = signal(false);
   maxHydrationMl = computed(() => Math.max(1000, ...this.intakeHistory().map(h => h.hydrationMl)));
   maxCalories    = computed(() => Math.max(500, ...this.intakeHistory().map(h => h.calories)));
   groupedLibraryItems = computed(() => {
@@ -385,5 +386,18 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
 
   formatShortDay(dateStr: string): string {
     return new Date(dateStr + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'narrow' });
+  }
+
+  /**
+   * Cor do indicador de status do dia, a partir do status real das sessões
+   * (antes era um ponto laranja fixo, decorativo, igual em todo dia).
+   */
+  dayStatusClass(day: TrainingDay): string {
+    const sessions = day.sessions;
+    if (!sessions.length) return 'bg-outline-variant/30';
+    if (sessions.every(s => s.status === 'done')) return 'bg-primary-fixed';
+    if (sessions.some(s => s.status === 'abandoned')) return 'bg-error';
+    if (sessions.some(s => s.status === 'done' || s.status === 'postponed')) return 'bg-primary-fixed/50';
+    return 'bg-outline-variant/30';
   }
 }
