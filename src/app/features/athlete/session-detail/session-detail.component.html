@@ -37,10 +37,20 @@
 
   <!-- Start CTA -->
   <a [routerLink]="['/athlete/active', session()!.id]"
-    class="flex items-center justify-center gap-2 w-full bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black py-4 rounded-sm uppercase tracking-tighter mb-6 transition-all text-sm">
+    class="flex items-center justify-center gap-2 w-full bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black py-4 rounded-sm uppercase tracking-tighter mb-3 transition-all text-sm">
     <span class="material-symbols-outlined text-[18px]">play_arrow</span>
     Iniciar Modo Treino
   </a>
+
+  <button type="button" (click)="openSkipSession()"
+    class="w-full py-3 rounded-sm border border-outline-variant/30 text-on-surface-variant font-headline text-xs uppercase tracking-wider transition-all mb-6">
+    Pular sessão
+  </button>
+
+  <app-skip-reason-modal
+    [open]="skipModalOpen()"
+    (confirmed)="onSkipConfirmed($event)"
+    (cancelled)="onSkipCancelled()" />
 
   <!-- Exercise List -->
   <h3 class="text-on-surface font-headline font-black text-xs uppercase tracking-widest mb-3">Exercícios</h3>
