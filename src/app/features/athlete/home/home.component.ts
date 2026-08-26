@@ -44,4 +44,9 @@ export class HomeComponent implements OnInit {
   getWeekDay(): string {
     return new Date().toLocaleDateString('pt-BR', { weekday: 'long' });
   }
+
+  isNextSession(session: Session): boolean {
+    const pending = this.todaySessions().filter(s => s.status === 'none');
+    return pending.length > 0 && pending[0].id === session.id;
+  }
 }

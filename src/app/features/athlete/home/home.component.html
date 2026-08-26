@@ -67,18 +67,22 @@
       <a routerLink="/athlete/weekly" class="text-primary-fixed text-xs font-headline hover:underline">Ver Tudo</a>
     </div>
 
-    @for (session of todaySessions(); track session.id; let i = $index) {
+    @for (session of todaySessions(); track session.id) {
       <a [routerLink]="['/athlete/session', session.id]"
         class="flex items-center gap-4 p-4 rounded-md mb-2 transition-all"
-        [class.bg-primary-fixed]="i === 1"
-        [class.bg-surface-container-low]="i !== 1">
+        [class.bg-primary-fixed]="session.status === 'none' && isNextSession(session)"
+        [class.bg-surface-container-low]="!(session.status === 'none' && isNextSession(session))">
         <!-- State indicator -->
         <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-          [class.bg-white/20]="i === 1"
-          [class.bg-surface-container]="i !== 1">
-          @if (i === 0) {
-            <span class="material-symbols-outlined text-[18px] text-outline">check_circle</span>
-          } @else if (i === 1) {
+          [class.bg-white/20]="session.status === 'none' && isNextSession(session)"
+          [class.bg-surface-container]="!(session.status === 'none' && isNextSession(session))">
+          @if (session.status === 'done') {
+            <span class="material-symbols-outlined text-[18px] text-primary-fixed">check_circle</span>
+          } @else if (session.status === 'postponed') {
+            <span class="material-symbols-outlined text-[18px] text-outline">schedule</span>
+          } @else if (session.status === 'abandoned') {
+            <span class="material-symbols-outlined text-[18px] text-outline">block</span>
+          } @else if (isNextSession(session)) {
             <span class="material-symbols-outlined text-[18px] text-on-primary-fixed">play_arrow</span>
           } @else {
             <span class="material-symbols-outlined text-[18px] text-outline">schedule</span>
@@ -86,20 +90,22 @@
         </div>
         <div class="flex-1 min-w-0">
           <p class="font-headline font-bold text-sm truncate"
-            [class.text-on-primary-fixed]="i === 1"
-            [class.text-on-surface]="i !== 1">{{ session.name }}</p>
+            [class.text-on-primary-fixed]="session.status === 'none' && isNextSession(session)"
+            [class.text-on-surface]="!(session.status === 'none' && isNextSession(session))">{{ session.name }}</p>
           <p class="text-xs mt-0.5"
-            [class.text-on-primary-fixed]="i === 1"
-            [class.text-outline]="i !== 1">
-            @if (i === 0) { <span>07:00 · CONCLUÍDO</span> }
-            @else if (i === 1) { <span>17:30 · PRÓXIMO</span> }
+            [class.text-on-primary-fixed]="session.status === 'none' && isNextSession(session)"
+            [class.text-outline]="!(session.status === 'none' && isNextSession(session))">
+            @if (session.status === 'done') { <span>Concluído</span> }
+            @else if (session.status === 'postponed') { <span>Pulado — vai fazer depois</span> }
+            @else if (session.status === 'abandoned') { <span>Pulado</span> }
+            @else if (isNextSession(session)) { <span>Próximo</span> }
             @else { <span>Agendado</span> }
           </p>
         </div>
-        @if (i !== 0) {
+        @if (session.status !== 'done') {
           <span class="material-symbols-outlined text-[18px]"
-            [class.text-on-primary-fixed]="i === 1"
-            [class.text-outline]="i !== 1">chevron_right</span>
+            [class.text-on-primary-fixed]="session.status === 'none' && isNextSession(session)"
+            [class.text-outline]="!(session.status === 'none' && isNextSession(session))">chevron_right</span>
         }
       </a>
     }

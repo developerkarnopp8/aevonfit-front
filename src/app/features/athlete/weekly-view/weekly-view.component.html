@@ -49,8 +49,10 @@
         <div class="flex gap-0.5 mt-2">
           @for (s of day.sessions; track s.id) {
             <div class="w-1.5 h-1.5 rounded-full transition-all"
-              [class.bg-primary-fixed]="s.exercises.length > 0 && s.exercises.every(e => e.completed)"
-              [class.bg-outline-variant]="!(s.exercises.length > 0 && s.exercises.every(e => e.completed))">
+              [class.bg-primary-fixed]="s.status === 'done'"
+              [class.bg-error]="s.status === 'abandoned'"
+              [class.bg-outline]="s.status === 'postponed'"
+              [class.bg-outline-variant]="s.status === 'none'">
             </div>
           }
         </div>
