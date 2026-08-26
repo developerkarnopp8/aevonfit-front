@@ -24,6 +24,7 @@
           class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-3 py-2.5 text-sm resize-none mb-4"></textarea>
       }
 
+      <p class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-2">E esse exercício, o que vai acontecer?</p>
       <div class="flex gap-2 mb-5">
         <button type="button" (click)="selectDecision('Postponed')"
           class="flex-1 py-2.5 rounded-sm text-xs font-headline font-bold uppercase tracking-wider transition-all"
@@ -31,7 +32,7 @@
           [class.text-on-primary-fixed]="selectedDecision() === 'Postponed'"
           [class.bg-surface-container]="selectedDecision() !== 'Postponed'"
           [class.text-outline]="selectedDecision() !== 'Postponed'">
-          Vou fazer depois
+          Retomar depois
         </button>
         <button type="button" (click)="selectDecision('Abandoned')"
           class="flex-1 py-2.5 rounded-sm text-xs font-headline font-bold uppercase tracking-wider transition-all"
@@ -39,7 +40,7 @@
           [class.text-on-error]="selectedDecision() === 'Abandoned'"
           [class.bg-surface-container]="selectedDecision() !== 'Abandoned'"
           [class.text-outline]="selectedDecision() !== 'Abandoned'">
-          Finalizar
+          Não vou fazer
         </button>
       </div>
 
