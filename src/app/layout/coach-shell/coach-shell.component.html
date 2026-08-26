@@ -123,24 +123,24 @@
                   Planos já existentes deste atleta
                 </p>
                 @for (plan of existingPlansForStudent(); track plan.id) {
-                  <p class="text-outline text-xs">Mês {{ plan.month }} — {{ plan.title }}</p>
+                  <p class="text-outline text-xs">{{ plan.title }} — início {{ plan.startDate | slice:0:10 }}</p>
                 }
               </div>
             }
           }
         </div>
 
-        <!-- Mês + Título lado a lado -->
-        <div class="grid grid-cols-[80px_1fr] gap-3 mb-6">
+        <!-- Data de Início + Título lado a lado -->
+        <div class="grid grid-cols-[140px_1fr] gap-3 mb-6">
           <div>
             <label class="block text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-1.5">
-              Mês *
+              Data de Início *
             </label>
-            <input formControlName="month" type="number" min="1" max="12"
-              title="Número do mês"
-              class="w-full bg-surface-container text-on-surface rounded-sm px-3 py-3 text-sm text-center"/>
-            @if (form.get('month')?.invalid && form.get('month')?.touched) {
-              <p class="text-error text-[10px] mt-1">1–12</p>
+            <input formControlName="startDate" type="date"
+              title="Data de início do mesociclo (ajustada pra Segunda-feira da semana)"
+              class="w-full bg-surface-container text-on-surface rounded-sm px-3 py-3 text-sm"/>
+            @if (form.get('startDate')?.invalid && form.get('startDate')?.touched) {
+              <p class="text-error text-[10px] mt-1">Obrigatório.</p>
             }
           </div>
           <div>
