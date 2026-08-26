@@ -18,7 +18,14 @@ const WATER_TAP_ML = 250;
 export class HomeComponent implements OnInit {
   todaySessions = signal<Session[]>([]);
   greeting = signal('Boa tarde');
-  dailyGoalPercent = signal(65);
+
+  /** % real de sessões de hoje já concluídas — mesmo critério (session.status) usado no Cronograma abaixo */
+  dailyGoalPercent = computed(() => {
+    const sessions = this.todaySessions();
+    if (!sessions.length) return 0;
+    const done = sessions.filter(s => s.status === 'done').length;
+    return Math.round((done / sessions.length) * 100);
+  });
 
   hydrationMl = signal(0);
   hydration = computed(() => (this.hydrationMl() / 1000).toFixed(1));
