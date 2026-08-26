@@ -4,6 +4,7 @@ import { Observable, map } from 'rxjs';
 import {
   Student, TrainingPlan, Session, Exercise, WorkoutLog,
   ExerciseLibraryItem, Payment, PaymentSummary, SkipReason, SkipDecision,
+  Movement, PersonalRecord,
 } from '../models';
 import { environment } from '../../../environments/environment';
 
@@ -249,6 +250,28 @@ export class ApiService {
   /** Histórico de 14 dias de hidratação/calorias de um aluno — coach dono */
   getStudentIntakeHistory(studentId: string): Observable<{ date: string; hydrationMl: number; calories: number }[]> {
     return this.http.get<{ date: string; hydrationMl: number; calories: number }[]>(`${this.base}/daily-intake/student/${studentId}/history`);
+  }
+
+  // ── Recordes pessoais (PR/1RM) ──────────────────────────────────────────
+
+  getMovements(): Observable<Movement[]> {
+    return this.http.get<Movement[]>(`${this.base}/movements`);
+  }
+
+  createMovement(name: string, category: string): Observable<Movement> {
+    return this.http.post<Movement>(`${this.base}/movements`, { name, category });
+  }
+
+  logPersonalRecord(movementId: string, loadKg?: number, reps?: number, note?: string): Observable<PersonalRecord> {
+    return this.http.post<PersonalRecord>(`${this.base}/personal-records`, { movementId, loadKg, reps, note });
+  }
+
+  getMyPersonalRecords(): Observable<PersonalRecord[]> {
+    return this.http.get<PersonalRecord[]>(`${this.base}/personal-records/me`);
+  }
+
+  getStudentPersonalRecordsHistory(studentId: string): Observable<PersonalRecord[]> {
+    return this.http.get<PersonalRecord[]>(`${this.base}/personal-records/student/${studentId}/history`);
   }
 
   // ── Sessions (plan-builder) ───────────────────────────────────────────────
