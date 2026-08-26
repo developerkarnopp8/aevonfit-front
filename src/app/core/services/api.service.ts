@@ -98,6 +98,7 @@ export interface ChatMessage {
   content: string;
   read: boolean;
   createdAt: string;
+  isSystem: boolean;
   from: { id: string; name: string; role: string };
   to:   { id: string; name: string; role: string };
 }
