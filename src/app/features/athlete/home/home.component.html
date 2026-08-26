@@ -42,21 +42,51 @@
 
   <!-- Bento: Stats Row -->
   <div class="grid grid-cols-2 gap-3 mb-5">
-    <div class="bg-surface-container-low rounded-md p-4">
-      <div class="flex items-center gap-2 mb-2">
-        <span class="material-symbols-outlined text-[16px] text-on-surface-variant">water_drop</span>
-        <span class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest">Meta 3L</span>
+    <button type="button" (click)="addWater()" [disabled]="loggingWater()"
+      class="bg-surface-container-low rounded-md p-4 text-left hover:bg-surface-container transition-colors disabled:opacity-60">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[16px] text-on-surface-variant">water_drop</span>
+          <span class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest">Meta 3L</span>
+        </div>
+        <span class="material-symbols-outlined text-[16px] text-primary-fixed">add_circle</span>
       </div>
       <p class="font-headline font-black text-2xl text-on-surface">{{ hydration() }} <span class="text-sm font-normal text-on-surface-variant">L</span></p>
-      <p class="text-outline text-[10px] mt-0.5">Hidratação</p>
-    </div>
+      <p class="text-outline text-[10px] mt-0.5">Toque pra +250ml</p>
+    </button>
+
     <div class="bg-surface-container-low rounded-md p-4">
-      <div class="flex items-center gap-2 mb-2">
-        <span class="material-symbols-outlined text-[16px] text-primary-fixed">local_fire_department</span>
-        <span class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest">Meta 2500</span>
-      </div>
-      <p class="font-headline font-black text-2xl text-on-surface">{{ calories() }} <span class="text-sm font-normal text-on-surface-variant">Kcal</span></p>
-      <p class="text-outline text-[10px] mt-0.5">Calorias</p>
+      @if (!addingCalories()) {
+        <button type="button" (click)="openCalorieInput()" class="w-full text-left">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px] text-primary-fixed">local_fire_department</span>
+              <span class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest">Meta 2500</span>
+            </div>
+            <span class="material-symbols-outlined text-[16px] text-primary-fixed">add_circle</span>
+          </div>
+          <p class="font-headline font-black text-2xl text-on-surface">{{ calories() }} <span class="text-sm font-normal text-on-surface-variant">Kcal</span></p>
+          <p class="text-outline text-[10px] mt-0.5">Toque pra registrar</p>
+        </button>
+      } @else {
+        <div class="flex items-center gap-2 mb-2">
+          <span class="material-symbols-outlined text-[16px] text-primary-fixed">local_fire_department</span>
+          <span class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest">Kcal da refeição</span>
+        </div>
+        <input type="number" inputmode="numeric" placeholder="Ex: 450"
+          [ngModel]="calorieInput()" (ngModelChange)="calorieInput.set($event)" (keyup.enter)="confirmCalories()"
+          class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-2 py-1.5 text-sm mb-2" />
+        <div class="flex gap-2">
+          <button type="button" (click)="cancelCalorieInput()"
+            class="flex-1 py-1.5 rounded-sm border border-outline-variant/30 text-on-surface-variant text-[10px] font-headline uppercase">
+            Cancelar
+          </button>
+          <button type="button" (click)="confirmCalories()" [disabled]="loggingCalories()"
+            class="flex-1 py-1.5 rounded-sm bg-primary-fixed disabled:opacity-60 text-on-primary-fixed text-[10px] font-headline uppercase">
+            Add
+          </button>
+        </div>
+      }
     </div>
   </div>
 
