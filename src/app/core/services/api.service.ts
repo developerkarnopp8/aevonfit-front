@@ -232,6 +232,25 @@ export class ApiService {
     return this.http.get<{ dayIndex: number; percent: number }[]>(`${this.base}/training-plans/coach/weekly-completion`);
   }
 
+  // ── Daily intake (hidratação / calorias) ────────────────────────────────
+
+  logHydration(amountMl: number): Observable<void> {
+    return this.http.post<void>(`${this.base}/daily-intake/hydration`, { amountMl });
+  }
+
+  logCalories(kcal: number): Observable<void> {
+    return this.http.post<void>(`${this.base}/daily-intake/calories`, { kcal });
+  }
+
+  getTodayIntake(): Observable<{ hydrationMl: number; calories: number }> {
+    return this.http.get<{ hydrationMl: number; calories: number }>(`${this.base}/daily-intake/today`);
+  }
+
+  /** Histórico de 14 dias de hidratação/calorias de um aluno — coach dono */
+  getStudentIntakeHistory(studentId: string): Observable<{ date: string; hydrationMl: number; calories: number }[]> {
+    return this.http.get<{ date: string; hydrationMl: number; calories: number }[]>(`${this.base}/daily-intake/student/${studentId}/history`);
+  }
+
   // ── Sessions (plan-builder) ───────────────────────────────────────────────
 
   addSession(dayId: string, name: string, type: string): Observable<Session> {
