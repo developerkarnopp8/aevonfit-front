@@ -51,6 +51,7 @@ export interface TrainingPlan {
   studentId: string;
   coachId: string;
   month: number;
+  startDate: string;
   title: string;
   published: boolean;
   weeks: Week[];
