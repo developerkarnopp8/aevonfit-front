@@ -116,10 +116,11 @@ html, body {
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* ─── Focus ─────────────────────────────────────────────────────── */
+/* box-shadow em vez de outline: acompanha o border-radius de cada elemento
+   com precisão (outline pode "cortar" os cantos arredondados). */
 button, a, input, select, textarea { outline: none; }
-button:focus-visible, a:focus-visible, input:focus-visible {
-  outline: 2px solid #ff7948;
-  outline-offset: 2px;
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  box-shadow: 0 0 0 2px #0d0d0d, 0 0 0 4px #ff7948;
 }
 
 /* ─── Animations ────────────────────────────────────────────────── */
