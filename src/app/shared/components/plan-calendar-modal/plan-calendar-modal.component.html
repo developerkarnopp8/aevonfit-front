@@ -1,0 +1,54 @@
+<div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 animate-fade-in" (click)="close()">
+  <div class="bg-surface-container-low rounded-md w-full max-w-sm p-5 animate-slide-up mx-4" (click)="$event.stopPropagation()">
+
+    <div class="flex items-center justify-between mb-4">
+      <button type="button" (click)="prevMonth()"
+        class="w-8 h-8 rounded-sm bg-surface-container flex items-center justify-center text-outline hover:text-on-surface transition-colors">
+        <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+      </button>
+      <p class="text-on-surface font-headline font-black text-sm uppercase tracking-wider capitalize">{{ monthLabel() }}</p>
+      <button type="button" (click)="nextMonth()"
+        class="w-8 h-8 rounded-sm bg-surface-container flex items-center justify-center text-outline hover:text-on-surface transition-colors">
+        <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+      </button>
+    </div>
+
+    <div class="grid grid-cols-7 gap-1 mb-1">
+      @for (label of ['S','T','Q','Q','S','S','D']; track $index) {
+        <div class="text-center text-outline text-[10px] font-headline uppercase py-1">{{ label }}</div>
+      }
+    </div>
+
+    <div class="flex flex-col gap-1">
+      @for (row of weeks(); track $index) {
+        <div class="grid grid-cols-7 gap-1">
+          @for (day of row; track day.dateKey) {
+            <button type="button"
+              (click)="selectDay(day)"
+              [disabled]="!day.planId"
+              class="aspect-square flex items-center justify-center rounded-sm text-xs font-headline transition-all relative"
+              [class.text-outline-variant]="!day.inCurrentMonth"
+              [class.text-on-surface-variant]="day.inCurrentMonth && !day.planId"
+              [class.text-on-surface]="day.planId"
+              [class.cursor-default]="!day.planId"
+              [class.bg-surface-container]="day.planId"
+              [class.hover:bg-primary-fixed]="day.planId"
+              [class.hover:text-on-primary-fixed]="day.planId"
+              [class.ring-1]="day.isToday"
+              [class.ring-primary-fixed]="day.isToday">
+              {{ day.date.getUTCDate() }}
+              @if (day.hasWorkoutLog) {
+                <span class="absolute bottom-0.5 w-1 h-1 rounded-full bg-primary-fixed"></span>
+              }
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <button type="button" (click)="close()"
+      class="w-full mt-4 py-2.5 rounded-sm border border-outline-variant/30 text-on-surface-variant hover:text-on-surface font-headline text-xs uppercase tracking-wider transition-all">
+      Fechar
+    </button>
+  </div>
+</div>
