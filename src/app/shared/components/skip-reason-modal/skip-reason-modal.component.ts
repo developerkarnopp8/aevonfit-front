@@ -23,7 +23,7 @@ export class SkipReasonModalComponent {
 
   reasons = REASONS;
   selectedReason = signal<SkipReason | null>(null);
-  selectedDecision = signal<SkipDecision>('Postponed');
+  selectedDecision = signal<SkipDecision | null>(null);
   note = signal('');
 
   get noteRequired(): boolean {
@@ -31,7 +31,7 @@ export class SkipReasonModalComponent {
   }
 
   get canConfirm(): boolean {
-    return !!this.selectedReason() && (!this.noteRequired || this.note().trim().length > 0);
+    return !!this.selectedReason() && !!this.selectedDecision() && (!this.noteRequired || this.note().trim().length > 0);
   }
 
   selectReason(r: SkipReason): void { this.selectedReason.set(r); }
@@ -41,7 +41,7 @@ export class SkipReasonModalComponent {
     if (!this.canConfirm) return;
     this.confirmed.emit({
       reason: this.selectedReason()!,
-      decision: this.selectedDecision(),
+      decision: this.selectedDecision()!,
       note: this.note().trim() || undefined,
     });
     this.reset();
@@ -54,7 +54,7 @@ export class SkipReasonModalComponent {
 
   private reset(): void {
     this.selectedReason.set(null);
-    this.selectedDecision.set('Postponed');
+    this.selectedDecision.set(null);
     this.note.set('');
   }
 }
