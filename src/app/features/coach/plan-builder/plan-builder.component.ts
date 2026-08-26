@@ -22,6 +22,7 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
   plan          = signal<TrainingPlan | null>(null);
   loading       = signal(true);
   selectedWeek  = signal(0);
+  studentCurrentWeek = signal<number | null>(null);
   expandedSessions = signal<Set<string>>(new Set());
 
   publishing       = signal(false);
@@ -97,9 +98,28 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
   ngOnChanges(): void {
     if (!this.studentId) return;
     this.plan.set(null);
+    this.studentCurrentWeek.set(null);
     this.loading.set(true);
     this.loadPlan();
     this.api.getStudentIntakeHistory(this.studentId).subscribe(h => this.intakeHistory.set(h));
+    this.api.getStudentWithPlan(this.studentId).subscribe(r => {
+      this.studentCurrentWeek.set(r.student.currentWeek);
+      this.applyDefaultWeek();
+    });
+  }
+
+  /**
+   * Abre direto na semana atual do aluno (student.currentWeek), não sempre
+   * na Semana 1 — reportado pelo usuário: "a semana 1 ja foi feita agora
+   * tem que vim na semana 2". Chamado depois que plano e aluno carregam
+   * (ordem não importa, idempotente).
+   */
+  private applyDefaultWeek(): void {
+    const week = this.studentCurrentWeek();
+    const p = this.plan();
+    if (week == null || !p) return;
+    const idx = p.weeks.findIndex(w => w.weekNumber === week);
+    this.selectedWeek.set(idx >= 0 ? idx : 0);
   }
 
   ngOnInit(): void {
@@ -109,7 +129,7 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
   private loadPlan(): void {
     if (this.planId) {
       this.api.getPlanById(this.planId).subscribe({
-        next: plan => { this.plan.set(plan); this.loading.set(false); },
+        next: plan => { this.plan.set(plan); this.loading.set(false); this.applyDefaultWeek(); },
         error: ()  => this.loadByStudent(),
       });
       return;
@@ -134,6 +154,7 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
 
         this.plan.set(sorted[0]);
         this.loading.set(false);
+        this.applyDefaultWeek();
       },
       error: () => { this.loading.set(false); this.loadError.set(true); },
     });
