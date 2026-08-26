@@ -1,14 +1,15 @@
 import { Component, OnInit, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
-import { Session, Exercise } from '../../../core/models';
+import { Session, Exercise, SkipReason, SkipDecision } from '../../../core/models';
+import { SkipReasonModalComponent } from '../../../shared/components/skip-reason-modal/skip-reason-modal.component';
 import { Subject, interval, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-session-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, SkipReasonModalComponent],
   templateUrl: './session-detail.component.html',
   styleUrl: './session-detail.component.scss'
 })
@@ -18,10 +19,12 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   timerSeconds = signal(0);
   timerTarget = signal(90);
   timerExercise = signal<Exercise | null>(null);
+  skipModalOpen = signal(false);
+  skipError     = signal('');
 
   private destroy$ = new Subject<void>();
 
-  constructor(private route: ActivatedRoute, private api: ApiService) {}
+  constructor(private route: ActivatedRoute, private api: ApiService, private router: Router) {}
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('sessionId') ?? '';
@@ -56,6 +59,30 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   }
 
   closeTimer(): void { this.timerActive.set(false); this.destroy$.next(); }
+
+  openSkipSession(): void {
+    this.skipModalOpen.set(true);
+  }
+
+  onSkipConfirmed(payload: { reason: SkipReason; decision: SkipDecision; note?: string }): void {
+    this.skipModalOpen.set(false);
+    const s = this.session();
+    if (!s) return;
+
+    this.api.skip({ sessionId: s.id }, payload.reason, payload.decision, payload.note).subscribe({
+      next: () => this.router.navigate(['/athlete/home']),
+      error: () => this.showSkipError(),
+    });
+  }
+
+  onSkipCancelled(): void {
+    this.skipModalOpen.set(false);
+  }
+
+  private showSkipError(): void {
+    this.skipError.set('Não foi possível registrar o pulo. Tente novamente.');
+    setTimeout(() => this.skipError.set(''), 3500);
+  }
 
   formatTime(s: number): string {
     const m = Math.floor(s / 60);

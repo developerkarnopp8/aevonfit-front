@@ -78,20 +78,28 @@
               </div>
 
               @for (msg of group.messages; track msg.id) {
-                <div class="flex"
-                  [class.justify-end]="msg.fromId === myId()"
-                  [class.justify-start]="msg.fromId !== myId()">
-                  <div class="max-w-[70%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed"
-                    [class.bg-primary-fixed]="msg.fromId === myId()"
-                    [class.text-on-primary-fixed]="msg.fromId === myId()"
-                    [class.rounded-br-sm]="msg.fromId === myId()"
-                    [class.bg-surface-container-low]="msg.fromId !== myId()"
-                    [class.text-on-surface]="msg.fromId !== myId()"
-                    [class.rounded-bl-sm]="msg.fromId !== myId()">
-                    <p>{{ msg.content }}</p>
-                    <p class="text-[10px] mt-1 opacity-60 text-right">{{ formatTime(msg.createdAt) }}</p>
+                @if (msg.isSystem) {
+                  <div class="flex justify-center my-1">
+                    <p class="text-outline text-[11px] italic bg-surface-container-low rounded-full px-3 py-1.5 text-center max-w-[85%]">
+                      {{ msg.content }}
+                    </p>
                   </div>
-                </div>
+                } @else {
+                  <div class="flex"
+                    [class.justify-end]="msg.fromId === myId()"
+                    [class.justify-start]="msg.fromId !== myId()">
+                    <div class="max-w-[70%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed"
+                      [class.bg-primary-fixed]="msg.fromId === myId()"
+                      [class.text-on-primary-fixed]="msg.fromId === myId()"
+                      [class.rounded-br-sm]="msg.fromId === myId()"
+                      [class.bg-surface-container-low]="msg.fromId !== myId()"
+                      [class.text-on-surface]="msg.fromId !== myId()"
+                      [class.rounded-bl-sm]="msg.fromId !== myId()">
+                      <p>{{ msg.content }}</p>
+                      <p class="text-[10px] mt-1 opacity-60 text-right">{{ formatTime(msg.createdAt) }}</p>
+                    </div>
+                  </div>
+                }
               }
             }
             <div #chatEnd></div>

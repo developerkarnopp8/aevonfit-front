@@ -2,7 +2,8 @@ import { Component, OnInit, signal, computed, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
-import { Session, Exercise } from '../../../core/models';
+import { Session, Exercise, SkipReason, SkipDecision } from '../../../core/models';
+import { SkipReasonModalComponent } from '../../../shared/components/skip-reason-modal/skip-reason-modal.component';
 import { Subject, interval, takeUntil } from 'rxjs';
 
 type Phase = 'exercise' | 'rest' | 'done';
@@ -10,13 +11,15 @@ type Phase = 'exercise' | 'rest' | 'done';
 @Component({
   selector: 'app-active-workout',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SkipReasonModalComponent],
   templateUrl: './active-workout.component.html',
   styleUrl: './active-workout.component.scss'
 })
 export class ActiveWorkoutComponent implements OnInit, OnDestroy {
   session      = signal<Session | null>(null);
   currentIndex = signal(0);
+  skipModalOpen = signal(false);
+  skipError    = signal('');
   phase        = signal<Phase>('exercise');
 
   // ── Exercise timer (countdown for duration-based exercises)
@@ -128,7 +131,34 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
 
   skipExercise(): void {
     this.stopTimers();
-    this.advance();
+    this.skipModalOpen.set(true);
+  }
+
+  onSkipConfirmed(payload: { reason: SkipReason; decision: SkipDecision; note?: string }): void {
+    this.skipModalOpen.set(false);
+    const ex = this.currentExercise();
+    if (!ex) return;
+
+    this.api.skip({ exerciseId: ex.id }, payload.reason, payload.decision, payload.note).subscribe({
+      next: () => this.advance(),
+      error: () => {
+        // Skip nao foi registrado: destrava o timer pra atleta poder tentar de novo
+        this.exRunning.set(false);
+        this.exPaused.set(false);
+        this.showSkipError();
+      },
+    });
+  }
+
+  onSkipCancelled(): void {
+    this.skipModalOpen.set(false);
+    this.exRunning.set(false);
+    this.exPaused.set(false);
+  }
+
+  private showSkipError(): void {
+    this.skipError.set('Não foi possível registrar o pulo. Tente novamente.');
+    setTimeout(() => this.skipError.set(''), 3500);
   }
 
   private onExerciseDone(): void {

@@ -16,14 +16,15 @@ type ModalMode = 'add' | 'edit';
   styleUrl: './students.component.scss'
 })
 export class StudentsComponent implements OnInit {
-  students  = signal<Student[]>([]);
-  search    = signal('');
-  showModal = signal(false);
-  modalMode = signal<ModalMode>('add');
-  saving    = signal(false);
-  deleting  = signal<string | null>(null);
-  errorMsg  = signal('');
-  editingId = signal<string | null>(null);
+  students      = signal<Student[]>([]);
+  pendingSkips  = signal<Record<string, number>>({});
+  search        = signal('');
+  showModal     = signal(false);
+  modalMode     = signal<ModalMode>('add');
+  saving        = signal(false);
+  deleting      = signal<string | null>(null);
+  errorMsg      = signal('');
+  editingId     = signal<string | null>(null);
 
   filtered = computed(() =>
     this.students().filter(s =>
@@ -56,6 +57,15 @@ export class StudentsComponent implements OnInit {
     const coach = this.auth.currentUser();
     if (!coach) return;
     this.api.getStudents(coach.id).subscribe(s => this.students.set(s));
+    this.loadPendingSkips();
+  }
+
+  private loadPendingSkips(): void {
+    this.api.getPendingSkipCounts().subscribe(counts => {
+      const map: Record<string, number> = {};
+      for (const c of counts) map[c.studentId] = c.count;
+      this.pendingSkips.set(map);
+    });
   }
 
   openModal(): void {

@@ -18,6 +18,7 @@ export interface Exercise {
   loadPercent?: number | null;
   coachNotes?: string;
   completed: boolean;
+  status: 'done' | 'postponed' | 'abandoned' | 'none';
 }
 
 export interface Session {
@@ -26,7 +27,11 @@ export interface Session {
   type: SessionType;
   order: number;
   exercises: Exercise[];
+  status: 'done' | 'postponed' | 'abandoned' | 'none';
 }
+
+export type SkipReason = 'NoTime' | 'Injury' | 'Later' | 'Other';
+export type SkipDecision = 'Postponed' | 'Abandoned';
 
 export interface TrainingDay {
   id: string;
