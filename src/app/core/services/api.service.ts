@@ -68,6 +68,7 @@ interface RawPlan {
   studentId: string;
   coachId: string;
   month: number;
+  startDate: string;
   title: string;
   published: boolean;
   weeks: RawWeek[];
@@ -215,9 +216,9 @@ export class ApiService {
   }
 
   /** Cria novo plano de treino para um aluno */
-  createPlan(studentId: string, title: string, month: number): Observable<TrainingPlan> {
+  createPlan(studentId: string, title: string, month: number, startDate: string): Observable<TrainingPlan> {
     return this.http
-      .post<RawPlan>(`${this.base}/training-plans`, { studentId, title, month })
+      .post<RawPlan>(`${this.base}/training-plans`, { studentId, title, month, startDate })
       .pipe(map(p => this.mapPlan(p)));
   }
 
@@ -384,16 +385,27 @@ export class ApiService {
   getWorkoutHistory(limit = 200): Observable<WorkoutLogEntry[]> {
     return this.http
       .get<RawWorkoutLog[]>(`${this.base}/workout-logs/history?limit=${limit}`)
-      .pipe(map(list => list.map(l => ({
-        id:           l.id,
-        exerciseId:   l.exerciseId,
-        exerciseName: l.exercise?.name ?? '',
-        sessionName:  l.exercise?.session?.name ?? '',
-        sessionType:  l.exercise?.session?.type ?? '',
-        completedAt:  new Date(l.completedAt),
-        setsCompleted: l.setsCompleted,
-        notes:        l.notes ?? undefined,
-      }))));
+      .pipe(map(list => list.map(l => this.mapWorkoutLogEntry(l))));
+  }
+
+  /** Coach: histórico completo de treinos de um aluno específico (dono via ownership check no backend) */
+  getStudentWorkoutHistory(studentId: string, limit = 500): Observable<WorkoutLogEntry[]> {
+    return this.http
+      .get<RawWorkoutLog[]>(`${this.base}/workout-logs/student/${studentId}/history?limit=${limit}`)
+      .pipe(map(list => list.map(l => this.mapWorkoutLogEntry(l))));
+  }
+
+  private mapWorkoutLogEntry(l: RawWorkoutLog): WorkoutLogEntry {
+    return {
+      id:           l.id,
+      exerciseId:   l.exerciseId,
+      exerciseName: l.exercise?.name ?? '',
+      sessionName:  l.exercise?.session?.name ?? '',
+      sessionType:  l.exercise?.session?.type ?? '',
+      completedAt:  new Date(l.completedAt),
+      setsCompleted: l.setsCompleted,
+      notes:        l.notes ?? undefined,
+    };
   }
 
   // ── Workout Skips ─────────────────────────────────────────────────────────
@@ -430,6 +442,7 @@ export class ApiService {
       studentId: p.studentId,
       coachId:   p.coachId,
       month:     p.month,
+      startDate: p.startDate,
       title:     p.title,
       published: p.published,
       weeks:     (p.weeks ?? []).map(w => ({

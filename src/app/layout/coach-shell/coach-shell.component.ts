@@ -7,6 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import { Student, TrainingPlan } from '../../core/models';
 import { NotificationPermissionBannerComponent } from '../../shared/components/notification-permission-banner/notification-permission-banner.component';
+import { addUtcDays, toDateKey, utcDateFromIso } from '../../shared/utils/date-key';
 
 interface NavItem { label: string; route: string; icon: string; soon?: boolean; }
 
@@ -27,7 +28,8 @@ export class CoachShellComponent implements OnInit {
   // Planos já existentes do aluno selecionado no modal — evita duplicata/redirecionamento surpresa
   existingPlansForStudent = signal<TrainingPlan[]>([]);
   loadingExistingPlans = signal(false);
-  private monthTouchedByUser = false;
+  computedMonth = signal(1); // número ordinal interno — não aparece mais no formulário
+  private startDateTouchedByUser = false;
 
   currentUrl = signal('');
 
@@ -50,20 +52,21 @@ export class CoachShellComponent implements OnInit {
   ) {
     this.form = this.fb.group({
       studentId: ['', Validators.required],
-      title:     ['Mês 1 — Treino', Validators.required],
-      month:     [1,  [Validators.required, Validators.min(1), Validators.max(12)]],
+      title:     ['Mesociclo 1', Validators.required],
+      startDate: ['', Validators.required],
     });
 
-    // Atualiza o título automaticamente quando o mês muda (se ainda não foi editado pelo usuário).
-    // Só dispara em edição manual do usuário — updates programáticos (auto-sugestão de mês) usam emitEvent: false.
-    this.form.get('month')!.valueChanges.subscribe((m: number) => {
-      this.monthTouchedByUser = true;
-      this.applyDefaultTitle(m);
+    // Atualiza o título automaticamente quando a data muda (se ainda não foi editado pelo usuário).
+    // Só dispara em edição manual do usuário — updates programáticos (auto-sugestão) usam emitEvent: false.
+    this.form.get('startDate')!.valueChanges.subscribe(() => {
+      this.startDateTouchedByUser = true;
+      this.applyDefaultTitle(this.computedMonth());
     });
 
     // Ao trocar o atleta, busca os planos já existentes dele — evita que o coach
     // tente criar um plano num mês que já tem um (o que hoje só redireciona pro
-    // existente sem deixar claro que é um plano diferente do que ele estava vendo).
+    // existente sem deixar claro que é um plano diferente do que ele estava vendo),
+    // e auto-sugere a data de início como o dia seguinte ao fim do último plano.
     this.form.get('studentId')!.valueChanges.subscribe((studentId: string) => {
       this.existingPlansForStudent.set([]);
       if (!studentId) return;
@@ -72,9 +75,11 @@ export class CoachShellComponent implements OnInit {
         next: plans => {
           this.existingPlansForStudent.set(plans);
           this.loadingExistingPlans.set(false);
-          if (!this.monthTouchedByUser) {
-            const nextMonth = plans.length ? Math.max(...plans.map(p => p.month)) + 1 : 1;
-            this.form.get('month')!.setValue(nextMonth, { emitEvent: false });
+          const nextMonth = plans.length ? Math.max(...plans.map(p => p.month)) + 1 : 1;
+          this.computedMonth.set(nextMonth);
+          if (!this.startDateTouchedByUser) {
+            const suggested = this.suggestNextStartDate(plans);
+            this.form.get('startDate')!.setValue(suggested, { emitEvent: false });
             this.applyDefaultTitle(nextMonth);
           }
         },
@@ -83,11 +88,20 @@ export class CoachShellComponent implements OnInit {
     });
   }
 
+  /** Dia seguinte ao fim do último plano do aluno (startDate + semanas*7 dias), ou hoje se não há nenhum plano ainda. */
+  private suggestNextStartDate(plans: TrainingPlan[]): string {
+    if (!plans.length) return toDateKey(new Date());
+    const last = plans.reduce((a, b) => (a.startDate > b.startDate ? a : b));
+    const lastStart = utcDateFromIso(last.startDate);
+    const end = addUtcDays(lastStart, last.weeks.length * 7);
+    return toDateKey(end);
+  }
+
   private applyDefaultTitle(month: number): void {
     const titleCtrl = this.form.get('title')!;
     const current = titleCtrl.value as string;
-    if (!current || /^Mês \d+ — Treino$/.test(current)) {
-      titleCtrl.setValue(`Mês ${month || 1} — Treino`, { emitEvent: false });
+    if (!current || /^Mesociclo \d+$/.test(current)) {
+      titleCtrl.setValue(`Mesociclo ${month || 1}`, { emitEvent: false });
     }
   }
 
@@ -112,10 +126,12 @@ export class CoachShellComponent implements OnInit {
 
   openModal(): void {
     this.existingPlansForStudent.set([]);
-    this.form.reset({ studentId: '', title: 'Mês 1 — Treino', month: 1 });
-    // reset() acima dispara valueChanges do campo mês, que marcaria monthTouchedByUser
-    // como true — por isso essa flag só é zerada DEPOIS do reset, não antes.
-    this.monthTouchedByUser = false;
+    this.computedMonth.set(1);
+    this.form.reset({ studentId: '', title: 'Mesociclo 1', startDate: '' });
+    // reset() acima dispara valueChanges do campo startDate, que marcaria
+    // startDateTouchedByUser como true — por isso essa flag só é zerada
+    // DEPOIS do reset, não antes.
+    this.startDateTouchedByUser = false;
     this.showNewPlanModal.set(true);
   }
 
@@ -127,9 +143,10 @@ export class CoachShellComponent implements OnInit {
   createPlan(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.saving.set(true);
-    const { studentId, title, month } = this.form.value as {
-      studentId: string; title: string; month: number;
+    const { studentId, title, startDate } = this.form.value as {
+      studentId: string; title: string; startDate: string;
     };
+    const month = this.computedMonth();
 
     // Verifica se já existe plano para esse aluno/mês antes de criar duplicata
     this.api.getPlansByStudent(studentId).subscribe({
@@ -143,7 +160,7 @@ export class CoachShellComponent implements OnInit {
           });
           return;
         }
-        this.api.createPlan(studentId, title, month).subscribe({
+        this.api.createPlan(studentId, title, month, startDate).subscribe({
           next: plan => {
             this.closeModal();
             this.showToast('Plano criado! Abrindo editor...');
@@ -159,7 +176,7 @@ export class CoachShellComponent implements OnInit {
       },
       error: () => {
         // Se não conseguir verificar, cria mesmo assim
-        this.api.createPlan(studentId, title, month).subscribe({
+        this.api.createPlan(studentId, title, month, startDate).subscribe({
           next: plan => {
             this.closeModal();
             this.showToast('Plano criado! Abrindo editor...');
