@@ -14,6 +14,7 @@ const CATEGORIES = ['LPO', 'Força', 'Ginástica', 'Metcon', 'Resistência', 'Mo
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './library.component.html',
+  styleUrl: './library.component.scss',
 })
 export class LibraryComponent implements OnInit {
   items       = signal<ExerciseLibraryItem[]>([]);
