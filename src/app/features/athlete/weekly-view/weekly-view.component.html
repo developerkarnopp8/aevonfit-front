@@ -1,12 +1,20 @@
 <div class="px-5 py-4 animate-fade-in">
 
   <!-- Header -->
-  <div class="mb-5">
-    <p class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-1">Plano de Treino</p>
-    <h2 class="font-headline font-black text-3xl text-on-surface tracking-tighter leading-none">
-      Semana {{ plan()?.weeks?.at(selectedWeek())?.weekNumber ?? 1 }}
-    </h2>
-    <p class="text-outline text-xs mt-1">{{ plan()?.title }}</p>
+  <div class="mb-5 flex items-start justify-between">
+    <div>
+      <p class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-1">Plano de Treino</p>
+      <h2 class="font-headline font-black text-3xl text-on-surface tracking-tighter leading-none">
+        Semana {{ plan()?.weeks?.at(selectedWeek())?.weekNumber ?? 1 }}
+      </h2>
+      <p class="text-outline text-xs mt-1">{{ plan()?.title }}</p>
+    </div>
+    @if (plan()) {
+      <button type="button" (click)="showCalendarModal.set(true)"
+        class="w-10 h-10 rounded-sm bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors flex-shrink-0">
+        <span class="material-symbols-outlined text-[20px]">calendar_month</span>
+      </button>
+    }
   </div>
 
   <!-- Week Selector — horizontal scroll pills -->
@@ -118,3 +126,11 @@
   </a>
 
 </div>
+
+@if (showCalendarModal()) {
+  <app-plan-calendar-modal
+    [plans]="allPlans()"
+    [workoutDates]="workoutDates()"
+    (daySelected)="onCalendarDaySelected($event)"
+    (closed)="showCalendarModal.set(false)" />
+}
