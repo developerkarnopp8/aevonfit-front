@@ -2,7 +2,7 @@ import { Component, OnInit, OnChanges, signal, computed, Input } from '@angular/
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
-import { TrainingPlan, Exercise, Session, SessionType } from '../../../core/models';
+import { TrainingPlan, Exercise, Session, SessionType, ExerciseLibraryItem } from '../../../core/models';
 
 type DrawerMode = 'add' | 'edit';
 
@@ -34,6 +34,19 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
   activeSessionId    = signal<string | null>(null);
   editingExercise    = signal<Exercise | null>(null);
   savingExercise     = signal(false);
+
+  // Biblioteca de exercícios (reutilizar ao adicionar)
+  libraryItems = signal<ExerciseLibraryItem[]>([]);
+  selectedLibraryId = signal('');
+  groupedLibraryItems = computed(() => {
+    const grouped: Record<string, ExerciseLibraryItem[]> = {};
+    for (const item of this.libraryItems()) {
+      const cat = item.category ?? 'Sem categoria';
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(item);
+    }
+    return Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b));
+  });
 
   // Add session inline
   showAddSession    = signal<string | null>(null); // dayId being edited
@@ -82,7 +95,9 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
     this.loadPlan();
   }
 
-  ngOnInit(): void { /* carregamento já feito pelo ngOnChanges */ }
+  ngOnInit(): void {
+    this.api.getLibrary().subscribe(items => this.libraryItems.set(items));
+  }
 
   private loadPlan(): void {
     if (this.planId) {
@@ -185,7 +200,26 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
     this.activeSessionId.set(sessionId);
     this.editingExercise.set(null);
     this.exerciseForm.reset({ sets: null, restSeconds: 90, loadPercent: null });
+    this.selectedLibraryId.set('');
     this.showExerciseDrawer.set(true);
+  }
+
+  /** Preenche o formulário com um item da biblioteca — o coach ainda pode ajustar antes de salvar */
+  selectFromLibrary(itemId: string): void {
+    this.selectedLibraryId.set(itemId);
+    if (!itemId) return;
+    const item = this.libraryItems().find(i => i.id === itemId);
+    if (!item) return;
+    this.exerciseForm.patchValue({
+      name:        item.name,
+      youtubeUrl:  item.youtubeUrl ?? '',
+      sets:        item.sets ?? null,
+      reps:        item.reps ?? '',
+      duration:    item.duration ?? '',
+      restSeconds: item.restSeconds ?? 90,
+      loadPercent: item.loadPercent ?? null,
+      coachNotes:  item.notes ?? '',
+    });
   }
 
   openEditExercise(ex: Exercise, sessionId: string): void {

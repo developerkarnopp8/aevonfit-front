@@ -267,6 +267,23 @@
         </button>
       </div>
 
+      @if (drawerMode() === 'add' && libraryItems().length > 0) {
+        <div class="mb-4">
+          <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">Escolher da Biblioteca (opcional)</label>
+          <select [value]="selectedLibraryId()" (change)="selectFromLibrary($any($event.target).value)"
+            class="w-full bg-surface-container text-on-surface rounded-sm px-3 py-2.5 text-sm">
+            <option value="">— Digitar do zero —</option>
+            @for (group of groupedLibraryItems(); track group[0]) {
+              <optgroup [label]="group[0]">
+                @for (item of group[1]; track item.id) {
+                  <option [value]="item.id">{{ item.name }}</option>
+                }
+              </optgroup>
+            }
+          </select>
+        </div>
+      }
+
       <form [formGroup]="exerciseForm" (ngSubmit)="saveExercise()">
         <div class="grid grid-cols-2 gap-3 mb-3">
           <div class="col-span-2">
