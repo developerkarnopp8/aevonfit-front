@@ -44,17 +44,17 @@
         </div>
         <!-- Bar chart -->
         <div class="flex items-end gap-2 h-28">
-          @for (bar of [40, 55, 70, 45, 88, 65, 80]; track $index) {
+          @for (dayIndex of [0,1,2,3,4,5,6]; track dayIndex) {
             <div
               class="flex-1 rounded-sm transition-all"
-              [style.height.%]="bar"
-              [class.bg-primary-fixed]="$index === 4"
-              [class.bg-surface-container-high]="$index !== 4">
+              [style.height.%]="weeklyCompletion()[dayIndex] || 2"
+              [class.bg-primary-fixed]="dayIndex === todayDayIndex"
+              [class.bg-surface-container-high]="dayIndex !== todayDayIndex">
             </div>
           }
         </div>
         <div class="flex justify-between text-outline text-[10px] font-headline uppercase mt-2">
-          @for (d of ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom']; track d) {
+          @for (d of ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']; track d) {
             <span>{{ d }}</span>
           }
         </div>
@@ -100,24 +100,6 @@
         <p class="font-headline font-black text-5xl text-on-surface tracking-tighter leading-none">{{ weeklyAvg() }}%</p>
         <p class="text-on-surface-variant text-xs mt-2 font-headline">Média do time</p>
       </div>
-
-      <!-- Streak highlights -->
-      <div class="bg-surface-container-low rounded-md p-4 mb-4">
-        <p class="text-on-surface font-headline font-black text-[10px] uppercase tracking-widest mb-4">Recordistas de Streak</p>
-        @for (student of students(); track student.id) {
-          <div class="flex items-center gap-2 mb-3 last:mb-0">
-            <div class="w-7 h-7 rounded-sm bg-primary-fixed/20 text-primary-fixed flex items-center justify-center text-[10px] font-headline font-bold flex-shrink-0">
-              {{ getInitials(student.name) }}
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-on-surface text-xs font-headline font-bold truncate">{{ student.name.split(' ')[0] }}</p>
-              <p class="text-outline text-[10px] truncate">{{ student.goal }}</p>
-            </div>
-            <span class="text-primary-fixed text-xs font-headline font-bold">W{{ student.currentWeek }}</span>
-          </div>
-        }
-      </div>
-
 
     </aside>
 

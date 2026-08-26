@@ -227,6 +227,11 @@ export class ApiService {
     );
   }
 
+  /** % real de conclusão por dia da semana (dayIndex 0-6), agregado entre os alunos do coach */
+  getWeeklyCompletion(): Observable<{ dayIndex: number; percent: number }[]> {
+    return this.http.get<{ dayIndex: number; percent: number }[]>(`${this.base}/training-plans/coach/weekly-completion`);
+  }
+
   // ── Sessions (plan-builder) ───────────────────────────────────────────────
 
   addSession(dayId: string, name: string, type: string): Observable<Session> {
