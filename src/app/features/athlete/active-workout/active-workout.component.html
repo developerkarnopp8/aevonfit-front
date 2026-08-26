@@ -251,4 +251,9 @@
     </div>
   }
 
+  <app-skip-reason-modal
+    [open]="skipModalOpen()"
+    (confirmed)="onSkipConfirmed($event)"
+    (cancelled)="onSkipCancelled()" />
+
 </div>
