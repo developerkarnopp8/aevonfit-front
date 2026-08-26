@@ -38,6 +38,11 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
   // Biblioteca de exercícios (reutilizar ao adicionar)
   libraryItems = signal<ExerciseLibraryItem[]>([]);
   selectedLibraryId = signal('');
+
+  // Hidratação/calorias do aluno (últimos 14 dias)
+  intakeHistory = signal<{ date: string; hydrationMl: number; calories: number }[]>([]);
+  maxHydrationMl = computed(() => Math.max(1000, ...this.intakeHistory().map(h => h.hydrationMl)));
+  maxCalories    = computed(() => Math.max(500, ...this.intakeHistory().map(h => h.calories)));
   groupedLibraryItems = computed(() => {
     const grouped: Record<string, ExerciseLibraryItem[]> = {};
     for (const item of this.libraryItems()) {
@@ -93,6 +98,7 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
     this.plan.set(null);
     this.loading.set(true);
     this.loadPlan();
+    this.api.getStudentIntakeHistory(this.studentId).subscribe(h => this.intakeHistory.set(h));
   }
 
   ngOnInit(): void {
@@ -375,5 +381,9 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
     if (ex.reps) parts.push(String(ex.reps));
     if (ex.duration) parts.push(ex.duration);
     return parts.join(' ') || '—';
+  }
+
+  formatShortDay(dateStr: string): string {
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'narrow' });
   }
 }

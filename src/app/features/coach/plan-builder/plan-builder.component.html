@@ -39,6 +39,34 @@
     </div>
   </header>
 
+  <!-- Hidratação / Calorias (14 dias) -->
+  @if (intakeHistory().length > 0) {
+    <div class="px-8 pb-4 flex-shrink-0">
+      <div class="bg-surface-container-low rounded-md p-4">
+        <p class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-3">Hidratação &amp; Calorias — últimos 14 dias</p>
+        <div class="flex items-end gap-1.5 h-16 mb-1">
+          @for (day of intakeHistory(); track day.date) {
+            <div class="flex-1 flex flex-col items-center justify-end gap-0.5 h-full" [title]="day.date + ': ' + day.hydrationMl + 'ml, ' + day.calories + 'kcal'">
+              <div class="w-full flex items-end gap-0.5 flex-1">
+                <div class="flex-1 bg-blue-400/70 rounded-t-sm transition-all" [style.height.%]="(day.hydrationMl / maxHydrationMl()) * 100"></div>
+                <div class="flex-1 bg-primary-fixed rounded-t-sm transition-all" [style.height.%]="(day.calories / maxCalories()) * 100"></div>
+              </div>
+            </div>
+          }
+        </div>
+        <div class="flex gap-1.5">
+          @for (day of intakeHistory(); track day.date) {
+            <span class="flex-1 text-center text-outline text-[9px] font-headline uppercase">{{ formatShortDay(day.date) }}</span>
+          }
+        </div>
+        <div class="flex items-center gap-4 mt-3">
+          <span class="flex items-center gap-1.5 text-[10px] text-on-surface-variant font-headline uppercase"><span class="w-2 h-2 rounded-full bg-blue-400/70"></span>Água</span>
+          <span class="flex items-center gap-1.5 text-[10px] text-on-surface-variant font-headline uppercase"><span class="w-2 h-2 rounded-full bg-primary-fixed"></span>Calorias</span>
+        </div>
+      </div>
+    </div>
+  }
+
   @if (loading()) {
     <div class="flex-1 flex items-center justify-center">
       <span class="material-symbols-outlined text-outline text-[40px] animate-pulse-subtle">fitness_center</span>
