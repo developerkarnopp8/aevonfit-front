@@ -49,16 +49,20 @@
       <p class="text-outline text-sm font-headline text-center py-12">Nenhum resultado para "{{ searchQuery() }}"</p>
     } @else {
       @for (group of groupedItems(); track group[0]) {
-        <div class="mb-6">
-          <!-- Category header -->
-          <div class="flex items-center gap-3 mb-3">
-            <span class="text-[10px] font-headline font-black uppercase tracking-widest text-outline">{{ group[0] }}</span>
+        <div class="mb-3">
+          <!-- Category header (accordion toggle) -->
+          <button type="button" (click)="toggleCategory(group[0])"
+            class="w-full flex items-center gap-3 py-2 group">
+            <span class="material-symbols-outlined text-outline text-[18px] transition-transform"
+              [class.rotate-90]="isCategoryExpanded(group[0])">chevron_right</span>
+            <span class="text-[10px] font-headline font-black uppercase tracking-widest text-outline group-hover:text-on-surface transition-colors">{{ group[0] }}</span>
             <div class="flex-1 h-px bg-outline-variant/10"></div>
             <span class="text-outline text-[10px]">{{ group[1].length }}</span>
-          </div>
+          </button>
 
           <!-- Exercise cards grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          @if (isCategoryExpanded(group[0])) {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3 animate-fade-in">
             @for (item of group[1]; track item.id) {
               <div class="bg-surface-container-low rounded-md p-4 flex flex-col gap-3 hover:bg-surface-container transition-colors">
                 <div class="flex items-start justify-between gap-2">
@@ -98,6 +102,7 @@
               </div>
             }
           </div>
+          }
         </div>
       }
     }

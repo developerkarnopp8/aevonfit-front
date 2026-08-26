@@ -26,6 +26,8 @@ export class LibraryComponent implements OnInit {
   editingItem   = signal<ExerciseLibraryItem | null>(null);
   saving        = signal(false);
 
+  expandedCategories = signal<Set<string>>(new Set());
+
   form!: FormGroup;
 
   filteredItems = computed(() => {
@@ -62,9 +64,27 @@ export class LibraryComponent implements OnInit {
 
   ngOnInit(): void {
     this.api.getLibrary().subscribe({
-      next: items => { this.items.set(items); this.loading.set(false); },
-      error: ()    => this.loading.set(false),
+      next: items => {
+        this.items.set(items);
+        this.loading.set(false);
+        const firstCategory = this.groupedItems()[0]?.[0];
+        if (firstCategory) this.expandedCategories.set(new Set([firstCategory]));
+      },
+      error: () => this.loading.set(false),
     });
+  }
+
+  toggleCategory(cat: string): void {
+    this.expandedCategories.update(set => {
+      const next = new Set(set);
+      next.has(cat) ? next.delete(cat) : next.add(cat);
+      return next;
+    });
+  }
+
+  /** Categoria com resultado de busca ativo sempre aparece expandida, senão segue o toggle manual */
+  isCategoryExpanded(cat: string): boolean {
+    return this.searchQuery().trim().length > 0 || this.expandedCategories().has(cat);
   }
 
   openAdd(): void {
