@@ -20,6 +20,7 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   timerTarget = signal(90);
   timerExercise = signal<Exercise | null>(null);
   skipModalOpen = signal(false);
+  skipError     = signal('');
 
   private destroy$ = new Subject<void>();
 
@@ -66,15 +67,21 @@ export class SessionDetailComponent implements OnInit, OnDestroy {
   onSkipConfirmed(payload: { reason: SkipReason; decision: SkipDecision; note?: string }): void {
     this.skipModalOpen.set(false);
     const s = this.session();
-    if (s) {
-      this.api.skip({ sessionId: s.id }, payload.reason, payload.decision, payload.note).subscribe(() => {
-        this.router.navigate(['/athlete/home']);
-      });
-    }
+    if (!s) return;
+
+    this.api.skip({ sessionId: s.id }, payload.reason, payload.decision, payload.note).subscribe({
+      next: () => this.router.navigate(['/athlete/home']),
+      error: () => this.showSkipError(),
+    });
   }
 
   onSkipCancelled(): void {
     this.skipModalOpen.set(false);
+  }
+
+  private showSkipError(): void {
+    this.skipError.set('Não foi possível registrar o pulo. Tente novamente.');
+    setTimeout(() => this.skipError.set(''), 3500);
   }
 
   formatTime(s: number): string {

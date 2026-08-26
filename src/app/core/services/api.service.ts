@@ -400,13 +400,15 @@ export class ApiService {
 
   private mapSession(s: RawSession): Session {
     const exercises = (s.exercises ?? []).map(e => this.mapExercise(e));
+    const allDone = exercises.length > 0 && exercises.every(e => e.completed);
+    // workoutSkips vem do backend com take: 1, orderBy: createdAt desc — skips?.[0] é sempre o mais recente
     return {
       id:        s.id,
       name:      s.name,
       type:      s.type as Session['type'],
       order:     s.order,
       exercises,
-      status:    this.computeStatus(false, s.workoutSkips),
+      status:    this.computeStatus(allDone, s.workoutSkips),
     };
   }
 
