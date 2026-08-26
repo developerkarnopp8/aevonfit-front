@@ -189,27 +189,25 @@
           <!-- Session cards -->
           <div class="pl-5 grid grid-cols-1 lg:grid-cols-2 gap-3">
             @for (session of day.sessions; track session.id) {
-              <div class="bg-surface-container-low rounded-md overflow-hidden">
+              <div class="bg-surface-container-low rounded-md overflow-hidden border-l-4" [class]="getTypeBorderColor(session.type)">
 
                 <!-- Session header -->
-                <div class="flex items-center justify-between px-4 py-3">
-                  <div class="flex items-center gap-2 flex-1 cursor-pointer" (click)="toggleSession(session.id)">
-                    <span class="text-[10px] font-headline font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider"
-                      [class]="getTypeColor(session.type)">
+                <div class="flex items-center justify-between gap-3 pl-3 pr-2 py-2.5 cursor-pointer" (click)="toggleSession(session.id)">
+                  <div class="flex-1 min-w-0">
+                    <span class="block text-[9px] font-headline font-bold uppercase tracking-widest mb-0.5" [class]="getTypeTextColor(session.type)">
                       {{ session.type }}
                     </span>
-                    <span class="text-on-surface text-sm font-headline font-bold">{{ session.name }}</span>
+                    <span class="block text-on-surface text-base font-headline font-bold truncate">{{ session.name }}</span>
                   </div>
-                  <div class="flex items-center gap-1">
-                    <span class="text-outline text-[10px] font-headline mr-1">{{ session.exercises.length }} exerc.</span>
-                    <button type="button" (click)="deleteSession(session.id)"
-                      class="w-6 h-6 flex items-center justify-center text-outline hover:text-error transition-colors rounded-sm hover:bg-error/10"
+                  <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <span class="text-outline text-[10px] font-headline">{{ session.exercises.length }} exerc.</span>
+                    <button type="button" (click)="deleteSession(session.id); $event.stopPropagation()"
+                      class="w-7 h-7 flex items-center justify-center text-outline hover:text-error transition-colors rounded-sm hover:bg-error/10"
                       title="Remover sessão">
                       <span class="material-symbols-outlined text-[16px]">delete</span>
                     </button>
-                    <span class="material-symbols-outlined text-outline text-[18px] transition-transform cursor-pointer"
-                      [class.rotate-180]="isExpanded(session.id)"
-                      (click)="toggleSession(session.id)">expand_more</span>
+                    <span class="material-symbols-outlined text-outline text-[20px] transition-transform"
+                      [class.rotate-180]="isExpanded(session.id)">expand_more</span>
                   </div>
                 </div>
 

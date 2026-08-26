@@ -71,6 +71,28 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
     Core:       'bg-yellow-500/20 text-yellow-400',
   };
 
+  /** Só a cor de texto (sem fundo) — usada no rótulo pequeno acima do nome da sessão */
+  typeTextColors: Record<SessionType, string> = {
+    LPO:        'text-primary-fixed',
+    Strength:   'text-blue-400',
+    Gymnastics: 'text-tertiary',
+    Metcon:     'text-primary',
+    Endurance:  'text-green-400',
+    Mobility:   'text-teal-400',
+    Core:       'text-yellow-400',
+  };
+
+  /** Cor da borda esquerda do card — mesma paleta de typeColors */
+  typeBorderColors: Record<SessionType, string> = {
+    LPO:        'border-primary-fixed',
+    Strength:   'border-blue-400',
+    Gymnastics: 'border-tertiary',
+    Metcon:     'border-primary',
+    Endurance:  'border-green-400',
+    Mobility:   'border-teal-400',
+    Core:       'border-yellow-400',
+  };
+
   exerciseForm!: FormGroup;
   sessionForm!:  FormGroup;
   currentWeek = computed(() => this.plan()?.weeks[this.selectedWeek()] ?? null);
@@ -395,6 +417,14 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
 
   getTypeColor(type: SessionType): string {
     return this.typeColors[type] ?? 'bg-surface-container text-on-surface-variant';
+  }
+
+  getTypeTextColor(type: SessionType): string {
+    return this.typeTextColors[type] ?? 'text-on-surface-variant';
+  }
+
+  getTypeBorderColor(type: SessionType): string {
+    return this.typeBorderColors[type] ?? 'border-outline-variant';
   }
 
   formatReps(ex: Exercise): string {
