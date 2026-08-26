@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { TrainingPlan, Exercise, Session, SessionType, ExerciseLibraryItem, TrainingDay, PersonalRecord } from '../../../core/models';
+import { PlanCalendarModalComponent } from '../../../shared/components/plan-calendar-modal/plan-calendar-modal.component';
 
 type DrawerMode = 'add' | 'edit';
 
 @Component({
   selector: 'app-plan-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PlanCalendarModalComponent],
   templateUrl: './plan-builder.component.html',
   styleUrl: './plan-builder.component.scss'
 })
@@ -24,6 +25,8 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
   selectedWeek  = signal(0);
   studentCurrentWeek = signal<number | null>(null);
   expandedSessions = signal<Set<string>>(new Set());
+  allPlans = signal<TrainingPlan[]>([]);
+  showCalendarModal = signal(false);
 
   publishing       = signal(false);
   toastMsg         = signal('');
@@ -168,10 +171,20 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
     this.loadPlan();
     this.api.getStudentIntakeHistory(this.studentId).subscribe(h => this.intakeHistory.set(h));
     this.api.getStudentPersonalRecordsHistory(this.studentId).subscribe(h => this.prHistory.set(h));
+    this.api.getPlansByStudent(this.studentId).subscribe(plans => this.allPlans.set(plans));
     this.api.getStudentWithPlan(this.studentId).subscribe(r => {
       this.studentCurrentWeek.set(r.student.currentWeek);
       this.applyDefaultWeek();
     });
+  }
+
+  onCalendarDaySelected(sel: { planId: string; weekNumber: number }): void {
+    this.showCalendarModal.set(false);
+    const target = this.allPlans().find(p => p.id === sel.planId);
+    if (!target) return;
+    this.plan.set(target);
+    const idx = target.weeks.findIndex(w => w.weekNumber === sel.weekNumber);
+    this.selectedWeek.set(idx >= 0 ? idx : 0);
   }
 
   /**

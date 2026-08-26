@@ -12,10 +12,11 @@
         }
       </div>
       @if (plan()) {
-        <div class="flex items-center gap-2 text-on-surface-variant">
-          <span class="material-symbols-outlined text-[16px]">calendar_today</span>
+        <button type="button" (click)="showCalendarModal.set(true)"
+          class="flex items-center gap-2 text-on-surface-variant hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined text-[16px]">calendar_month</span>
           <span class="text-sm font-headline">Semana {{ (currentWeek()?.weekNumber ?? 1) }}</span>
-        </div>
+        </button>
       }
     </div>
     <div class="flex items-center gap-2">
@@ -439,4 +440,11 @@
       </form>
     </div>
   </div>
+}
+
+@if (showCalendarModal()) {
+  <app-plan-calendar-modal
+    [plans]="allPlans()"
+    (daySelected)="onCalendarDaySelected($event)"
+    (closed)="showCalendarModal.set(false)" />
 }
