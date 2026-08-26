@@ -156,24 +156,25 @@
         <div class="flex-shrink-0 px-5 py-4">
 
           <!-- Big reps display -->
-          <div class="flex items-center justify-center gap-6 py-4">
+          <div class="flex items-center justify-center gap-4 py-4 flex-wrap px-2">
             @if (currentExercise()!.sets) {
-              <div class="text-center">
+              <div class="text-center flex-shrink-0">
                 <p class="font-headline font-black text-[64px] text-on-surface leading-none tracking-tighter">{{ currentExercise()!.sets }}</p>
                 <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">Séries</p>
               </div>
             }
             @if (currentExercise()!.sets && currentExercise()!.reps) {
-              <p class="text-outline font-headline text-3xl">×</p>
+              <p class="text-outline font-headline text-3xl flex-shrink-0">×</p>
             }
             @if (currentExercise()!.reps) {
-              <div class="text-center">
-                <p class="font-headline font-black text-[64px] text-on-surface leading-none tracking-tighter">{{ currentExercise()!.reps }}</p>
+              <div class="text-center max-w-[65vw] min-w-0">
+                <p [class]="repsFontSizeClass(currentExercise()!.reps!)"
+                  class="font-headline font-black text-on-surface leading-tight tracking-tighter break-words">{{ currentExercise()!.reps }}</p>
                 <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">Reps</p>
               </div>
             }
             @if (currentExercise()!.loadPercent) {
-              <div class="text-center">
+              <div class="text-center flex-shrink-0">
                 <p class="font-headline font-black text-[40px] text-primary-fixed leading-none tracking-tighter">{{ currentExercise()!.loadPercent }}%</p>
                 <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">Carga</p>
               </div>
