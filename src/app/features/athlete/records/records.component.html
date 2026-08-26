@@ -1,0 +1,52 @@
+<div class="px-5 py-4 animate-fade-in">
+
+  <div class="mb-6">
+    <h2 class="font-headline font-black text-3xl text-on-surface leading-tight tracking-tighter">Meus Recordes</h2>
+    <p class="text-on-surface-variant text-sm mt-1">Seu histórico de PR/1RM por movimento.</p>
+  </div>
+
+  @if (loading()) {
+    <div class="flex items-center justify-center h-40">
+      <span class="material-symbols-outlined text-outline text-[40px] animate-pulse-subtle">military_tech</span>
+    </div>
+  } @else {
+    @for (group of groupedMovements(); track group[0]) {
+      <div class="mb-3">
+        <button type="button" (click)="toggleCategory(group[0])"
+          class="w-full flex items-center gap-3 py-2 group">
+          <span class="material-symbols-outlined text-outline text-[18px] transition-transform"
+            [class.rotate-90]="isCategoryExpanded(group[0])">chevron_right</span>
+          <span class="text-[10px] font-headline font-black uppercase tracking-widest text-outline group-hover:text-on-surface transition-colors">{{ group[0] }}</span>
+          <div class="flex-1 h-px bg-outline-variant/10"></div>
+          <span class="text-outline text-[10px]">{{ group[1].length }}</span>
+        </button>
+
+        @if (isCategoryExpanded(group[0])) {
+          <div class="grid grid-cols-1 gap-2 mt-2 animate-fade-in">
+            @for (item of group[1]; track item.movement.id) {
+              <div class="bg-surface-container-low rounded-md p-4 flex items-center justify-between gap-3">
+                <div class="flex-1 min-w-0">
+                  <p class="text-on-surface font-headline font-bold text-sm truncate">{{ item.movement.name }}</p>
+                  @if (item.bestLoadKg || item.bestReps) {
+                    <p class="text-on-surface-variant text-xs mt-0.5">
+                      @if (item.bestLoadKg) { <span class="text-primary-fixed font-bold">{{ item.bestLoadKg }}kg</span> }
+                      @if (item.bestLoadKg && item.bestReps) { <span> · </span> }
+                      @if (item.bestReps) { <span class="text-primary-fixed font-bold">{{ item.bestReps }} reps</span> }
+                    </p>
+                  } @else {
+                    <p class="text-outline text-xs mt-0.5">Nenhum registro ainda</p>
+                  }
+                </div>
+                <button type="button"
+                  class="flex items-center gap-1 text-[10px] font-headline font-bold text-primary-fixed hover:bg-primary-fixed/10 px-3 py-2 rounded-sm uppercase tracking-wider transition-colors">
+                  <span class="material-symbols-outlined text-[14px]">add</span>
+                  Registrar
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+</div>
