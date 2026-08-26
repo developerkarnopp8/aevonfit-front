@@ -26,6 +26,13 @@
           Publicado
         </span>
       }
+      @if (plan()) {
+        <button type="button" (click)="exportCurrentMonthPdf()"
+          class="px-4 py-2 rounded-sm border border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:border-outline font-headline text-xs uppercase tracking-wider transition-all flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[14px]">picture_as_pdf</span>
+          Exportar Mês
+        </button>
+      }
       <button type="button" (click)="saveDraft()" [disabled]="!plan()"
         class="px-4 py-2 rounded-sm border border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:border-outline font-headline text-xs uppercase tracking-wider transition-all disabled:opacity-40">
         Salvar Rascunho
@@ -173,6 +180,11 @@
 
     <!-- Week Tabs sidebar -->
     <aside class="w-40 border-r border-outline-variant/10 flex-shrink-0 py-4 px-2 overflow-y-auto">
+      <button type="button" (click)="exportCurrentWeekPdf()"
+        class="w-full flex items-center gap-1.5 px-4 py-2 mb-2 text-outline hover:text-on-surface font-headline text-[10px] uppercase tracking-wider transition-colors">
+        <span class="material-symbols-outlined text-[14px]">picture_as_pdf</span>
+        Exportar Semana
+      </button>
       @for (week of plan()!.weeks; track week.id; let i = $index) {
         <button type="button"
           (click)="selectedWeek.set(i)"

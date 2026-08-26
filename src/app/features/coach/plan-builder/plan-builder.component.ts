@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { ApiService } from '../../../core/services/api.service';
 import { TrainingPlan, Exercise, Session, SessionType, ExerciseLibraryItem, TrainingDay, PersonalRecord } from '../../../core/models';
 import { PlanCalendarModalComponent } from '../../../shared/components/plan-calendar-modal/plan-calendar-modal.component';
+import { exportWeekToPdf, exportMonthToPdf } from '../../../shared/utils/plan-pdf-export';
 
 type DrawerMode = 'add' | 'edit';
 
@@ -27,6 +28,7 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
   expandedSessions = signal<Set<string>>(new Set());
   allPlans = signal<TrainingPlan[]>([]);
   showCalendarModal = signal(false);
+  studentName = signal('');
 
   publishing       = signal(false);
   toastMsg         = signal('');
@@ -174,8 +176,24 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
     this.api.getPlansByStudent(this.studentId).subscribe(plans => this.allPlans.set(plans));
     this.api.getStudentWithPlan(this.studentId).subscribe(r => {
       this.studentCurrentWeek.set(r.student.currentWeek);
+      this.studentName.set(r.student.name);
       this.applyDefaultWeek();
     });
+  }
+
+  exportCurrentWeekPdf(): void {
+    const p = this.plan();
+    const week = this.currentWeek();
+    if (!p || !week) return;
+    this.api.getStudentWorkoutHistory(this.studentId).subscribe(logs =>
+      exportWeekToPdf(p, week.weekNumber, this.studentName(), logs));
+  }
+
+  exportCurrentMonthPdf(): void {
+    const p = this.plan();
+    if (!p) return;
+    this.api.getStudentWorkoutHistory(this.studentId).subscribe(logs =>
+      exportMonthToPdf(p, this.studentName(), logs));
   }
 
   onCalendarDaySelected(sel: { planId: string; weekNumber: number }): void {
