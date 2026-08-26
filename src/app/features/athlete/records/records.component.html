@@ -32,12 +32,15 @@
                       @if (item.bestLoadKg) { <span class="text-primary-fixed font-bold">{{ item.bestLoadKg }}kg</span> }
                       @if (item.bestLoadKg && item.bestReps) { <span> · </span> }
                       @if (item.bestReps) { <span class="text-primary-fixed font-bold">{{ item.bestReps }} reps</span> }
+                      @if (item.movement.id === justRecordedId()) {
+                        <span class="ml-2 text-[10px] bg-primary-fixed text-on-primary-fixed px-1.5 py-0.5 rounded-sm uppercase font-headline">Novo!</span>
+                      }
                     </p>
                   } @else {
                     <p class="text-outline text-xs mt-0.5">Nenhum registro ainda</p>
                   }
                 </div>
-                <button type="button"
+                <button type="button" (click)="openForm(item.movement)"
                   class="flex items-center gap-1 text-[10px] font-headline font-bold text-primary-fixed hover:bg-primary-fixed/10 px-3 py-2 rounded-sm uppercase tracking-wider transition-colors">
                   <span class="material-symbols-outlined text-[14px]">add</span>
                   Registrar
@@ -50,3 +53,46 @@
     }
   }
 </div>
+
+@if (showForm(); as movement) {
+  <div class="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center z-50 animate-fade-in"
+    (click)="closeForm()">
+    <div class="bg-surface-container-low rounded-t-md sm:rounded-md w-full sm:max-w-sm p-6 animate-slide-up"
+      (click)="$event.stopPropagation()">
+
+      <h3 class="font-headline font-black text-lg text-on-surface tracking-tighter mb-1">{{ movement.name }}</h3>
+      <p class="text-on-surface-variant text-xs mb-4">Registrar nova tentativa</p>
+
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div>
+          <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">Carga (kg)</label>
+          <input type="number" inputmode="decimal" placeholder="Ex: 100"
+            [ngModel]="formLoadKg()" (ngModelChange)="formLoadKg.set($event)"
+            class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-3 py-2.5 text-sm"/>
+        </div>
+        <div>
+          <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">Repetições</label>
+          <input type="number" inputmode="numeric" placeholder="Ex: 5"
+            [ngModel]="formReps()" (ngModelChange)="formReps.set($event)"
+            class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-3 py-2.5 text-sm"/>
+        </div>
+      </div>
+
+      <label class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest block mb-1.5">Nota (opcional)</label>
+      <textarea rows="2" placeholder="Ex: com cinto, sem cinto..."
+        [ngModel]="formNote()" (ngModelChange)="formNote.set($event)"
+        class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-3 py-2.5 text-sm resize-none mb-4"></textarea>
+
+      <div class="flex gap-3">
+        <button type="button" (click)="closeForm()"
+          class="flex-1 py-3 rounded-sm border border-outline-variant/30 text-on-surface-variant font-headline text-xs uppercase tracking-wider">
+          Cancelar
+        </button>
+        <button type="button" (click)="submitForm()" [disabled]="!canSubmitForm || saving()"
+          class="flex-1 py-3 rounded-sm bg-primary-fixed disabled:opacity-40 text-on-primary-fixed font-headline font-black text-xs uppercase tracking-tighter">
+          {{ saving() ? 'Salvando...' : 'Registrar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
