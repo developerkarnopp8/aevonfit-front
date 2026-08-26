@@ -5,7 +5,7 @@ import { RouterOutlet, RouterLink, Router, NavigationEnd } from '@angular/router
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
-import { Student } from '../../core/models';
+import { Student, TrainingPlan } from '../../core/models';
 import { NotificationPermissionBannerComponent } from '../../shared/components/notification-permission-banner/notification-permission-banner.component';
 
 interface NavItem { label: string; route: string; icon: string; soon?: boolean; }
@@ -23,6 +23,11 @@ export class CoachShellComponent implements OnInit {
   students = signal<Student[]>([]);
   saving = signal(false);
   toast = signal<string>('');
+
+  // Planos já existentes do aluno selecionado no modal — evita duplicata/redirecionamento surpresa
+  existingPlansForStudent = signal<TrainingPlan[]>([]);
+  loadingExistingPlans = signal(false);
+  private monthTouchedByUser = false;
 
   currentUrl = signal('');
 
@@ -49,14 +54,41 @@ export class CoachShellComponent implements OnInit {
       month:     [1,  [Validators.required, Validators.min(1), Validators.max(12)]],
     });
 
-    // Atualiza o título automaticamente quando o mês muda (se ainda não foi editado pelo usuário)
+    // Atualiza o título automaticamente quando o mês muda (se ainda não foi editado pelo usuário).
+    // Só dispara em edição manual do usuário — updates programáticos (auto-sugestão de mês) usam emitEvent: false.
     this.form.get('month')!.valueChanges.subscribe((m: number) => {
-      const titleCtrl = this.form.get('title')!;
-      const current = titleCtrl.value as string;
-      if (!current || /^Mês \d+ — Treino$/.test(current)) {
-        titleCtrl.setValue(`Mês ${m || 1} — Treino`, { emitEvent: false });
-      }
+      this.monthTouchedByUser = true;
+      this.applyDefaultTitle(m);
     });
+
+    // Ao trocar o atleta, busca os planos já existentes dele — evita que o coach
+    // tente criar um plano num mês que já tem um (o que hoje só redireciona pro
+    // existente sem deixar claro que é um plano diferente do que ele estava vendo).
+    this.form.get('studentId')!.valueChanges.subscribe((studentId: string) => {
+      this.existingPlansForStudent.set([]);
+      if (!studentId) return;
+      this.loadingExistingPlans.set(true);
+      this.api.getPlansByStudent(studentId).subscribe({
+        next: plans => {
+          this.existingPlansForStudent.set(plans);
+          this.loadingExistingPlans.set(false);
+          if (!this.monthTouchedByUser) {
+            const nextMonth = plans.length ? Math.max(...plans.map(p => p.month)) + 1 : 1;
+            this.form.get('month')!.setValue(nextMonth, { emitEvent: false });
+            this.applyDefaultTitle(nextMonth);
+          }
+        },
+        error: () => this.loadingExistingPlans.set(false),
+      });
+    });
+  }
+
+  private applyDefaultTitle(month: number): void {
+    const titleCtrl = this.form.get('title')!;
+    const current = titleCtrl.value as string;
+    if (!current || /^Mês \d+ — Treino$/.test(current)) {
+      titleCtrl.setValue(`Mês ${month || 1} — Treino`, { emitEvent: false });
+    }
   }
 
   ngOnInit(): void {
@@ -79,7 +111,11 @@ export class CoachShellComponent implements OnInit {
   }
 
   openModal(): void {
+    this.existingPlansForStudent.set([]);
     this.form.reset({ studentId: '', title: 'Mês 1 — Treino', month: 1 });
+    // reset() acima dispara valueChanges do campo mês, que marcaria monthTouchedByUser
+    // como true — por isso essa flag só é zerada DEPOIS do reset, não antes.
+    this.monthTouchedByUser = false;
     this.showNewPlanModal.set(true);
   }
 
@@ -101,7 +137,7 @@ export class CoachShellComponent implements OnInit {
         const duplicate = existing.find(p => p.month === month);
         if (duplicate) {
           this.closeModal();
-          this.showToast(`Aluno já tem um plano no Mês ${month}. Abrindo o existente...`);
+          this.showToast(`Já existe "${duplicate.title}" no Mês ${month} — nenhum plano novo foi criado. Abrindo esse plano existente.`, 5000);
           this.router.navigate(['/coach/plan-builder', studentId], {
             queryParams: { planId: duplicate.id },
           });
@@ -140,9 +176,9 @@ export class CoachShellComponent implements OnInit {
     });
   }
 
-  private showToast(msg: string): void {
+  private showToast(msg: string, durationMs = 3000): void {
     this.toast.set(msg);
-    setTimeout(() => this.toast.set(''), 3000);
+    setTimeout(() => this.toast.set(''), durationMs);
   }
 
   logout(): void { this.auth.logout(); }

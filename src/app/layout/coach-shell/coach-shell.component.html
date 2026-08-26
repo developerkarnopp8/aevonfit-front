@@ -117,6 +117,16 @@
             @if (form.get('studentId')?.invalid && form.get('studentId')?.touched) {
               <p class="text-error text-xs mt-1">Selecione um atleta.</p>
             }
+            @if (existingPlansForStudent().length > 0) {
+              <div class="mt-2 bg-surface-container rounded-sm px-3 py-2">
+                <p class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-1">
+                  Planos já existentes deste atleta
+                </p>
+                @for (plan of existingPlansForStudent(); track plan.id) {
+                  <p class="text-outline text-xs">Mês {{ plan.month }} — {{ plan.title }}</p>
+                }
+              </div>
+            }
           }
         </div>
 
