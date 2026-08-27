@@ -25,6 +25,9 @@ export class CoachShellComponent implements OnInit {
   students = signal<Student[]>([]);
   saving = signal(false);
   toast = signal<string>('');
+  newPlanMode = signal<'manual' | 'pdf'>('manual');
+  selectedPdfFile = signal<File | null>(null);
+  importing = signal(false);
 
   // Planos já existentes do aluno selecionado no modal — evita duplicata/redirecionamento surpresa
   existingPlansForStudent = signal<TrainingPlan[]>([]);
@@ -129,6 +132,8 @@ export class CoachShellComponent implements OnInit {
     this.existingPlansForStudent.set([]);
     this.computedMonth.set(1);
     this.form.reset({ studentId: '', title: 'Mesociclo 1', startDate: '' });
+    this.newPlanMode.set('manual');
+    this.selectedPdfFile.set(null);
     // reset() acima dispara valueChanges do campo startDate, que marcaria
     // startDateTouchedByUser como true — por isso essa flag só é zerada
     // DEPOIS do reset, não antes.
@@ -190,6 +195,40 @@ export class CoachShellComponent implements OnInit {
             this.showToast('Erro ao criar plano. Tente novamente.');
           },
         });
+      },
+    });
+  }
+
+  onPdfFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.selectedPdfFile.set(input.files?.[0] ?? null);
+  }
+
+  importPlanFromPdf(): void {
+    const studentId = this.form.get('studentId')!.value as string;
+    const startDate = this.form.get('startDate')!.value as string;
+    const file = this.selectedPdfFile();
+    if (!studentId || !startDate || !file) {
+      this.showToast('Selecione o aluno, a data de início e o arquivo PDF.');
+      return;
+    }
+
+    this.importing.set(true);
+    this.api.importPlanFromPdf(studentId, startDate, file).subscribe({
+      next: plan => {
+        this.importing.set(false);
+        this.closeModal();
+        this.showToast('Plano importado do PDF! Revise e publique quando estiver pronto.');
+        this.router.navigate(['/coach/plan-builder', studentId], {
+          queryParams: { planId: plan.id },
+        });
+      },
+      error: (err) => {
+        this.importing.set(false);
+        const message = err?.status === 422
+          ? 'Não consegui extrair um treino válido desse PDF — tente outro arquivo ou crie manualmente.'
+          : 'Erro ao importar o PDF. Tente novamente.';
+        this.showToast(message, 5000);
       },
     });
   }
