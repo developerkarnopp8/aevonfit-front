@@ -102,7 +102,7 @@
 
       <div class="flex bg-surface-container rounded-sm p-1 mb-4">
         <button type="button"
-          (click)="newPlanMode.set('manual')"
+          (click)="setNewPlanMode('manual')"
           class="flex-1 py-2 rounded-sm text-[11px] font-headline font-bold uppercase tracking-wider transition-all duration-200"
           [class.bg-primary-fixed]="newPlanMode() === 'manual'"
           [class.text-on-primary-fixed]="newPlanMode() === 'manual'"
@@ -110,7 +110,7 @@
           Criar Vazio
         </button>
         <button type="button"
-          (click)="newPlanMode.set('pdf')"
+          (click)="setNewPlanMode('pdf')"
           class="flex-1 py-2 rounded-sm text-[11px] font-headline font-bold uppercase tracking-wider transition-all duration-200"
           [class.bg-primary-fixed]="newPlanMode() === 'pdf'"
           [class.text-on-primary-fixed]="newPlanMode() === 'pdf'"
