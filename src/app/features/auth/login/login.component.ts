@@ -26,19 +26,14 @@ export class LoginComponent {
     private router: Router,
   ) {
     this.form = this.fb.group({
-      email:    ['luan@aevonfit.com',  [Validators.required, Validators.email]],
-      password: ['coach123', [Validators.required, Validators.minLength(4)]],
+      email:    ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(4)]],
     });
   }
 
   setRole(role: UserRole): void {
     this.selectedRole.set(role);
     this.error.set('');
-    if (role === 'coach') {
-      this.form.patchValue({ email: 'luan@aevonfit.com', password: 'coach123' });
-    } else {
-      this.form.patchValue({ email: 'gustavo@aevonfit.com', password: 'athlete123' });
-    }
   }
 
   submit(): void {
