@@ -100,7 +100,26 @@
         </button>
       </div>
 
-      <form [formGroup]="form" (ngSubmit)="createPlan()" novalidate>
+      <div class="flex bg-surface-container rounded-sm p-1 mb-4">
+        <button type="button"
+          (click)="setNewPlanMode('manual')"
+          class="flex-1 py-2 rounded-sm text-[11px] font-headline font-bold uppercase tracking-wider transition-all duration-200"
+          [class.bg-primary-fixed]="newPlanMode() === 'manual'"
+          [class.text-on-primary-fixed]="newPlanMode() === 'manual'"
+          [class.text-outline]="newPlanMode() !== 'manual'">
+          Criar Vazio
+        </button>
+        <button type="button"
+          (click)="setNewPlanMode('pdf')"
+          class="flex-1 py-2 rounded-sm text-[11px] font-headline font-bold uppercase tracking-wider transition-all duration-200"
+          [class.bg-primary-fixed]="newPlanMode() === 'pdf'"
+          [class.text-on-primary-fixed]="newPlanMode() === 'pdf'"
+          [class.text-outline]="newPlanMode() !== 'pdf'">
+          Importar PDF
+        </button>
+      </div>
+
+      <form [formGroup]="form" novalidate>
 
         <!-- Atleta -->
         <div class="mb-4">
@@ -133,8 +152,8 @@
           }
         </div>
 
-        <!-- Data de Início + Título lado a lado -->
-        <div class="grid grid-cols-[140px_1fr] gap-3 mb-6">
+        <!-- Data de Início + Título lado a lado (Título só no modo manual — no modo PDF o título vem da IA) -->
+        <div [class]="newPlanMode() === 'manual' ? 'grid grid-cols-[140px_1fr] gap-3 mb-6' : 'grid grid-cols-1 gap-3 mb-6'">
           <div>
             <label class="block text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-1.5">
               Data de Início *
@@ -146,18 +165,29 @@
               <p class="text-error text-[10px] mt-1">Obrigatório.</p>
             }
           </div>
-          <div>
-            <label class="block text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-1.5">
-              Título do Plano *
-            </label>
-            <input formControlName="title" type="text"
-              placeholder="Ex: Mês 1 — Base de Força"
-              class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-3 py-3 text-sm"/>
-            @if (form.get('title')?.invalid && form.get('title')?.touched) {
-              <p class="text-error text-xs mt-1">Título obrigatório.</p>
-            }
-          </div>
+          @if (newPlanMode() === 'manual') {
+            <div>
+              <label class="block text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-1.5">
+                Título do Plano *
+              </label>
+              <input formControlName="title" type="text"
+                placeholder="Ex: Mês 1 — Base de Força"
+                class="w-full bg-surface-container text-on-surface placeholder:text-outline rounded-sm px-3 py-3 text-sm"/>
+              @if (form.get('title')?.invalid && form.get('title')?.touched) {
+                <p class="text-error text-xs mt-1">Título obrigatório.</p>
+              }
+            </div>
+          }
         </div>
+
+        @if (newPlanMode() === 'pdf') {
+          <div class="mb-6">
+            <label class="block text-on-surface-variant text-[10px] mb-1.5 tracking-widest uppercase font-headline">Arquivo PDF *</label>
+            <input type="file" accept="application/pdf" (change)="onPdfFileSelected($event)"
+              class="w-full text-on-surface text-sm file:mr-3 file:py-2 file:px-4 file:rounded-sm file:border-0 file:bg-surface-container file:text-on-surface-variant file:text-xs file:uppercase file:font-headline file:font-bold" />
+            <p class="text-outline text-[10px] mt-1.5">Pode levar até 1 minuto pra processar. A IA cria um rascunho — você revisa e publica depois.</p>
+          </div>
+        }
 
         <!-- Actions -->
         <div class="flex gap-3">
@@ -165,14 +195,16 @@
             class="flex-1 py-3 rounded-sm border border-outline-variant/30 text-on-surface-variant hover:text-on-surface font-headline text-xs uppercase tracking-wider transition-all">
             Cancelar
           </button>
-          <button type="submit" [disabled]="saving()"
+          <button type="button"
+            [disabled]="saving() || importing()"
+            (click)="newPlanMode() === 'manual' ? createPlan() : importPlanFromPdf()"
             class="flex-1 py-3 rounded-sm bg-primary-fixed hover:bg-primary-dim disabled:opacity-60 text-on-primary-fixed font-headline font-black text-xs uppercase tracking-tighter transition-all flex items-center justify-center gap-2">
-            @if (saving()) {
-              <span class="material-symbols-outlined text-[16px]">progress_activity</span>
+            @if (saving() || importing()) {
+              <span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
             } @else {
               <span class="material-symbols-outlined text-[16px]">add</span>
             }
-            {{ saving() ? 'Criando...' : 'Criar Plano' }}
+            {{ importing() ? 'Processando PDF...' : (saving() ? 'Criando...' : (newPlanMode() === 'manual' ? 'Criar Plano' : 'Importar e Criar Rascunho')) }}
           </button>
         </div>
 

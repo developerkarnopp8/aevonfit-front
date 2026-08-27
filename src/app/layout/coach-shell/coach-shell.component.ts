@@ -12,6 +12,8 @@ import { addUtcDays, toDateKey, utcDateFromIso } from '../../shared/utils/date-k
 
 interface NavItem { label: string; route: string; icon: string; soon?: boolean; }
 
+const MAX_PDF_SIZE_BYTES = 20 * 1024 * 1024; // 20MB — mesmo limite do backend
+
 @Component({
   selector: 'app-coach-shell',
   standalone: true,
@@ -25,6 +27,9 @@ export class CoachShellComponent implements OnInit {
   students = signal<Student[]>([]);
   saving = signal(false);
   toast = signal<string>('');
+  newPlanMode = signal<'manual' | 'pdf'>('manual');
+  selectedPdfFile = signal<File | null>(null);
+  importing = signal(false);
 
   // Planos já existentes do aluno selecionado no modal — evita duplicata/redirecionamento surpresa
   existingPlansForStudent = signal<TrainingPlan[]>([]);
@@ -129,6 +134,9 @@ export class CoachShellComponent implements OnInit {
     this.existingPlansForStudent.set([]);
     this.computedMonth.set(1);
     this.form.reset({ studentId: '', title: 'Mesociclo 1', startDate: '' });
+    this.newPlanMode.set('manual');
+    this.selectedPdfFile.set(null);
+    this.importing.set(false);
     // reset() acima dispara valueChanges do campo startDate, que marcaria
     // startDateTouchedByUser como true — por isso essa flag só é zerada
     // DEPOIS do reset, não antes.
@@ -137,8 +145,24 @@ export class CoachShellComponent implements OnInit {
   }
 
   closeModal(): void {
+    // Enquanto uma importação de PDF está em andamento, o modal não pode ser
+    // fechado (backdrop/X/Cancelar) — isso deixaria `importing` travado em
+    // true e, ao reabrir, o coach poderia disparar uma segunda importação
+    // duplicada enquanto a primeira ainda está em voo no servidor. O modal
+    // volta a ser fechável assim que `importPlanFromPdf()` resolve (sucesso
+    // ou erro), que já zera `importing`.
+    if (this.importing()) return;
     this.showNewPlanModal.set(false);
     this.saving.set(false);
+  }
+
+  setNewPlanMode(mode: 'manual' | 'pdf'): void {
+    this.newPlanMode.set(mode);
+    // Evita que um arquivo PDF selecionado antes de trocar pra "Criar Vazio"
+    // e depois voltar pra "Importar PDF" fique associado ao formulário —
+    // o input de arquivo é recriado (mostrando "nenhum arquivo selecionado")
+    // mas o signal continuaria com a referência antiga se não fosse resetado aqui.
+    this.selectedPdfFile.set(null);
   }
 
   createPlan(): void {
@@ -190,6 +214,46 @@ export class CoachShellComponent implements OnInit {
             this.showToast('Erro ao criar plano. Tente novamente.');
           },
         });
+      },
+    });
+  }
+
+  onPdfFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    if (file && file.size > MAX_PDF_SIZE_BYTES) {
+      this.selectedPdfFile.set(null);
+      this.showToast('Arquivo muito grande — o limite é 20MB.', 5000);
+      return;
+    }
+    this.selectedPdfFile.set(file);
+  }
+
+  importPlanFromPdf(): void {
+    const studentId = this.form.get('studentId')!.value as string;
+    const startDate = this.form.get('startDate')!.value as string;
+    const file = this.selectedPdfFile();
+    if (!studentId || !startDate || !file) {
+      this.showToast('Selecione o aluno, a data de início e o arquivo PDF.');
+      return;
+    }
+
+    this.importing.set(true);
+    this.api.importPlanFromPdf(studentId, startDate, file).subscribe({
+      next: plan => {
+        this.importing.set(false);
+        this.closeModal();
+        this.showToast('Plano importado do PDF! Revise e publique quando estiver pronto.');
+        this.router.navigate(['/coach/plan-builder', studentId], {
+          queryParams: { planId: plan.id },
+        });
+      },
+      error: (err) => {
+        this.importing.set(false);
+        const message = err?.status === 422
+          ? 'Não consegui extrair um treino válido desse PDF — tente outro arquivo ou crie manualmente.'
+          : 'Erro ao importar o PDF. Tente novamente.';
+        this.showToast(message, 5000);
       },
     });
   }
