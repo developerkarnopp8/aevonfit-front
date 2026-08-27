@@ -3,3 +3,4 @@ export * from './student.model';
 export * from './training.model';
 export * from './library.model';
 export * from './movement.model';
+export * from './notification.model';

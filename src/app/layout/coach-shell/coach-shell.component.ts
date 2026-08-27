@@ -7,6 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import { Student, TrainingPlan } from '../../core/models';
 import { NotificationPermissionBannerComponent } from '../../shared/components/notification-permission-banner/notification-permission-banner.component';
+import { NotificationsBellComponent } from '../../shared/components/notifications-bell/notifications-bell.component';
 import { addUtcDays, toDateKey, utcDateFromIso } from '../../shared/utils/date-key';
 
 interface NavItem { label: string; route: string; icon: string; soon?: boolean; }
@@ -14,7 +15,7 @@ interface NavItem { label: string; route: string; icon: string; soon?: boolean; 
 @Component({
   selector: 'app-coach-shell',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterOutlet, RouterLink, NotificationPermissionBannerComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterOutlet, RouterLink, NotificationPermissionBannerComponent, NotificationsBellComponent],
   templateUrl: './coach-shell.component.html',
   styleUrl: './coach-shell.component.scss'
 })

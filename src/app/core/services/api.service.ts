@@ -4,7 +4,7 @@ import { Observable, map } from 'rxjs';
 import {
   Student, TrainingPlan, Session, Exercise, WorkoutLog,
   ExerciseLibraryItem, Payment, PaymentSummary, SkipReason, SkipDecision,
-  Movement, PersonalRecord,
+  Movement, PersonalRecord, AppNotification,
 } from '../models';
 import { environment } from '../../../environments/environment';
 
@@ -379,6 +379,24 @@ export class ApiService {
 
   getUnreadCount(): Observable<{ count: number }> {
     return this.http.get<{ count: number }>(`${this.base}/messages/unread`);
+  }
+
+  // ── Notifications ─────────────────────────────────────────────────────────
+
+  getNotifications(): Observable<AppNotification[]> {
+    return this.http.get<AppNotification[]>(`${this.base}/notifications`);
+  }
+
+  getNotificationsUnreadCount(): Observable<{ count: number }> {
+    return this.http.get<{ count: number }>(`${this.base}/notifications/unread-count`);
+  }
+
+  markNotificationRead(id: string): Observable<AppNotification> {
+    return this.http.patch<AppNotification>(`${this.base}/notifications/${id}/read`, {});
+  }
+
+  markAllNotificationsRead(): Observable<void> {
+    return this.http.patch<void>(`${this.base}/notifications/read-all`, {});
   }
 
   /** Atleta: histórico completo de treinos */

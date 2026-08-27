@@ -1,0 +1,41 @@
+<div class="relative inline-block">
+  <button type="button" (click)="togglePanel()"
+    class="relative text-on-surface-variant hover:text-primary-fixed transition-colors">
+    <span class="material-symbols-outlined text-[22px]">notifications</span>
+    @if (unreadCount() > 0) {
+      <span class="absolute -top-1 -right-1 min-w-[16px] h-4 bg-error text-on-error text-[9px] font-bold rounded-full flex items-center justify-center px-1">
+        {{ unreadCount() > 9 ? '9+' : unreadCount() }}
+      </span>
+    }
+  </button>
+
+  @if (showPanel()) {
+    <div class="fixed inset-0 z-[55]" (click)="showPanel.set(false)"></div>
+    <div class="absolute top-11 right-0 w-80 max-w-[90vw] bg-surface-container-low border border-outline-variant/20 rounded-md shadow-xl z-[60] animate-fade-in max-h-96 overflow-y-auto">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-outline-variant/10">
+        <p class="text-on-surface text-xs font-headline font-bold uppercase tracking-widest">Notificações</p>
+        <button type="button" (click)="markAllRead()" class="text-primary-fixed text-[10px] font-headline uppercase">Marcar todas como lidas</button>
+      </div>
+      @if (notifications().length === 0) {
+        <p class="text-outline text-xs px-4 py-6 text-center">Nenhuma notificação ainda.</p>
+      } @else {
+        @for (n of notifications(); track n.id) {
+          <button type="button" (click)="selectNotification(n)"
+            class="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-surface-container transition-colors border-b border-outline-variant/10 last:border-0"
+            [class.bg-surface-container]="!n.read">
+            <span class="material-symbols-outlined text-[18px] text-primary-fixed flex-shrink-0 mt-0.5">{{ iconFor(n.type) }}</span>
+            <div class="min-w-0 flex-1">
+              <p class="text-on-surface text-xs font-headline font-bold truncate">{{ n.title }}</p>
+              @if (n.body) {
+                <p class="text-on-surface-variant text-[11px] mt-0.5 line-clamp-2">{{ n.body }}</p>
+              }
+            </div>
+            @if (!n.read) {
+              <span class="w-2 h-2 rounded-full bg-primary-fixed flex-shrink-0 mt-1"></span>
+            }
+          </button>
+        }
+      }
+    </div>
+  }
+</div>

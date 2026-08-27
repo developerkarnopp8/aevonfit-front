@@ -6,11 +6,12 @@ import { takeUntil, filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { SocketService } from '../../core/services/socket.service';
 import { NotificationPermissionBannerComponent } from '../../shared/components/notification-permission-banner/notification-permission-banner.component';
+import { NotificationsBellComponent } from '../../shared/components/notifications-bell/notifications-bell.component';
 
 @Component({
   selector: 'app-athlete-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, NotificationPermissionBannerComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, NotificationPermissionBannerComponent, NotificationsBellComponent],
   templateUrl: './athlete-shell.component.html',
   styleUrl: './athlete-shell.component.scss'
 })
