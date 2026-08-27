@@ -1,0 +1,7 @@
+services:
+  frontend:
+    build: .
+    container_name: aevonfit-frontend
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:4121:80'
