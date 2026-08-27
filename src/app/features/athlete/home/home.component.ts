@@ -28,7 +28,10 @@ export class HomeComponent implements OnInit {
   });
 
   hydrationMl = signal(0);
-  hydration = computed(() => (this.hydrationMl() / 1000).toFixed(1));
+  /** 2 casas — com passos de +250ml, 1 casa arredonda de forma enganosa
+   * (ex.: 250ml exibia "0.3L" por causa do desempate do toFixed, dando
+   * a impressão de 300ml logados quando só 250ml foram registrados). */
+  hydration = computed(() => (this.hydrationMl() / 1000).toFixed(2));
   calories = signal(0);
 
   addingCalories = signal(false);
