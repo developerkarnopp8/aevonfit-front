@@ -3,11 +3,13 @@ import { Subject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from '../../../environments/environment';
 import { ChatMessage } from './api.service';
+import { AppNotification } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class SocketService implements OnDestroy {
   private socket: Socket | null = null;
   readonly newMessage$ = new Subject<ChatMessage>();
+  readonly newNotification$ = new Subject<AppNotification>();
 
   connect(token: string): void {
     if (this.socket?.connected) return;
@@ -21,6 +23,10 @@ export class SocketService implements OnDestroy {
     this.socket.on('new_message', (msg: ChatMessage) => {
       this.newMessage$.next(msg);
       this.showBrowserNotification(msg);
+    });
+
+    this.socket.on('new_notification', (notification: AppNotification) => {
+      this.newNotification$.next(notification);
     });
   }
 
