@@ -222,6 +222,15 @@ export class ApiService {
       .pipe(map(p => this.mapPlan(p)));
   }
 
+  /** Cria plano de treino a partir de um PDF, via extração por IA (rascunho, não publicado) */
+  importPlanFromPdf(studentId: string, startDate: string, file: File): Observable<{ id: string }> {
+    const formData = new FormData();
+    formData.append('studentId', studentId);
+    formData.append('startDate', startDate);
+    formData.append('file', file);
+    return this.http.post<{ id: string }>(`${this.base}/training-plans/import-pdf`, formData);
+  }
+
   /** Retorna o primeiro plano do aluno (mais usado no front) */
   getFirstPlanByStudent(studentId: string): Observable<TrainingPlan | null> {
     return this.getPlansByStudent(studentId).pipe(
