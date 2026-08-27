@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
@@ -23,6 +23,8 @@ export class WeeklyViewComponent implements OnInit {
   workoutDates = signal<Set<string>>(new Set());
   showCalendarModal = signal(false);
 
+  @ViewChild('dayScroller') dayScroller?: ElementRef<HTMLElement>;
+
   constructor(private api: ApiService, private auth: AuthService) {}
 
   ngOnInit(): void {
@@ -40,7 +42,11 @@ export class WeeklyViewComponent implements OnInit {
 
             const week = plan.weeks.at(weekIndex >= 0 ? weekIndex : 0);
             const today = week?.days.find(d => d.dayIndex === new Date().getDay());
-            this.selectedDay.set(today ?? week?.days[0] ?? null);
+            const initialDay = today ?? week?.days[0] ?? null;
+            this.selectedDay.set(initialDay);
+            if (initialDay) {
+              setTimeout(() => this.scrollDayIntoView(initialDay.id));
+            }
           },
         });
         this.api.getWorkoutHistory(500).subscribe(logs => {
@@ -53,7 +59,19 @@ export class WeeklyViewComponent implements OnInit {
     });
   }
 
-  selectDay(day: TrainingDay): void { this.selectedDay.set(day); }
+  selectDay(day: TrainingDay, event?: Event): void {
+    this.selectedDay.set(day);
+    const target = event?.currentTarget as HTMLElement | undefined;
+    try { target?.scrollIntoView({ inline: 'nearest', block: 'nearest' }); } catch {}
+  }
+
+  private scrollDayIntoView(dayId: string): void {
+    try {
+      this.dayScroller?.nativeElement
+        .querySelector(`[data-day-id="${dayId}"]`)
+        ?.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+    } catch {}
+  }
 
   exportCurrentWeekPdf(): void {
     const p = this.plan();
@@ -78,7 +96,11 @@ export class WeeklyViewComponent implements OnInit {
     const idx = target.weeks.findIndex(w => w.weekNumber === sel.weekNumber);
     this.selectedWeek.set(idx >= 0 ? idx : 0);
     const week = target.weeks.at(idx >= 0 ? idx : 0);
-    this.selectedDay.set(week?.days[0] ?? null);
+    const day = week?.days[0] ?? null;
+    this.selectedDay.set(day);
+    if (day) {
+      setTimeout(() => this.scrollDayIntoView(day.id));
+    }
   }
 
   getCompletionForDay(day: TrainingDay): number {
