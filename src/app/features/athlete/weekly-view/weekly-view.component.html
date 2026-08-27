@@ -45,10 +45,11 @@
   </div>
 
   <!-- Day Cards — horizontal scroll -->
-  <div class="flex gap-3 overflow-x-auto pb-3 mb-5 no-scrollbar">
+  <div #dayScroller class="flex gap-3 overflow-x-auto pb-3 mb-5 no-scrollbar">
     @for (day of plan()?.weeks?.at(selectedWeek())?.days ?? []; track day.id) {
       <button type="button"
-        (click)="selectDay(day)"
+        [attr.data-day-id]="day.id"
+        (click)="selectDay(day, $event)"
         class="flex-shrink-0 flex flex-col items-center px-4 py-3 rounded-md border transition-all min-w-[72px]"
         [class.border-primary-fixed]="selectedDay()?.id === day.id"
         [class.bg-surface-container]="selectedDay()?.id === day.id"
