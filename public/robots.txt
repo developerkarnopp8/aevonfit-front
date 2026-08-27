@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /coach/
+Disallow: /athlete/
+
+Sitemap: https://aevonfit.aevon.online/sitemap.xml
