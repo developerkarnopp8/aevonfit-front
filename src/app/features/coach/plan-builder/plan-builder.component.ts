@@ -55,6 +55,10 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
   prHistory = signal<PersonalRecord[]>([]);
   showPRSection = signal(false);
   selectedPRMovementId = signal<string | null>(null);
+  showMovementForm = signal(false);
+  savingMovement = signal(false);
+  movementForm!: FormGroup;
+  readonly MOVEMENT_CATEGORIES = ['LPO', 'Força', 'Ginástica', 'Metcon', 'Resistência', 'Mobilidade', 'Core', 'Outro'];
 
   prByMovement = computed(() => {
     const grouped = new Map<string, PersonalRecord[]>();
@@ -91,6 +95,33 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
 
   formatPRDate(iso: string): string {
     return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  }
+
+  openMovementForm(): void {
+    this.movementForm.reset({ name: '', category: this.MOVEMENT_CATEGORIES[0] });
+    this.showMovementForm.set(true);
+    this.showPRSection.set(true);
+  }
+
+  closeMovementForm(): void {
+    this.showMovementForm.set(false);
+  }
+
+  submitMovement(): void {
+    if (this.movementForm.invalid) { this.movementForm.markAllAsTouched(); return; }
+    const { name, category } = this.movementForm.value as { name: string; category: string };
+    this.savingMovement.set(true);
+    this.api.createMovement(name, category).subscribe({
+      next: () => {
+        this.savingMovement.set(false);
+        this.showMovementForm.set(false);
+        this.showToast(`Movimento "${name}" cadastrado — já disponível pro aluno registrar PR.`);
+      },
+      error: () => {
+        this.savingMovement.set(false);
+        this.showToast('Erro ao cadastrar movimento. Tente novamente.');
+      },
+    });
   }
 
   groupedLibraryItems = computed(() => {
@@ -160,6 +191,11 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
     this.sessionForm = this.fb.group({
       name: ['', Validators.required],
       type: ['Strength', Validators.required],
+    });
+
+    this.movementForm = this.fb.group({
+      name: ['', [Validators.required, Validators.maxLength(80)]],
+      category: [this.MOVEMENT_CATEGORIES[0], Validators.required],
     });
   }
 
