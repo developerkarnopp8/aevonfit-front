@@ -22,7 +22,7 @@ const MAX_PDF_SIZE_BYTES = 20 * 1024 * 1024; // 20MB — mesmo limite do backend
   styleUrl: './coach-shell.component.scss'
 })
 export class CoachShellComponent implements OnInit {
-  sidebarOpen = signal(false);
+  mobileMenuOpen = signal(false);
   showNewPlanModal = signal(false);
   students = signal<Student[]>([]);
   saving = signal(false);
@@ -115,6 +115,7 @@ export class CoachShellComponent implements OnInit {
     this.currentUrl.set(this.router.url);
     this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(e => {
       this.currentUrl.set((e as NavigationEnd).urlAfterRedirects);
+      this.mobileMenuOpen.set(false);
     });
     const coach = this.auth.currentUser();
     if (!coach) return;
@@ -266,6 +267,9 @@ export class CoachShellComponent implements OnInit {
     this.toast.set(msg);
     setTimeout(() => this.toast.set(''), durationMs);
   }
+
+  toggleMobileMenu(): void { this.mobileMenuOpen.update(v => !v); }
+  closeMobileMenu(): void { this.mobileMenuOpen.set(false); }
 
   logout(): void { this.auth.logout(); }
 }
