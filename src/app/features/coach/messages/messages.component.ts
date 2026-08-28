@@ -31,6 +31,7 @@ export class CoachMessagesComponent implements OnInit, OnDestroy, AfterViewCheck
   selectedName  = signal('');
   loading       = signal(true);
   sending       = signal(false);
+  mobileView    = signal<'list' | 'chat'>('list');
   newMsg        = '';
 
   myId = computed(() => this.auth.currentUser()?.id ?? '');
@@ -84,6 +85,7 @@ export class CoachMessagesComponent implements OnInit, OnDestroy, AfterViewCheck
         if (convMap.size > 0) {
           const first = Array.from(convMap.values())[0];
           this.openConversation(first.athleteId, first.athleteName);
+          this.mobileView.set('list'); // auto-abertura não força o chat no mobile — só o clique explícito
         }
       },
       error: () => this.loading.set(false),
@@ -106,7 +108,10 @@ export class CoachMessagesComponent implements OnInit, OnDestroy, AfterViewCheck
     this.api.getConversation(athleteId).subscribe({
       next: msgs => this.messages.set(msgs),
     });
+    this.mobileView.set('chat');
   }
+
+  backToList(): void { this.mobileView.set('list'); }
 
   send(): void {
     const content = this.newMsg.trim();
