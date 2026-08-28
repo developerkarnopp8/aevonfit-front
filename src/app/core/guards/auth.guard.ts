@@ -22,3 +22,10 @@ export const athleteGuard: CanActivateFn = () => {
   if (auth.isAthlete()) return true;
   return router.createUrlTree([auth.isAuthenticated() ? '/coach/dashboard' : '/login']);
 };
+
+export const adminGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  if (auth.isAdmin()) return true;
+  return router.createUrlTree([auth.isAuthenticated() ? '/login' : '/login']);
+};

@@ -72,6 +72,10 @@ export class AuthService {
     return this.currentUser()?.role === 'athlete';
   }
 
+  isAdmin(): boolean {
+    return this.currentUser()?.role === 'admin';
+  }
+
   private loadUser(): User | null {
     try {
       const raw = localStorage.getItem(USER_KEY);
