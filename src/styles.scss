@@ -115,6 +115,16 @@ html, body {
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* ─── iOS Safari: evita o zoom automático da página ao focar um campo ─
+   Safari no iOS aumenta o zoom sempre que o font-size computado de um
+   input/select/textarea fica abaixo de 16px — nossa base tipográfica
+   compacta (html/body a 14px + classes text-sm/text-xs do Tailwind)
+   fica abaixo desse limiar em quase todo campo do app. !important é
+   necessário aqui: os próprios campos aplicam classes do Tailwind
+   (text-sm etc.) com a mesma especificidade de seletor de classe, que
+   venceria um seletor de elemento simples. */
+input, select, textarea { font-size: 16px !important; }
+
 /* ─── Focus ─────────────────────────────────────────────────────── */
 /* box-shadow em vez de outline: acompanha o border-radius de cada elemento
    com precisão (outline pode "cortar" os cantos arredondados). */
