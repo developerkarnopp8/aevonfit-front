@@ -41,6 +41,14 @@
           [class.text-outline]="selectedRole() !== 'athlete'">
           Atleta
         </button>
+        <button type="button"
+          (click)="setRole('admin')"
+          class="flex-1 py-2 rounded-sm text-[11px] font-headline font-bold uppercase tracking-wider transition-all duration-200"
+          [class.bg-primary-fixed]="selectedRole() === 'admin'"
+          [class.text-on-primary-fixed]="selectedRole() === 'admin'"
+          [class.text-outline]="selectedRole() !== 'admin'">
+          Admin
+        </button>
       </div>
 
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate>

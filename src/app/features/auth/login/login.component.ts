@@ -46,9 +46,9 @@ export class LoginComponent {
     this.auth.login(email, password, this.selectedRole()).subscribe({
       next: () => {
         this.loading.set(false);
-        this.router.navigate([
-          this.selectedRole() === 'coach' ? '/coach/dashboard' : '/athlete/home',
-        ]);
+        const role = this.selectedRole();
+        const destination = role === 'coach' ? '/coach/dashboard' : role === 'admin' ? '/admin/coaches' : '/athlete/home';
+        this.router.navigate([destination]);
       },
       error: (err: Error) => {
         this.loading.set(false);
