@@ -2,7 +2,7 @@ import { Component, OnInit, OnChanges, signal, computed, Input } from '@angular/
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
-import { TrainingPlan, Exercise, Session, SessionType, ExerciseLibraryItem, TrainingDay, PersonalRecord, SessionTimeSummary } from '../../../core/models';
+import { TrainingPlan, Exercise, Session, SessionType, ExerciseLibraryItem, TrainingDay, PersonalRecord, SessionTimeSummary, SessionTimeDetail } from '../../../core/models';
 import { PlanCalendarModalComponent } from '../../../shared/components/plan-calendar-modal/plan-calendar-modal.component';
 import { exportWeekToPdf, exportMonthToPdf } from '../../../shared/utils/plan-pdf-export';
 import { formatDurationShort } from '../../../shared/utils/format-duration';
@@ -93,6 +93,15 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
   timeSummary = signal<SessionTimeSummary | null>(null);
   showTimeSection = signal(false);
   fmtDuration = formatDurationShort;
+
+  // Detalhe de tempo por sessão — carregado sob demanda ao expandir a sessão, cacheado por id
+  sessionTimeDetails = signal<Record<string, SessionTimeDetail>>({});
+
+  loadSessionTime(sessionId: string): void {
+    if (this.sessionTimeDetails()[sessionId]) return;
+    this.api.getStudentSessionDetail(this.studentId, sessionId).subscribe(d =>
+      this.sessionTimeDetails.update(m => ({ ...m, [sessionId]: d })));
+  }
 
   maxPerExerciseSeconds = computed(() => {
     const s = this.timeSummary();
@@ -315,11 +324,13 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
   // ── Sessions ────────────────────────────────────────────────────────────
 
   toggleSession(sessionId: string): void {
+    const willExpand = !this.expandedSessions().has(sessionId);
     this.expandedSessions.update(set => {
       const next = new Set(set);
       next.has(sessionId) ? next.delete(sessionId) : next.add(sessionId);
       return next;
     });
+    if (willExpand) this.loadSessionTime(sessionId);
   }
 
   isExpanded(id: string): boolean { return this.expandedSessions().has(id); }

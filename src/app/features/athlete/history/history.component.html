@@ -4,7 +4,7 @@
   <p class="text-text-secondary text-sm mb-5 capitalize">{{ getMonthName() }}</p>
 
   <!-- Stats -->
-  <div class="grid grid-cols-2 gap-3 mb-5">
+  <div class="grid grid-cols-3 gap-3 mb-5">
     <div class="bg-surface rounded-xl p-4 text-center">
       <p class="text-primary text-3xl mb-1">🔥 {{ streak() }}</p>
       <p class="text-white font-bold text-sm">dias de streak</p>
@@ -12,6 +12,10 @@
     <div class="bg-surface rounded-xl p-4 text-center">
       <p class="font-display font-black text-3xl text-white">{{ monthCompletion() }}%</p>
       <p class="text-text-secondary text-sm mt-0.5">conclusão mensal</p>
+    </div>
+    <div class="bg-surface rounded-xl p-4 text-center">
+      <p class="font-display font-black text-3xl text-white">{{ fmtDuration(avgSessionSeconds()) }}</p>
+      <p class="text-text-secondary text-sm mt-0.5">tempo médio</p>
     </div>
   </div>
 

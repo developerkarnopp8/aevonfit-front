@@ -1,6 +1,8 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService, WorkoutLogEntry } from '../../../core/services/api.service';
+import { WorkoutSessionRecord } from '../../../core/models';
+import { formatDurationShort } from '../../../shared/utils/format-duration';
 
 interface CalendarDay { date: number; completed: boolean; hasWorkout: boolean; }
 
@@ -14,12 +16,21 @@ interface CalendarDay { date: number; completed: boolean; hasWorkout: boolean; }
 export class HistoryComponent implements OnInit {
   loading = signal(true);
   logs    = signal<WorkoutLogEntry[]>([]);
+  sessions = signal<WorkoutSessionRecord[]>([]);
 
   weekDays = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+  fmtDuration = formatDurationShort;
 
   streak = computed(() => this.calcStreak(this.logs()));
   monthCompletion = computed(() => this.calcMonthCompletion(this.logs()));
   calendar = computed(() => this.buildCalendar(this.logs()));
+
+  avgSessionSeconds = computed(() => {
+    const list = this.sessions();
+    if (!list.length) return 0;
+    return Math.round(list.reduce((a, s) => a + s.elapsedSeconds, 0) / list.length);
+  });
 
   constructor(private api: ApiService) {}
 
@@ -28,6 +39,7 @@ export class HistoryComponent implements OnInit {
       next: logs => { this.logs.set(logs); this.loading.set(false); },
       error: ()  => this.loading.set(false),
     });
+    this.api.getMyWorkoutSessions().subscribe(s => this.sessions.set(s));
   }
 
   getMonthName(): string {

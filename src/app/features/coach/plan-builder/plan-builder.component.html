@@ -376,10 +376,30 @@
                 <!-- Exercises expandable -->
                 @if (isExpanded(session.id)) {
                   <div class="border-t border-outline-variant/10 px-4 py-2 animate-fade-in">
+                    @if (sessionTimeDetails()[session.id]; as td) {
+                      @if (td.lastExecution; as lastEx) {
+                        <div class="bg-surface-container rounded-sm px-4 py-3 my-3 flex items-center justify-between gap-3">
+                          <div class="min-w-0">
+                            <p class="text-outline text-[9px] font-headline uppercase tracking-widest">Última execução</p>
+                            <p class="text-on-surface text-xs font-headline truncate">{{ lastEx.startedAt | date:'dd/MM HH:mm' }} · {{ lastEx.status === 'Partial' ? 'Parcial' : 'Completa' }}</p>
+                          </div>
+                          <p class="font-headline font-black text-lg text-primary-fixed flex-shrink-0">{{ fmtDuration(lastEx.elapsedSeconds) }}</p>
+                        </div>
+                      }
+                    }
                     @for (ex of session.exercises; track ex.id) {
                       <div class="flex items-start justify-between py-3 border-b border-outline-variant/10 last:border-0">
                         <div class="flex-1 min-w-0 pr-3">
-                          <p class="text-on-surface text-sm font-headline font-bold truncate">{{ ex.name }}</p>
+                          <p class="text-on-surface text-sm font-headline font-bold truncate">
+                            {{ ex.name }}
+                            @if (sessionTimeDetails()[session.id]?.exercises; as exList) {
+                              @for (te of exList; track te.id) {
+                                @if (te.id === ex.id && te.durationSeconds != null) {
+                                  <span class="text-outline text-[10px] font-headline ml-2">{{ fmtDuration(te.durationSeconds) }}</span>
+                                }
+                              }
+                            }
+                          </p>
                           <p class="text-on-surface-variant text-xs mt-0.5">{{ formatReps(ex) }}
                             @if (ex.loadPercent) {
                               <span class="text-primary-fixed font-bold"> @ {{ ex.loadPercent }}%</span>
