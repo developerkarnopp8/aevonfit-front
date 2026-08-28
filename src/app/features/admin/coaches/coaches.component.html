@@ -1,0 +1,134 @@
+<div class="px-8 py-6 animate-fade-in">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <p class="text-outline text-[10px] font-headline uppercase tracking-widest mb-1">Admin</p>
+      <h2 class="font-headline font-black text-3xl text-on-surface tracking-tighter leading-none">Coaches</h2>
+    </div>
+    <button type="button" (click)="openModal()"
+      class="bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black text-xs uppercase tracking-tighter px-5 py-3 rounded-sm flex items-center gap-2 transition-all">
+      <span class="material-symbols-outlined text-[18px]">add</span>
+      Novo Coach
+    </button>
+  </div>
+
+  <!-- Senha revelada (única vez) -->
+  @if (revealedPassword(); as revealed) {
+    <div class="bg-primary-fixed/10 border border-primary-fixed/30 rounded-md p-5 mb-6 flex items-start justify-between gap-4">
+      <div>
+        <p class="text-primary-fixed text-xs font-headline font-bold uppercase tracking-widest mb-2">Anote agora — não aparece de novo</p>
+        <p class="text-on-surface text-sm">{{ revealed.email }}</p>
+        <p class="text-on-surface font-headline font-black text-lg tracking-wider">{{ revealed.password }}</p>
+      </div>
+      <button type="button" (click)="dismissRevealedPassword()"
+        class="text-outline hover:text-on-surface transition-colors">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+  }
+
+  @if (listErrorMsg()) {
+    <div class="bg-error/10 border border-error/30 rounded-sm px-4 py-3 text-error text-sm mb-4">
+      {{ listErrorMsg() }}
+    </div>
+  }
+
+  <!-- Lista -->
+  <div class="bg-surface-container-low rounded-md overflow-hidden">
+    @if (coaches().length === 0) {
+      <p class="text-outline text-sm px-5 py-8 text-center">Nenhum coach cadastrado ainda.</p>
+    } @else {
+      @for (coach of coaches(); track coach.id) {
+        <div class="flex items-center gap-4 px-5 py-4 border-b border-outline-variant/10 last:border-0">
+          <div class="w-9 h-9 rounded-full bg-primary-fixed/20 flex items-center justify-center text-xs font-headline font-black text-primary-fixed flex-shrink-0">
+            {{ getInitials(coach.name) }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-on-surface font-headline font-bold text-sm truncate">{{ coach.name }}</p>
+            <p class="text-outline text-xs truncate">{{ coach.email }}</p>
+          </div>
+
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <span class="hidden md:inline text-outline text-[10px] font-headline uppercase tracking-widest">Importação de PDF</span>
+            <button type="button"
+              [disabled]="togglingId() === coach.id"
+              (click)="toggleAi(coach)"
+              title="Importação de PDF via IA"
+              class="w-11 h-6 rounded-full relative transition-colors disabled:opacity-50"
+              [class.bg-primary-fixed]="coach.aiImportEnabled"
+              [class.bg-surface-container]="!coach.aiImportEnabled">
+              <span class="absolute top-0.5 w-5 h-5 rounded-full bg-on-primary-fixed transition-all"
+                [class.left-[22px]]="coach.aiImportEnabled"
+                [class.left-0.5]="!coach.aiImportEnabled"></span>
+            </button>
+          </div>
+
+          <button type="button"
+            [disabled]="resettingId() === coach.id"
+            (click)="resetPassword(coach)"
+            class="text-[11px] font-headline font-bold uppercase tracking-wider text-outline hover:text-on-surface disabled:opacity-50 transition-colors px-3 py-1.5 flex-shrink-0">
+            Resetar senha
+          </button>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Modal: Novo Coach -->
+  @if (showModal()) {
+    <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 animate-fade-in"
+         (click)="closeModal()">
+      <div class="bg-surface-container-low rounded-md w-full max-w-md p-6 animate-slide-up mx-4"
+           (click)="$event.stopPropagation()">
+
+        <div class="flex items-center justify-between mb-5">
+          <h3 class="font-headline font-black text-xl text-on-surface tracking-tighter">Novo Coach</h3>
+          <button type="button" (click)="closeModal()"
+            class="w-8 h-8 rounded-sm bg-surface-container flex items-center justify-center text-outline hover:text-on-surface transition-colors">
+            <span class="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="createCoach()" novalidate>
+          <div class="mb-4">
+            <label class="block text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-1.5">Nome *</label>
+            <input formControlName="name" type="text"
+              class="w-full bg-surface-container text-on-surface rounded-sm px-4 py-3 text-sm"/>
+            @if (form.get('name')?.invalid && form.get('name')?.touched) {
+              <p class="text-error text-xs mt-1">Nome obrigatório.</p>
+            }
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-1.5">E-mail *</label>
+            <input formControlName="email" type="email"
+              class="w-full bg-surface-container text-on-surface rounded-sm px-4 py-3 text-sm"/>
+            @if (form.get('email')?.invalid && form.get('email')?.touched) {
+              <p class="text-error text-xs mt-1">E-mail válido obrigatório.</p>
+            }
+          </div>
+
+          @if (errorMsg()) {
+            <div class="bg-error/10 border border-error/30 rounded-sm px-4 py-2 text-error text-xs mb-4">
+              {{ errorMsg() }}
+            </div>
+          }
+
+          <div class="flex gap-3">
+            <button type="button" (click)="closeModal()"
+              class="flex-1 py-3 rounded-sm border border-outline-variant/30 text-on-surface-variant hover:text-on-surface font-headline text-xs uppercase tracking-wider transition-all">
+              Cancelar
+            </button>
+            <button type="submit" [disabled]="saving()"
+              class="flex-1 py-3 rounded-sm bg-primary-fixed hover:bg-primary-dim disabled:opacity-60 text-on-primary-fixed font-headline font-black text-xs uppercase tracking-tighter transition-all">
+              {{ saving() ? 'Criando...' : 'Criar Coach' }}
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  }
+
+</div>

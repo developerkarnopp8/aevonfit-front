@@ -526,4 +526,28 @@ export class ApiService {
     if (latest?.decision === 'Abandoned') return 'abandoned';
     return 'none';
   }
+
+  // ── Admin ────────────────────────────────────────────────────────────────
+
+  getCoaches(): Observable<{ id: string; name: string; email: string; aiImportEnabled: boolean; createdAt: string }[]> {
+    return this.http.get<{ id: string; name: string; email: string; aiImportEnabled: boolean; createdAt: string }[]>(
+      `${this.base}/admin/coaches`,
+    );
+  }
+
+  createCoach(name: string, email: string): Observable<{ id: string; name: string; email: string; password: string }> {
+    return this.http.post<{ id: string; name: string; email: string; password: string }>(
+      `${this.base}/admin/coaches`, { name, email },
+    );
+  }
+
+  resetCoachPassword(id: string): Observable<{ password: string }> {
+    return this.http.post<{ password: string }>(`${this.base}/admin/coaches/${id}/reset-password`, {});
+  }
+
+  toggleCoachAi(id: string, aiImportEnabled: boolean): Observable<{ id: string; aiImportEnabled: boolean }> {
+    return this.http.patch<{ id: string; aiImportEnabled: boolean }>(
+      `${this.base}/admin/coaches/${id}`, { aiImportEnabled },
+    );
+  }
 }

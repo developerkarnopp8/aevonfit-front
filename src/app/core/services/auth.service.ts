@@ -38,10 +38,9 @@ export class AuthService {
         }),
         map(res => {
           if (res.user.role !== expectedRole) {
+            const labels: Record<string, string> = { coach: 'Coach', athlete: 'Atleta', admin: 'Admin' };
             throw new Error(
-              expectedRole === 'coach'
-                ? 'Este e-mail pertence a um atleta. Use o acesso Atleta.'
-                : 'Este e-mail pertence a um coach. Use o acesso Coach.',
+              `Este e-mail pertence a um perfil diferente. Use o acesso ${labels[res.user.role] ?? res.user.role}.`,
             );
           }
         }),
@@ -70,6 +69,10 @@ export class AuthService {
 
   isAthlete(): boolean {
     return this.currentUser()?.role === 'athlete';
+  }
+
+  isAdmin(): boolean {
+    return this.currentUser()?.role === 'admin';
   }
 
   private loadUser(): User | null {

@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, coachGuard, athleteGuard } from './core/guards/auth.guard';
+import { authGuard, coachGuard, athleteGuard, adminGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -98,6 +98,21 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/athlete/messages/messages.component').then(m => m.AthleteMessagesComponent)
       }
+    ]
+  },
+
+  {
+    path: 'admin',
+    loadComponent: () =>
+      import('./layout/admin-shell/admin-shell.component').then(m => m.AdminShellComponent),
+    canActivate: [authGuard, adminGuard],
+    children: [
+      { path: '', redirectTo: 'coaches', pathMatch: 'full' },
+      {
+        path: 'coaches',
+        loadComponent: () =>
+          import('./features/admin/coaches/coaches.component').then(m => m.CoachesComponent)
+      },
     ]
   },
 
