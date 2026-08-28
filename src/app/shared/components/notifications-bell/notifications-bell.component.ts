@@ -12,6 +12,7 @@ const TYPE_ICON: Record<NotificationType, string> = {
   new_message: 'chat',
   workout_skipped: 'skip_next',
   new_pr: 'military_tech',
+  ai_credit_exhausted: 'credit_card_off',
 };
 
 @Component({
