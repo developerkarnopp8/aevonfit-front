@@ -70,3 +70,39 @@ export interface ExerciseLog {
   completedSets: number;
   notes?: string;
 }
+
+export type WorkoutSessionStatus = 'Completed' | 'Partial';
+
+export interface WorkoutSessionRecord {
+  id: string;
+  sessionId: string;
+  sessionName: string;
+  sessionType: string;
+  startedAt: string;
+  elapsedSeconds: number;
+  activeSeconds: number;
+  status: WorkoutSessionStatus;
+}
+
+export interface SessionTimeSummary {
+  count: number;
+  avgElapsedSeconds: number;
+  trend: { direction: 'faster' | 'slower' | 'equal' | 'new'; deltaSeconds: number };
+  perExercise: { exerciseName: string; avgSeconds: number; samples: number }[];
+}
+
+export interface SessionTimeDetail {
+  sessionId: string;
+  sessionName: string;
+  exercises: { id: string; name: string; durationSeconds: number | null; completed: boolean }[];
+  lastExecution:
+    | { startedAt: string; finishedAt: string; elapsedSeconds: number; activeSeconds: number; status: string }
+    | null;
+  executionCount: number;
+}
+
+export interface CoachAvgDuration {
+  overallAvgSeconds: number;
+  totalSessions: number;
+  byStudent: { studentId: string; avgSeconds: number; count: number }[];
+}
