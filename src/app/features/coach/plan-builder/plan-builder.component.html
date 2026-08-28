@@ -199,7 +199,7 @@
               <div class="flex items-end gap-6 mb-4">
                 <div>
                   <p class="font-headline font-black text-3xl text-primary-fixed tracking-tighter leading-none">{{ fmtDuration(ts.avgElapsedSeconds) }}</p>
-                  <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">Média · {{ ts.count }} treinos</p>
+                  <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">Média · últimos {{ ts.count }} treinos</p>
                 </div>
                 <div class="text-xs font-headline"
                   [class.text-primary-fixed]="ts.trend.direction === 'faster'"
