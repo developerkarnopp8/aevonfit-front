@@ -252,6 +252,10 @@ export class CoachShellComponent implements OnInit {
         this.importing.set(false);
         const message = err?.status === 422
           ? 'Não consegui extrair um treino válido desse PDF — tente outro arquivo ou crie manualmente.'
+          : err?.status === 403
+          ? 'Recurso desativado pra sua conta — entre em contato com o suporte.'
+          : err?.status === 503
+          ? 'Erro no sistema de importação — nossa equipe já foi avisada. Tente novamente mais tarde ou entre em contato com o suporte.'
           : 'Erro ao importar o PDF. Tente novamente.';
         this.showToast(message, 5000);
       },

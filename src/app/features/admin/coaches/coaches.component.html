@@ -28,6 +28,12 @@
     </div>
   }
 
+  @if (listErrorMsg()) {
+    <div class="bg-error/10 border border-error/30 rounded-sm px-4 py-3 text-error text-sm mb-4">
+      {{ listErrorMsg() }}
+    </div>
+  }
+
   <!-- Lista -->
   <div class="bg-surface-container-low rounded-md overflow-hidden">
     @if (coaches().length === 0) {
@@ -44,10 +50,11 @@
           </div>
 
           <div class="flex items-center gap-2 flex-shrink-0">
-            <span class="text-outline text-[10px] font-headline uppercase tracking-widest">Importação de PDF</span>
+            <span class="hidden md:inline text-outline text-[10px] font-headline uppercase tracking-widest">Importação de PDF</span>
             <button type="button"
               [disabled]="togglingId() === coach.id"
               (click)="toggleAi(coach)"
+              title="Importação de PDF via IA"
               class="w-11 h-6 rounded-full relative transition-colors disabled:opacity-50"
               [class.bg-primary-fixed]="coach.aiImportEnabled"
               [class.bg-surface-container]="!coach.aiImportEnabled">

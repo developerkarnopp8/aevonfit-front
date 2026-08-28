@@ -23,6 +23,7 @@ export class CoachesComponent implements OnInit {
   showModal    = signal(false);
   saving       = signal(false);
   errorMsg     = signal('');
+  listErrorMsg = signal('');
   togglingId   = signal<string | null>(null);
   resettingId  = signal<string | null>(null);
   revealedPassword = signal<{ email: string; password: string } | null>(null);
@@ -44,7 +45,14 @@ export class CoachesComponent implements OnInit {
   }
 
   private load(): void {
-    this.api.getCoaches().subscribe(list => this.coaches.set(list));
+    this.listErrorMsg.set('');
+    this.api.getCoaches().subscribe({
+      next: list => this.coaches.set(list),
+      error: err => {
+        const msg = err?.error?.message;
+        this.listErrorMsg.set(Array.isArray(msg) ? msg[0] : (msg ?? 'Erro ao carregar a lista de coaches.'));
+      },
+    });
   }
 
   openModal(): void {
@@ -69,6 +77,7 @@ export class CoachesComponent implements OnInit {
       next: coach => {
         this.closeModal();
         this.revealedPassword.set({ email: coach.email, password: coach.password });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         this.load();
       },
       error: err => {
@@ -86,8 +95,13 @@ export class CoachesComponent implements OnInit {
       next: res => {
         this.resettingId.set(null);
         this.revealedPassword.set({ email: coach.email, password: res.password });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       },
-      error: () => this.resettingId.set(null),
+      error: err => {
+        this.resettingId.set(null);
+        const msg = err?.error?.message;
+        this.listErrorMsg.set(Array.isArray(msg) ? msg[0] : (msg ?? 'Erro ao resetar a senha. Tente novamente.'));
+      },
     });
   }
 
@@ -99,7 +113,11 @@ export class CoachesComponent implements OnInit {
         this.togglingId.set(null);
         this.coaches.update(list => list.map(c => c.id === coach.id ? { ...c, aiImportEnabled: next } : c));
       },
-      error: () => this.togglingId.set(null),
+      error: err => {
+        this.togglingId.set(null);
+        const msg = err?.error?.message;
+        this.listErrorMsg.set(Array.isArray(msg) ? msg[0] : (msg ?? 'Erro ao atualizar a permissão de IA. Tente novamente.'));
+      },
     });
   }
 
