@@ -65,6 +65,8 @@ describe('ActiveWorkoutComponent', () => {
   });
 
   it('restaura currentIndex e marca exercícios concluídos a partir de um rascunho no localStorage', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-28T09:10:00.000Z'));
     const draft: WorkoutDraft = {
       sessionId: SESSION_ID,
       startedAt: '2026-08-28T09:00:00.000Z',
@@ -114,6 +116,35 @@ describe('ActiveWorkoutComponent', () => {
     expect(comp.saving()).toBe(false);
     expect(loadDraft(SESSION_ID)).toBeNull();
     expect(router.navigate).toHaveBeenCalledWith(['/athlete/history']);
+
+    comp.ngOnDestroy();
+  });
+
+  it('goToSummary congela o finishedAt: o checkout envia o instante do resumo, não o do tap', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-28T10:00:00.000Z'));
+
+    const session = makeSession();
+    const { api, router, route } = makeDeps(session);
+    const comp = new ActiveWorkoutComponent(route as any, router as any, api as any);
+    comp.ngOnInit();
+
+    comp.startExercise();
+    // atleta chega ao resumo às 10:45
+    vi.setSystemTime(new Date('2026-08-28T10:45:00.000Z'));
+    comp.goToSummary();
+    const frozen = comp.finishedAtIso();
+    expect(frozen).toBe('2026-08-28T10:45:00.000Z');
+    expect(comp.phase()).toBe('done');
+    const elapsedAtSummary = comp.summaryElapsedSecs();
+
+    // celular largado: só toca "Finalizar treino" 1h depois
+    vi.setSystemTime(new Date('2026-08-28T11:45:00.000Z'));
+    expect(comp.summaryElapsedSecs()).toBe(elapsedAtSummary); // não cresce na tela
+    comp.finishWorkout();
+
+    expect(api.checkoutWorkoutSession).toHaveBeenCalledTimes(1);
+    expect(api.checkoutWorkoutSession.mock.calls[0][2]).toBe(frozen);
 
     comp.ngOnDestroy();
   });

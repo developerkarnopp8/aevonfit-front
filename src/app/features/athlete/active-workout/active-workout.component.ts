@@ -27,6 +27,13 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
   /** ISO do primeiro "Iniciar exercício" do treino (relógio de parede da sessão) */
   sessionStartedAt = signal<string | null>(null);
 
+  /**
+   * ISO do momento em que o atleta entrou na tela de resumo (fase 'done').
+   * Capturado uma única vez para que o número exibido no resumo e o `finishedAt`
+   * enviado ao backend sejam idênticos — e não cresçam enquanto a tela fica aberta.
+   */
+  finishedAtIso = signal<string | null>(null);
+
   // ── Cronômetro do exercício (count-up) ──
   exRunning = signal(false);
   exPaused  = signal(false);
@@ -94,9 +101,20 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
 
   summaryElapsedSecs = computed(() => {
     const start = this.sessionStartedAt();
-    if (!start) return this.summaryActiveSecs();
-    return Math.max(0, Math.round((Date.now() - new Date(start).getTime()) / 1000));
+    const end = this.finishedAtIso();
+    if (!start || !end) return this.summaryActiveSecs();
+    return Math.max(0, Math.round((new Date(end).getTime() - new Date(start).getTime()) / 1000));
   });
+
+  /**
+   * Única porta de entrada para a fase de resumo: para os cronômetros e
+   * congela o instante de término antes de renderizar o resumo.
+   */
+  goToSummary(): void {
+    this.stopTimers();
+    if (!this.finishedAtIso()) this.finishedAtIso.set(new Date().toISOString());
+    this.phase.set('done');
+  }
 
   finishWorkout(): void {
     const s = this.session();
@@ -109,7 +127,7 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
     }
     this.saving.set(true);
     this.checkoutErr.set('');
-    this.api.checkoutWorkoutSession(s.id, startedAt, new Date().toISOString()).subscribe({
+    this.api.checkoutWorkoutSession(s.id, startedAt, this.finishedAtIso() ?? new Date().toISOString()).subscribe({
       next: () => {
         clearDraft(s.id);
         this.saving.set(false);
@@ -189,7 +207,7 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
   private enterExercise(): void {
     this.stopTimers();
     const ex = this.currentExercise();
-    if (!ex) { this.phase.set('done'); return; }
+    if (!ex) { this.goToSummary(); return; }
     this.phase.set('exercise');
     this.exRunning.set(false);
     this.exPaused.set(false);
@@ -322,8 +340,7 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
       this.persistDraft();
       this.enterExercise();
     } else {
-      this.stopTimers();
-      this.phase.set('done');
+      this.goToSummary();
     }
   }
 
