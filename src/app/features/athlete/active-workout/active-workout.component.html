@@ -86,114 +86,86 @@
   } @else if (phase() === 'exercise' && currentExercise()) {
     <div class="flex-1 flex flex-col overflow-y-auto">
 
-      <!-- Exercise name -->
       <div class="px-5 pt-2 pb-1 flex-shrink-0">
         <h2 class="font-headline font-black text-[22px] text-on-surface uppercase leading-tight tracking-tighter">
           {{ currentExercise()!.name }}
         </h2>
       </div>
 
-      <!-- ── COM DURAÇÃO: timer central ── -->
-      @if (hasDuration()) {
-        <div class="flex-shrink-0 flex flex-col items-center justify-center px-5 py-5">
+      <!-- Cronômetro count-up (todo exercício) -->
+      <div class="flex-shrink-0 flex flex-col items-center justify-center px-5 py-5">
+        <p class="font-headline font-black leading-none tracking-tighter italic timer-fluid"
+          [class.text-primary-fixed]="exRunning() && !exPaused()"
+          [class.opacity-40]="exPaused()">
+          {{ formatTime(exElapsed()) }}
+        </p>
+        <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">
+          @if (!exRunning()) {
+            @if (durationTarget()) { Alvo: {{ formatTime(durationTarget()) }} } @else { Tempo de execução }
+          } @else if (exPaused()) { Pausado } @else { Cronometrando... }
+        </p>
 
-          <!-- Timer display -->
-          <p class="font-headline font-black leading-none tracking-tighter italic"
-            class="timer-fluid"
-            [class.text-primary-fixed]="exRunning() && !exPaused()"
-            [class.opacity-40]="exPaused()">
-            {{ formatTime(exSecs()) }}
-          </p>
+        <div class="flex gap-3 mt-5 w-full">
+          @if (!exRunning()) {
+            <button type="button" (click)="startExercise()"
+              class="flex-1 flex items-center justify-center gap-2 bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black py-5 rounded-sm active:scale-95 transition-all text-base uppercase tracking-tighter">
+              <span class="material-symbols-outlined text-[24px]">play_arrow</span>
+              Iniciar exercício
+            </button>
+          } @else {
+            <button type="button" (click)="toggleExPause()"
+              class="flex-1 flex items-center justify-center gap-2 border border-outline-variant/30 text-on-surface-variant font-headline py-4 rounded-sm active:scale-95 transition-all text-xs uppercase tracking-wider">
+              <span class="material-symbols-outlined text-[20px]">{{ exPaused() ? 'play_arrow' : 'pause' }}</span>
+              {{ exPaused() ? 'Retomar' : 'Pausar' }}
+            </button>
+            <button type="button" (click)="completeExercise()"
+              class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-headline font-bold py-4 rounded-sm active:scale-95 transition-all text-xs uppercase tracking-wider">
+              <span class="material-symbols-outlined text-[20px]">check</span>
+              Concluir exercício
+            </button>
+          }
+        </div>
 
-          <!-- Status label -->
-          <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">
-            @if (!exRunning()) { Duração do exercício }
-            @else if (exPaused()) { Pausado }
-            @else { Contando... }
-          </p>
+        <button type="button" (click)="skipExercise()"
+          class="mt-2 w-full flex items-center justify-center gap-1 text-outline hover:text-on-surface-variant font-headline py-3 text-xs uppercase tracking-wider transition-colors">
+          <span class="material-symbols-outlined text-[16px]">skip_next</span>
+          Pular exercício
+        </button>
+      </div>
 
-          <!-- Depleting bar (visible when running) -->
-          @if (exRunning()) {
-            <div class="w-full bg-surface-container rounded-full h-1 mt-3">
-              <div class="bg-primary-fixed rounded-full h-1 transition-all duration-1000"
-                [style.width.%]="exProgress()"></div>
+      <!-- Prescrição (sets / reps / carga) como info -->
+      <div class="px-5 flex-shrink-0">
+        <div class="flex items-center justify-center gap-4 py-2 flex-wrap">
+          @if (currentExercise()!.sets) {
+            <div class="text-center flex-shrink-0">
+              <p class="font-headline font-black text-2xl text-on-surface leading-none tracking-tighter">{{ currentExercise()!.sets }}</p>
+              <p class="text-outline text-[9px] font-headline uppercase tracking-widest mt-0.5">Séries</p>
             </div>
           }
-
-          <!-- Start / Pause button -->
-          <div class="flex gap-3 mt-5 w-full">
-            @if (!exRunning()) {
-              <button type="button" (click)="startTimer()"
-                class="flex-1 flex items-center justify-center gap-2 bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black py-5 rounded-sm active:scale-95 transition-all text-base uppercase tracking-tighter">
-                <span class="material-symbols-outlined text-[24px]">play_arrow</span>
-                Iniciar
-              </button>
-            } @else {
-              <button type="button" (click)="toggleExPause()"
-                class="flex-1 flex items-center justify-center gap-2 border border-outline-variant/30 text-on-surface-variant font-headline py-4 rounded-sm active:scale-95 transition-all text-xs uppercase tracking-wider">
-                <span class="material-symbols-outlined text-[20px]">{{ exPaused() ? 'play_arrow' : 'pause' }}</span>
-                {{ exPaused() ? 'Retomar' : 'Pausar' }}
-              </button>
-              <button type="button" (click)="checkin()"
-                class="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-headline font-bold py-4 rounded-sm active:scale-95 transition-all text-xs uppercase tracking-wider">
-                <span class="material-symbols-outlined text-[20px]">check</span>
-                Concluir
-              </button>
-            }
-          </div>
-
-          <!-- Pular -->
-          <button type="button" (click)="skipExercise()"
-            class="mt-2 w-full flex items-center justify-center gap-1 text-outline hover:text-on-surface-variant font-headline py-3 text-xs uppercase tracking-wider transition-colors">
-            <span class="material-symbols-outlined text-[16px]">skip_next</span>
-            Pular exercício
-          </button>
-
+          @if (currentExercise()!.reps) {
+            <div class="text-center max-w-[55vw] min-w-0">
+              <p [class]="repsFontSizeClass(currentExercise()!.reps!)"
+                class="font-headline font-black text-on-surface leading-tight tracking-tighter break-words">{{ currentExercise()!.reps }}</p>
+              <p class="text-outline text-[9px] font-headline uppercase tracking-widest mt-0.5">Reps</p>
+            </div>
+          }
+          @if (currentExercise()!.loadPercent) {
+            <div class="text-center flex-shrink-0">
+              <p class="font-headline font-black text-2xl text-primary-fixed leading-none tracking-tighter">{{ currentExercise()!.loadPercent }}%</p>
+              <p class="text-outline text-[9px] font-headline uppercase tracking-widest mt-0.5">Carga</p>
+            </div>
+          }
         </div>
+      </div>
 
-      <!-- ── SEM DURAÇÃO: sets / reps ── -->
-      } @else {
-        <div class="flex-shrink-0 px-5 py-4">
-
-          <!-- Big reps display -->
-          <div class="flex items-center justify-center gap-4 py-4 flex-wrap px-2">
-            @if (currentExercise()!.sets) {
-              <div class="text-center flex-shrink-0">
-                <p class="font-headline font-black text-[64px] text-on-surface leading-none tracking-tighter">{{ currentExercise()!.sets }}</p>
-                <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">Séries</p>
-              </div>
-            }
-            @if (currentExercise()!.sets && currentExercise()!.reps) {
-              <p class="text-outline font-headline text-3xl flex-shrink-0">×</p>
-            }
-            @if (currentExercise()!.reps) {
-              <div class="text-center max-w-[65vw] min-w-0">
-                <p [class]="repsFontSizeClass(currentExercise()!.reps!)"
-                  class="font-headline font-black text-on-surface leading-tight tracking-tighter break-words">{{ currentExercise()!.reps }}</p>
-                <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">Reps</p>
-              </div>
-            }
-            @if (currentExercise()!.loadPercent) {
-              <div class="text-center flex-shrink-0">
-                <p class="font-headline font-black text-[40px] text-primary-fixed leading-none tracking-tighter">{{ currentExercise()!.loadPercent }}%</p>
-                <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">Carga</p>
-              </div>
-            }
-          </div>
-
-        </div>
-      }
-
-      <!-- ── Info extra (coach notes, youtube) ── -->
-      <div class="px-5 flex-1">
-
+      <!-- Info extra: dica do coach, vídeo, descanso -->
+      <div class="px-5 flex-1 mt-2">
         @if (currentExercise()!.coachNotes) {
           <div class="bg-surface-container-low rounded-md p-4 mb-3 border-l-2 border-primary-fixed">
             <p class="text-outline text-[9px] font-headline uppercase tracking-wider mb-1">Dica do Coach</p>
             <p class="text-on-surface text-xs leading-relaxed">{{ currentExercise()!.coachNotes }}</p>
           </div>
         }
-
         @if (currentExercise()!.youtubeUrl) {
           <a [href]="currentExercise()!.youtubeUrl" target="_blank" rel="noopener"
             class="flex items-center gap-2 text-primary-fixed text-xs font-headline mb-3 transition-opacity active:opacity-60">
@@ -201,37 +173,22 @@
             Ver demonstração
           </a>
         }
-
-        <!-- Rest info -->
         @if (currentExercise()!.restSeconds) {
           <p class="text-outline text-[10px] font-headline flex items-center gap-1 mb-3">
             <span class="material-symbols-outlined text-[14px]">timer</span>
             Descanso após: {{ formatTime(currentExercise()!.restSeconds!) }}
           </p>
-        } @else {
-          <p class="text-outline text-[10px] font-headline flex items-center gap-1 mb-3">
-            <span class="material-symbols-outlined text-[14px]">bolt</span>
-            Sem descanso — vai direto para o próximo
-          </p>
         }
-
       </div>
 
-      <!-- ── Bottom action buttons (sem duração) ── -->
-      @if (!hasDuration()) {
-        <div class="px-5 pb-6 flex gap-3 flex-shrink-0">
-          <button type="button" (click)="skipExercise()"
-            class="flex-1 flex items-center justify-center gap-2 border border-outline-variant/30 text-on-surface-variant font-headline py-4 rounded-sm active:scale-95 transition-all text-xs uppercase tracking-wider">
-            <span class="material-symbols-outlined text-[18px]">skip_next</span>
-            Pular
-          </button>
-          <button type="button" (click)="checkin()"
-            class="flex-[2] flex items-center justify-center gap-2 bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black py-4 rounded-sm active:scale-95 transition-all text-sm uppercase tracking-tighter">
-            Check-in
-            <span class="material-symbols-outlined text-[20px]">check_circle</span>
-          </button>
-        </div>
-      }
+      <!-- Finalizar treino agora -->
+      <div class="px-5 pb-6 flex-shrink-0">
+        <button type="button" (click)="phase.set('done')"
+          class="w-full flex items-center justify-center gap-2 border border-outline-variant/30 text-on-surface-variant font-headline py-3 rounded-sm active:scale-95 transition-all text-xs uppercase tracking-wider">
+          <span class="material-symbols-outlined text-[18px]">flag</span>
+          Finalizar treino agora
+        </button>
+      </div>
 
     </div>
 
@@ -263,6 +220,16 @@
       <div class="bg-error/10 border border-error/30 text-error font-headline text-sm px-5 py-3 rounded-sm shadow-xl flex items-center gap-2">
         <span class="material-symbols-outlined text-[18px]">error</span>
         {{ skipError() }}
+      </div>
+    </div>
+  }
+
+  <!-- Toast de treino retomado -->
+  @if (resumedToast()) {
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] animate-slide-up px-5 w-full max-w-md">
+      <div class="bg-surface-container-high border border-outline-variant/30 text-on-surface font-headline text-sm px-5 py-3 rounded-sm shadow-xl flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">history</span>
+        Treino retomado de onde você parou
       </div>
     </div>
   }
