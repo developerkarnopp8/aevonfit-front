@@ -71,6 +71,57 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
     return t ? ((t - this.restSecs()) / t) * 100 : 0;
   });
 
+  // ── Resumo + checkout ──────────────────────────────────────────────────────
+  saving      = signal(false);
+  checkoutErr = signal('');
+
+  summaryRows = computed(() => {
+    const s = this.session();
+    if (!s) return [];
+    const per = this.perExercise();
+    return s.exercises.map(e => ({
+      name: e.name,
+      durationSeconds: per[e.id] ?? null,
+      completed: e.completed,
+      skipped: e.status === 'postponed' || e.status === 'abandoned',
+    }));
+  });
+
+  summaryDoneCount   = computed(() => this.summaryRows().filter(r => r.completed).length);
+  summarySkipCount   = computed(() => this.summaryRows().filter(r => r.skipped).length);
+  summaryActiveSecs  = computed(() =>
+    Object.values(this.perExercise()).reduce((a, b) => a + b, 0));
+
+  summaryElapsedSecs = computed(() => {
+    const start = this.sessionStartedAt();
+    if (!start) return this.summaryActiveSecs();
+    return Math.max(0, Math.round((Date.now() - new Date(start).getTime()) / 1000));
+  });
+
+  finishWorkout(): void {
+    const s = this.session();
+    const startedAt = this.sessionStartedAt();
+    if (!s) return;
+    if (!startedAt) {
+      // treino encerrado sem nunca iniciar um exercício — nada a gravar
+      this.router.navigate(['/athlete/history']);
+      return;
+    }
+    this.saving.set(true);
+    this.checkoutErr.set('');
+    this.api.checkoutWorkoutSession(s.id, startedAt, new Date().toISOString()).subscribe({
+      next: () => {
+        clearDraft(s.id);
+        this.saving.set(false);
+        this.router.navigate(['/athlete/history']);
+      },
+      error: () => {
+        this.saving.set(false);
+        this.checkoutErr.set('Não foi possível salvar o treino. Tente novamente.');
+      },
+    });
+  }
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,

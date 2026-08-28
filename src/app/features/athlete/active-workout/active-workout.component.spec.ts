@@ -1,7 +1,7 @@
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { ActiveWorkoutComponent } from './active-workout.component';
 import { Session } from '../../../core/models';
-import { clearDraft, saveDraft, WorkoutDraft } from '../../../shared/utils/workout-draft';
+import { clearDraft, loadDraft, saveDraft, WorkoutDraft } from '../../../shared/utils/workout-draft';
 
 const SESSION_ID = 'sess-1';
 
@@ -24,6 +24,7 @@ function makeDeps(session: Session) {
     getSession: vi.fn().mockReturnValue(of(session)),
     logExercise: vi.fn().mockReturnValue(of({})),
     skip: vi.fn().mockReturnValue(of(undefined)),
+    checkoutWorkoutSession: vi.fn().mockReturnValue(of({ id: 'ws-1' })),
   };
   const router = { navigate: vi.fn() };
   const route = { snapshot: { paramMap: { get: () => SESSION_ID } } };
@@ -87,6 +88,53 @@ describe('ActiveWorkoutComponent', () => {
     expect(exercises[0].status).toBe('done');
     expect(exercises[1].completed).toBe(false);
     expect(comp.resumedToast()).toBe(true);
+
+    comp.ngOnDestroy();
+  });
+
+  it('finishWorkout com sessionStartedAt definido: chama checkout, limpa rascunho e navega para o histórico', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-28T10:00:00.000Z'));
+
+    const session = makeSession();
+    const { api, router, route } = makeDeps(session);
+    const comp = new ActiveWorkoutComponent(route as any, router as any, api as any);
+    comp.ngOnInit();
+
+    comp.startExercise();          // define sessionStartedAt + grava rascunho
+    expect(loadDraft(SESSION_ID)).toBeTruthy();
+    const startedAt = comp.sessionStartedAt()!;
+
+    vi.setSystemTime(new Date('2026-08-28T10:05:00.000Z'));
+    comp.finishWorkout();
+
+    expect(api.checkoutWorkoutSession).toHaveBeenCalledTimes(1);
+    expect(api.checkoutWorkoutSession.mock.calls[0][0]).toBe(SESSION_ID);
+    expect(api.checkoutWorkoutSession.mock.calls[0][1]).toBe(startedAt);
+    expect(comp.saving()).toBe(false);
+    expect(loadDraft(SESSION_ID)).toBeNull();
+    expect(router.navigate).toHaveBeenCalledWith(['/athlete/history']);
+
+    comp.ngOnDestroy();
+  });
+
+  it('finishWorkout com erro no checkout: mantém checkoutErr, não navega e preserva o rascunho', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-28T10:00:00.000Z'));
+
+    const session = makeSession();
+    const { api, router, route } = makeDeps(session);
+    api.checkoutWorkoutSession.mockReturnValue(throwError(() => new Error('500')));
+    const comp = new ActiveWorkoutComponent(route as any, router as any, api as any);
+    comp.ngOnInit();
+
+    comp.startExercise();
+    comp.finishWorkout();
+
+    expect(comp.checkoutErr()).toBe('Não foi possível salvar o treino. Tente novamente.');
+    expect(comp.saving()).toBe(false);
+    expect(loadDraft(SESSION_ID)).toBeTruthy();
+    expect(router.navigate).not.toHaveBeenCalledWith(['/athlete/history']);
 
     comp.ngOnDestroy();
   });

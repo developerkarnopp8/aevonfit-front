@@ -196,16 +196,60 @@
        FASE: CONCLUÍDO
        ═══════════════════════════════════════════ -->
   } @else if (phase() === 'done') {
-    <div class="flex-1 flex flex-col items-center justify-center px-5 text-center gap-4">
-      <span class="material-symbols-outlined text-primary-fixed text-[72px]">emoji_events</span>
-      <div>
-        <h2 class="font-headline font-black text-2xl text-on-surface tracking-tighter">Sessão Concluída!</h2>
-        <p class="text-on-surface-variant text-sm mt-1">Excelente trabalho. Descanse bem.</p>
+    <div class="flex-1 flex flex-col overflow-y-auto px-5 py-6 animate-fade-in">
+
+      <div class="text-center mb-6">
+        <span class="material-symbols-outlined text-primary-fixed text-[56px]">emoji_events</span>
+        <h2 class="font-headline font-black text-2xl text-on-surface tracking-tighter mt-1">Resumo do Treino</h2>
       </div>
-      <button type="button" (click)="exitWorkout()"
-        class="mt-4 px-8 py-4 bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black rounded-sm uppercase tracking-tighter text-sm active:scale-95 transition-all">
-        Voltar ao Início
+
+      <!-- Totais -->
+      <div class="grid grid-cols-3 gap-2 mb-5">
+        <div class="bg-surface-container-low rounded-md p-3 text-center">
+          <p class="font-headline font-black text-xl text-on-surface leading-none">{{ formatTime(summaryElapsedSecs()) }}</p>
+          <p class="text-outline text-[9px] font-headline uppercase tracking-widest mt-1">Tempo total</p>
+        </div>
+        <div class="bg-surface-container-low rounded-md p-3 text-center">
+          <p class="font-headline font-black text-xl text-green-500 leading-none">{{ summaryDoneCount() }}</p>
+          <p class="text-outline text-[9px] font-headline uppercase tracking-widest mt-1">Concluídos</p>
+        </div>
+        <div class="bg-surface-container-low rounded-md p-3 text-center">
+          <p class="font-headline font-black text-xl text-on-surface-variant leading-none">{{ summarySkipCount() }}</p>
+          <p class="text-outline text-[9px] font-headline uppercase tracking-widest mt-1">Pulados</p>
+        </div>
+      </div>
+
+      <!-- Por exercício -->
+      <div class="space-y-1.5 mb-6">
+        @for (row of summaryRows(); track row.name) {
+          <div class="flex items-center justify-between bg-surface-container-low rounded-sm px-4 py-3">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="material-symbols-outlined text-[16px]"
+                [class.text-green-500]="row.completed"
+                [class.text-outline]="!row.completed">
+                {{ row.completed ? 'check_circle' : (row.skipped ? 'skip_next' : 'radio_button_unchecked') }}
+              </span>
+              <span class="text-on-surface text-xs font-headline truncate">{{ row.name }}</span>
+            </div>
+            <span class="text-on-surface-variant text-xs font-headline font-bold flex-shrink-0">
+              {{ row.durationSeconds != null ? formatTime(row.durationSeconds) : '—' }}
+            </span>
+          </div>
+        }
+      </div>
+
+      @if (checkoutErr()) {
+        <div class="bg-error/10 border border-error/30 text-error font-headline text-xs px-4 py-3 rounded-sm mb-3 flex items-center gap-2">
+          <span class="material-symbols-outlined text-[16px]">error</span>
+          {{ checkoutErr() }}
+        </div>
+      }
+
+      <button type="button" (click)="finishWorkout()" [disabled]="saving()"
+        class="w-full px-8 py-4 bg-primary-fixed hover:bg-primary-dim disabled:opacity-50 text-on-primary-fixed font-headline font-black rounded-sm uppercase tracking-tighter text-sm active:scale-95 transition-all">
+        {{ saving() ? 'Salvando...' : 'Finalizar treino' }}
       </button>
+
     </div>
   }
 
