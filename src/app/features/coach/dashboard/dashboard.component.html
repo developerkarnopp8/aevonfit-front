@@ -1,12 +1,12 @@
 <div class="flex flex-col h-full overflow-y-auto animate-fade-in">
 
   <!-- Header -->
-  <header class="px-8 py-6 flex items-center justify-between flex-shrink-0">
+  <header class="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between flex-shrink-0 gap-3">
     <div>
       <p class="text-outline text-[10px] font-headline uppercase tracking-widest mb-1">Coach Premium</p>
-      <h2 class="font-headline font-black text-3xl text-on-surface tracking-tighter leading-none">PERFORMANCE HUB</h2>
+      <h2 class="font-headline font-black text-2xl md:text-3xl text-on-surface tracking-tighter leading-none">PERFORMANCE HUB</h2>
     </div>
-    <div class="flex items-center gap-3">
+    <div class="hidden sm:flex items-center gap-3">
       <div class="flex items-center gap-2 bg-surface-container rounded-md px-3 py-2">
         <span class="material-symbols-outlined text-outline text-[16px]">search</span>
         <input
@@ -18,15 +18,27 @@
   </header>
 
   <!-- Content -->
-  <div class="flex flex-1 overflow-hidden min-h-0">
+  <div class="flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden min-h-0">
+
+    <!-- Right sidebar: Stats -->
+    <aside class="w-full md:w-60 px-4 md:px-5 pt-4 md:pt-0 pb-4 md:pb-8 flex-shrink-0 md:overflow-y-auto md:order-2">
+
+      <!-- Monthly avg -->
+      <div class="bg-surface-container-low rounded-md p-5 mb-4 text-center">
+        <p class="text-outline text-[10px] font-headline uppercase tracking-widest mb-2">Progresso do Mês</p>
+        <p class="font-headline font-black text-5xl text-on-surface tracking-tighter leading-none">{{ monthlyAvg() }}%</p>
+        <p class="text-on-surface-variant text-xs mt-2 font-headline">Média do time no plano atual</p>
+      </div>
+
+    </aside>
 
     <!-- Left: Main -->
-    <section class="flex-1 px-8 pb-8 overflow-y-auto">
+    <section class="flex-1 px-4 md:px-8 pb-8 md:overflow-y-auto md:order-1">
 
       <!-- Hero heading -->
       <div class="mb-6">
-        <h3 class="font-headline font-black text-5xl text-on-surface leading-none tracking-tighter">PROGRESSO</h3>
-        <h3 class="font-headline font-black text-5xl text-primary-fixed leading-none tracking-tighter">DA EQUIPE</h3>
+        <h3 class="font-headline font-black text-4xl md:text-5xl text-on-surface leading-none tracking-tighter">PROGRESSO</h3>
+        <h3 class="font-headline font-black text-4xl md:text-5xl text-primary-fixed leading-none tracking-tighter">DA EQUIPE</h3>
         <p class="text-on-surface-variant text-sm mt-3 max-w-sm">Análise em tempo real de retenção, completude e engajamento dos seus atletas.</p>
       </div>
 
@@ -95,18 +107,6 @@
         }
       </div>
     </section>
-
-    <!-- Right sidebar: Stats -->
-    <aside class="w-60 px-5 py-0 pb-8 flex-shrink-0 overflow-y-auto">
-
-      <!-- Monthly avg -->
-      <div class="bg-surface-container-low rounded-md p-5 mb-4 text-center">
-        <p class="text-outline text-[10px] font-headline uppercase tracking-widest mb-2">Progresso do Mês</p>
-        <p class="font-headline font-black text-5xl text-on-surface tracking-tighter leading-none">{{ monthlyAvg() }}%</p>
-        <p class="text-on-surface-variant text-xs mt-2 font-headline">Média do time no plano atual</p>
-      </div>
-
-    </aside>
 
   </div>
 </div>
