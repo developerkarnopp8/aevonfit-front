@@ -16,6 +16,11 @@ export function loadDraft(sessionId: string): WorkoutDraft | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as WorkoutDraft;
     if (!parsed || parsed.sessionId !== sessionId) return null;
+    const MAX_DRAFT_AGE_MS = 6 * 60 * 60 * 1000; // 6h
+    if (!parsed.updatedAt || Date.now() - new Date(parsed.updatedAt).getTime() > MAX_DRAFT_AGE_MS) {
+      clearDraft(sessionId);
+      return null;
+    }
     return parsed;
   } catch {
     return null;
