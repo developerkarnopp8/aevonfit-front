@@ -175,6 +175,66 @@
     </div>
   </div>
 
+  <!-- Tempo de execução -->
+  <div class="px-8 pb-4 flex-shrink-0">
+    <div class="bg-surface-container-low rounded-md">
+      <div class="w-full flex items-center justify-between px-4 py-3">
+        <button type="button" (click)="showTimeSection.set(!showTimeSection())"
+          class="flex-1 flex items-center gap-2 group">
+          <span class="flex items-center gap-2 text-on-surface-variant text-[10px] font-headline uppercase tracking-widest group-hover:text-on-surface transition-colors">
+            <span class="material-symbols-outlined text-[16px]">timer</span>
+            Tempo de Execução
+          </span>
+        </button>
+        <button type="button" (click)="showTimeSection.set(!showTimeSection())">
+          <span class="material-symbols-outlined text-outline text-[18px] transition-transform" [class.rotate-180]="showTimeSection()">expand_more</span>
+        </button>
+      </div>
+      @if (showTimeSection()) {
+        @if (timeSummary(); as ts) {
+          @if (ts.count === 0) {
+            <p class="px-4 pb-4 text-outline text-xs">Nenhum treino cronometrado ainda. Assim que o aluno concluir sessões com o cronômetro, os tempos médios aparecem aqui.</p>
+          } @else {
+            <div class="px-4 pb-4 animate-fade-in">
+              <div class="flex items-end gap-6 mb-4">
+                <div>
+                  <p class="font-headline font-black text-3xl text-primary-fixed tracking-tighter leading-none">{{ fmtDuration(ts.avgElapsedSeconds) }}</p>
+                  <p class="text-outline text-[10px] font-headline uppercase tracking-widest mt-1">Média · {{ ts.count }} treinos</p>
+                </div>
+                <div class="text-xs font-headline"
+                  [class.text-primary-fixed]="ts.trend.direction === 'faster'"
+                  [class.text-error]="ts.trend.direction === 'slower'"
+                  [class.text-outline]="ts.trend.direction === 'equal' || ts.trend.direction === 'new'">
+                  {{ trendLabel(ts.trend.direction) }}
+                  @if (ts.trend.direction === 'faster' || ts.trend.direction === 'slower') {
+                    ({{ fmtDuration(ts.trend.deltaSeconds < 0 ? -ts.trend.deltaSeconds : ts.trend.deltaSeconds) }})
+                  }
+                </div>
+              </div>
+
+              <p class="text-on-surface-variant text-[10px] font-headline uppercase tracking-widest mb-2">Tempo médio por exercício</p>
+              <div class="flex flex-col gap-2">
+                @for (ex of ts.perExercise; track ex.exerciseName) {
+                  <div>
+                    <div class="flex justify-between text-xs font-headline mb-1">
+                      <span class="text-on-surface truncate">{{ ex.exerciseName }}</span>
+                      <span class="text-on-surface-variant flex-shrink-0">{{ fmtDuration(ex.avgSeconds) }} · {{ ex.samples }}x</span>
+                    </div>
+                    <div class="bg-surface-container rounded-full h-1.5">
+                      <div class="bg-primary-fixed rounded-full h-1.5 transition-all" [style.width.%]="(ex.avgSeconds / maxPerExerciseSeconds()) * 100"></div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        } @else {
+          <p class="px-4 pb-4 text-outline text-xs">Carregando...</p>
+        }
+      }
+    </div>
+  </div>
+
   @if (loading()) {
     <div class="flex-1 flex items-center justify-center">
       <span class="material-symbols-outlined text-outline text-[40px] animate-pulse-subtle">fitness_center</span>

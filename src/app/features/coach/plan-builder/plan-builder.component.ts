@@ -2,9 +2,10 @@ import { Component, OnInit, OnChanges, signal, computed, Input } from '@angular/
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
-import { TrainingPlan, Exercise, Session, SessionType, ExerciseLibraryItem, TrainingDay, PersonalRecord } from '../../../core/models';
+import { TrainingPlan, Exercise, Session, SessionType, ExerciseLibraryItem, TrainingDay, PersonalRecord, SessionTimeSummary } from '../../../core/models';
 import { PlanCalendarModalComponent } from '../../../shared/components/plan-calendar-modal/plan-calendar-modal.component';
 import { exportWeekToPdf, exportMonthToPdf } from '../../../shared/utils/plan-pdf-export';
+import { formatDurationShort } from '../../../shared/utils/format-duration';
 
 type DrawerMode = 'add' | 'edit';
 
@@ -87,6 +88,23 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
     if (!id) return null;
     return this.prByMovement().find(m => m.movementId === id) ?? null;
   });
+
+  // Tempo de execução do aluno — recolhido por padrão
+  timeSummary = signal<SessionTimeSummary | null>(null);
+  showTimeSection = signal(false);
+  fmtDuration = formatDurationShort;
+
+  maxPerExerciseSeconds = computed(() => {
+    const s = this.timeSummary();
+    return Math.max(1, ...(s?.perExercise ?? []).map(e => e.avgSeconds));
+  });
+
+  trendLabel(dir: string): string {
+    return dir === 'faster' ? 'Mais rápido'
+      : dir === 'slower' ? 'Mais lento'
+      : dir === 'equal' ? 'Estável'
+      : 'Sem histórico';
+  }
 
   prBarHeight(record: PersonalRecord, maxValue: number): number {
     const value = record.loadKg ?? record.reps ?? 0;
@@ -209,6 +227,7 @@ export class PlanBuilderComponent implements OnInit, OnChanges {
     this.loadPlan();
     this.api.getStudentIntakeHistory(this.studentId).subscribe(h => this.intakeHistory.set(h));
     this.api.getStudentPersonalRecordsHistory(this.studentId).subscribe(h => this.prHistory.set(h));
+    this.api.getStudentSessionSummary(this.studentId).subscribe(s => this.timeSummary.set(s));
     this.api.getPlansByStudent(this.studentId).subscribe(plans => this.allPlans.set(plans));
     this.api.getStudentWithPlan(this.studentId).subscribe(r => {
       this.studentCurrentWeek.set(r.student.currentWeek);
