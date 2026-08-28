@@ -5,6 +5,7 @@ import { ApiService } from '../../../core/services/api.service';
 import { Session, Exercise, SkipReason, SkipDecision } from '../../../core/models';
 import { SkipReasonModalComponent } from '../../../shared/components/skip-reason-modal/skip-reason-modal.component';
 import { Subject, interval, takeUntil } from 'rxjs';
+import { loadDraft, saveDraft, clearDraft, WorkoutDraft } from '../../../shared/utils/workout-draft';
 
 type Phase = 'exercise' | 'rest' | 'done';
 
@@ -13,25 +14,44 @@ type Phase = 'exercise' | 'rest' | 'done';
   standalone: true,
   imports: [CommonModule, SkipReasonModalComponent],
   templateUrl: './active-workout.component.html',
-  styleUrl: './active-workout.component.scss'
+  styleUrl: './active-workout.component.scss',
 })
 export class ActiveWorkoutComponent implements OnInit, OnDestroy {
-  session      = signal<Session | null>(null);
-  currentIndex = signal(0);
+  session       = signal<Session | null>(null);
+  currentIndex  = signal(0);
   skipModalOpen = signal(false);
-  skipError    = signal('');
-  phase        = signal<Phase>('exercise');
+  skipError     = signal('');
+  phase         = signal<Phase>('exercise');
+  resumedToast  = signal(false);
 
-  // ── Exercise timer (countdown for duration-based exercises)
-  exSecs    = signal(0);
-  exTarget  = signal(0);
+  /** ISO do primeiro "Iniciar exercício" do treino (relógio de parede da sessão) */
+  sessionStartedAt = signal<string | null>(null);
+
+  /**
+   * ISO do momento em que o atleta entrou na tela de resumo (fase 'done').
+   * Capturado uma única vez para que o número exibido no resumo e o `finishedAt`
+   * enviado ao backend sejam idênticos — e não cresçam enquanto a tela fica aberta.
+   */
+  finishedAtIso = signal<string | null>(null);
+
+  // ── Cronômetro do exercício (count-up) ──
   exRunning = signal(false);
   exPaused  = signal(false);
+  exElapsed = signal(0);               // segundos decorridos no exercício atual
+  private exStartMs = 0;               // Date.now() de quando iniciou/retomou
+  private exAccumBeforePause = 0;      // segundos acumulados antes da pausa atual
 
-  // ── Rest timer
+  // ── Timer de descanso (countdown, inalterado) ──
   restSecs   = signal(0);
   restTarget = signal(0);
   restPaused = signal(false);
+
+  /**
+   * exerciseId -> durationSeconds dos já concluídos (fonte da tela de resumo).
+   * RULING 1: signal (não propriedade simples) — o `summaryRows` da Task 11 lê
+   * isto num computed e precisa reagir às mudanças.
+   */
+  perExercise = signal<Record<string, number>>({});
 
   private destroy$   = new Subject<void>();
   private timerStop$ = new Subject<void>();
@@ -47,21 +67,78 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
     return s.exercises[this.currentIndex() + 1] ?? null;
   });
 
-  /** true when the exercise has a parseable duration > 0 */
-  hasDuration = computed(() => {
+  /** alvo de duração parseável, só como guia visual */
+  durationTarget = computed(() => {
     const ex = this.currentExercise();
-    return !!ex?.duration && this.parseDuration(ex.duration) > 0;
-  });
-
-  exProgress = computed(() => {
-    const t = this.exTarget();
-    return t ? ((t - this.exSecs()) / t) * 100 : 0;
+    return ex?.duration ? this.parseDuration(ex.duration) : 0;
   });
 
   restProgress = computed(() => {
     const t = this.restTarget();
     return t ? ((t - this.restSecs()) / t) * 100 : 0;
   });
+
+  // ── Resumo + checkout ──────────────────────────────────────────────────────
+  saving      = signal(false);
+  checkoutErr = signal('');
+
+  summaryRows = computed(() => {
+    const s = this.session();
+    if (!s) return [];
+    const per = this.perExercise();
+    return s.exercises.map(e => ({
+      name: e.name,
+      durationSeconds: per[e.id] ?? null,
+      completed: e.completed,
+      skipped: e.status === 'postponed' || e.status === 'abandoned',
+    }));
+  });
+
+  summaryDoneCount   = computed(() => this.summaryRows().filter(r => r.completed).length);
+  summarySkipCount   = computed(() => this.summaryRows().filter(r => r.skipped).length);
+  summaryActiveSecs  = computed(() =>
+    Object.values(this.perExercise()).reduce((a, b) => a + b, 0));
+
+  summaryElapsedSecs = computed(() => {
+    const start = this.sessionStartedAt();
+    const end = this.finishedAtIso();
+    if (!start || !end) return this.summaryActiveSecs();
+    return Math.max(0, Math.round((new Date(end).getTime() - new Date(start).getTime()) / 1000));
+  });
+
+  /**
+   * Única porta de entrada para a fase de resumo: para os cronômetros e
+   * congela o instante de término antes de renderizar o resumo.
+   */
+  goToSummary(): void {
+    this.stopTimers();
+    if (!this.finishedAtIso()) this.finishedAtIso.set(new Date().toISOString());
+    this.phase.set('done');
+  }
+
+  finishWorkout(): void {
+    const s = this.session();
+    const startedAt = this.sessionStartedAt();
+    if (!s) return;
+    if (!startedAt) {
+      // treino encerrado sem nunca iniciar um exercício — nada a gravar
+      this.router.navigate(['/athlete/history']);
+      return;
+    }
+    this.saving.set(true);
+    this.checkoutErr.set('');
+    this.api.checkoutWorkoutSession(s.id, startedAt, this.finishedAtIso() ?? new Date().toISOString()).subscribe({
+      next: () => {
+        clearDraft(s.id);
+        this.saving.set(false);
+        this.router.navigate(['/athlete/history']);
+      },
+      error: () => {
+        this.saving.set(false);
+        this.checkoutErr.set('Não foi possível salvar o treino. Tente novamente.');
+      },
+    });
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -73,6 +150,7 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
     const id = this.route.snapshot.paramMap.get('sessionId') ?? '';
     this.api.getSession(id).subscribe(s => {
       this.session.set(s);
+      this.restoreDraftIfAny(s);
       this.enterExercise();
     });
   }
@@ -83,7 +161,40 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // ── Navigation ─────────────────────────────────────────────────────────────
+  // ── Rascunho ───────────────────────────────────────────────────────────────
+
+  private restoreDraftIfAny(s: Session): void {
+    const draft = loadDraft(s.id);
+    if (!draft) return;
+    this.sessionStartedAt.set(draft.startedAt);
+    this.perExercise.set({ ...draft.perExercise });
+    // marca como concluídos os exercícios que já têm tempo no rascunho
+    this.session.update(cur => cur ? {
+      ...cur,
+      exercises: cur.exercises.map(e =>
+        draft.perExercise[e.id] != null ? { ...e, completed: true, status: 'done' as const } : e),
+    } : cur);
+    const idx = Math.min(draft.currentIndex, s.exercises.length - 1);
+    this.currentIndex.set(Math.max(0, idx));
+    this.resumedToast.set(true);
+    setTimeout(() => this.resumedToast.set(false), 3000);
+  }
+
+  private persistDraft(): void {
+    const s = this.session();
+    const startedAt = this.sessionStartedAt();
+    if (!s || !startedAt) return;
+    const draft: WorkoutDraft = {
+      sessionId: s.id,
+      startedAt,
+      currentIndex: this.currentIndex(),
+      perExercise: { ...this.perExercise() },
+      updatedAt: new Date().toISOString(),
+    };
+    saveDraft(draft);
+  }
+
+  // ── Navegação ──────────────────────────────────────────────────────────────
 
   exitWorkout(): void {
     this.stopTimers();
@@ -91,43 +202,71 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
     this.router.navigate(s ? ['/athlete/session', s.id] : ['/athlete/home']);
   }
 
-  // ── Exercise phase ─────────────────────────────────────────────────────────
+  // ── Fase exercício ─────────────────────────────────────────────────────────
 
   private enterExercise(): void {
     this.stopTimers();
     const ex = this.currentExercise();
-    if (!ex) { this.phase.set('done'); return; }
-
+    if (!ex) { this.goToSummary(); return; }
     this.phase.set('exercise');
-    const secs = this.parseDuration(ex.duration ?? '');
-    this.exTarget.set(secs);
-    this.exSecs.set(secs);
     this.exRunning.set(false);
     this.exPaused.set(false);
+    this.exElapsed.set(0);
+    this.exAccumBeforePause = 0;
   }
 
-  startTimer(): void {
+  startExercise(): void {
     if (this.exRunning()) return;
+    if (!this.sessionStartedAt()) this.sessionStartedAt.set(new Date().toISOString());
     this.exRunning.set(true);
     this.exPaused.set(false);
+    this.exStartMs = Date.now();
+    this.persistDraft();
 
     interval(1000).pipe(takeUntil(this.timerStop$)).subscribe(() => {
       if (this.exPaused()) return;
-      const cur = this.exSecs();
-      if (cur <= 1) {
-        this.exSecs.set(0);
-        this.exRunning.set(false);
-        this.onExerciseDone();
-      } else {
-        this.exSecs.set(cur - 1);
-      }
+      const running = Math.round((Date.now() - this.exStartMs) / 1000);
+      this.exElapsed.set(this.exAccumBeforePause + running);
     });
   }
 
-  toggleExPause(): void { this.exPaused.update(v => !v); }
+  toggleExPause(): void {
+    if (!this.exRunning()) return;
+    if (this.exPaused()) {
+      this.exPaused.set(false);
+      this.exStartMs = Date.now();
+    } else {
+      this.exPaused.set(true);
+      this.exAccumBeforePause += Math.round((Date.now() - this.exStartMs) / 1000);
+      this.exElapsed.set(this.exAccumBeforePause);
+    }
+  }
 
-  /** Athlete manually marks exercise as done (no-duration flow) */
-  checkin(): void { this.onExerciseDone(); }
+  /** "Concluir exercício" */
+  completeExercise(): void {
+    const ex = this.currentExercise();
+    if (!ex) return;
+
+    let duration = this.exElapsed();
+    if (this.exRunning() && !this.exPaused()) {
+      duration = this.exAccumBeforePause + Math.round((Date.now() - this.exStartMs) / 1000);
+    }
+    this.stopTimers();
+    this.exRunning.set(false);
+
+    this.perExercise.update(m => ({ ...m, [ex.id]: duration }));
+    this.api.logExercise(ex.id, ex.sets ?? 1, undefined, duration).subscribe();
+    this.session.update(s => s ? {
+      ...s,
+      exercises: s.exercises.map((e, i) =>
+        i === this.currentIndex() ? { ...e, completed: true, status: 'done' as const } : e),
+    } : s);
+    this.persistDraft();
+
+    const rest = ex.restSeconds ?? 0;
+    if (rest > 0) this.enterRest(rest);
+    else this.advance();
+  }
 
   skipExercise(): void {
     this.stopTimers();
@@ -138,11 +277,21 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
     this.skipModalOpen.set(false);
     const ex = this.currentExercise();
     if (!ex) return;
-
     this.api.skip({ exerciseId: ex.id }, payload.reason, payload.decision, payload.note).subscribe({
-      next: () => this.advance(),
+      next: () => {
+        // RULING 2: registra no estado do exercício atual a decisão do pulo
+        // (minúsculo) antes de avançar — o resumo da Task 11 conta os pulados.
+        const status: Exercise['status'] =
+          payload.decision === 'Postponed' ? 'postponed' : 'abandoned';
+        this.session.update(s => s ? {
+          ...s,
+          exercises: s.exercises.map((e, i) =>
+            i === this.currentIndex() ? { ...e, status } : e),
+        } : s);
+        this.persistDraft();
+        this.advance();
+      },
       error: () => {
-        // Skip nao foi registrado: destrava o timer pra atleta poder tentar de novo
         this.exRunning.set(false);
         this.exPaused.set(false);
         this.showSkipError();
@@ -161,31 +310,7 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
     setTimeout(() => this.skipError.set(''), 3500);
   }
 
-  private onExerciseDone(): void {
-    // Log to backend
-    const ex = this.currentExercise();
-    if (ex) {
-      this.api.logExercise(ex.id, ex.sets ?? 1).subscribe();
-      this.session.update(s => {
-        if (!s) return s;
-        return {
-          ...s,
-          exercises: s.exercises.map((e, i) =>
-            i === this.currentIndex() ? { ...e, completed: true } : e
-          ),
-        };
-      });
-    }
-
-    const rest = ex?.restSeconds ?? 0;
-    if (rest > 0) {
-      this.enterRest(rest);
-    } else {
-      this.advance();
-    }
-  }
-
-  // ── Rest phase ─────────────────────────────────────────────────────────────
+  // ── Fase descanso ──────────────────────────────────────────────────────────
 
   private enterRest(seconds: number): void {
     this.stopTimers();
@@ -197,30 +322,25 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
     interval(1000).pipe(takeUntil(this.timerStop$)).subscribe(() => {
       if (this.restPaused()) return;
       const cur = this.restSecs();
-      if (cur <= 1) {
-        this.restSecs.set(0);
-        this.advance();
-      } else {
-        this.restSecs.set(cur - 1);
-      }
+      if (cur <= 1) { this.restSecs.set(0); this.advance(); }
+      else this.restSecs.set(cur - 1);
     });
   }
 
   toggleRestPause(): void { this.restPaused.update(v => !v); }
-
   skipRest(): void { this.stopTimers(); this.advance(); }
 
-  // ── Advance ────────────────────────────────────────────────────────────────
+  // ── Avançar ────────────────────────────────────────────────────────────────
 
   private advance(): void {
     const s = this.session();
     if (!s) return;
     if (this.currentIndex() < s.exercises.length - 1) {
       this.currentIndex.update(i => i + 1);
+      this.persistDraft();
       this.enterExercise();
     } else {
-      this.stopTimers();
-      this.phase.set('done');
+      this.goToSummary();
     }
   }
 
@@ -234,7 +354,6 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
     return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
   }
 
-  /** Parse "1:30" | "90s" | "2min" | "45" → seconds */
   parseDuration(d: string): number {
     if (!d) return 0;
     const s = d.toLowerCase().trim();
@@ -246,25 +365,11 @@ export class ActiveWorkoutComponent implements OnInit, OnDestroy {
     return 0;
   }
 
-  /**
-   * `reps` é texto livre (pode ser "4 reps", "21-15-9" ou uma descrição
-   * longa de complexo, ex: "2 Hang Snatch + 1 Power Snatch + 1 Squat
-   * Snatch") — reduz a fonte gigante conforme o tamanho pra nunca estourar
-   * a tela, em vez de assumir que sempre cabe um número curto.
-   */
   repsFontSizeClass(reps: string | number): string {
     const len = String(reps).length;
     if (len <= 3)  return 'text-[64px]';
     if (len <= 7)  return 'text-[40px]';
     if (len <= 14) return 'text-2xl';
     return 'text-base';
-  }
-
-  formatReps(ex: Exercise): string {
-    const parts: string[] = [];
-    if (ex.sets)     parts.push(`${ex.sets}×`);
-    if (ex.reps)     parts.push(String(ex.reps));
-    if (ex.duration) parts.push(ex.duration);
-    return parts.join(' ') || '—';
   }
 }

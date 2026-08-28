@@ -97,6 +97,10 @@
                 <span class="text-on-surface-variant">Fase</span>
                 <span class="text-on-surface-variant font-headline">Semana {{ student.currentWeek }}</span>
               </div>
+              <div class="flex justify-between text-xs">
+                <span class="text-on-surface-variant" title="Tempo médio de treino nos últimos 30 dias">Tempo médio</span>
+                <span class="text-on-surface font-headline font-bold">{{ fmtDuration(avgByStudent()[student.id]) }}</span>
+              </div>
             </div>
 
             <!-- Progress bar -->

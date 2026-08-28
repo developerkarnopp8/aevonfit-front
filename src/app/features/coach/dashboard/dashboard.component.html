@@ -56,6 +56,15 @@
         </div>
       </div>
 
+      <!-- Tempo médio de treino -->
+      <div class="bg-surface-container-low rounded-md p-5 mb-6 flex items-center justify-between">
+        <div>
+          <p class="text-on-surface-variant text-xs font-headline uppercase tracking-widest">Tempo médio de treino</p>
+          <p class="text-outline text-[10px] font-headline mt-1">Últimos 30 dias · seus alunos</p>
+        </div>
+        <p class="font-headline font-black text-3xl text-primary-fixed tracking-tighter">{{ fmtDuration(avgDuration()) }}</p>
+      </div>
+
       <!-- Atividade Semanal -->
       <div>
         <div class="flex items-center justify-between mb-4">

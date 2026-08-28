@@ -50,9 +50,22 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    this.clearWorkoutDrafts();
     this.currentUser.set(null);
     this.socket.disconnect();
     this.router.navigate(['/login']);
+  }
+
+  /** Remove todos os rascunhos de treino locais — não devem sobreviver ao logout. */
+  private clearWorkoutDrafts(): void {
+    try {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k?.startsWith('workout-draft:')) localStorage.removeItem(k);
+      }
+    } catch {
+      /* localStorage indisponível */
+    }
   }
 
   getToken(): string | null {

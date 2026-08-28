@@ -5,6 +5,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Student } from '../../../core/models';
+import { formatDurationShort } from '../../../shared/utils/format-duration';
 
 type ModalMode = 'add' | 'edit';
 
@@ -18,6 +19,9 @@ type ModalMode = 'add' | 'edit';
 export class StudentsComponent implements OnInit {
   students      = signal<Student[]>([]);
   pendingSkips  = signal<Record<string, number>>({});
+  /** studentId → tempo médio de treino em segundos (últimos 30 dias) */
+  avgByStudent  = signal<Record<string, number>>({});
+  fmtDuration   = formatDurationShort;
   search        = signal('');
   showModal     = signal(false);
   modalMode     = signal<ModalMode>('add');
@@ -58,6 +62,7 @@ export class StudentsComponent implements OnInit {
     if (!coach) return;
     this.api.getStudents(coach.id).subscribe(s => this.students.set(s));
     this.loadPendingSkips();
+    this.loadAvgDuration();
   }
 
   private loadPendingSkips(): void {
@@ -65,6 +70,14 @@ export class StudentsComponent implements OnInit {
       const map: Record<string, number> = {};
       for (const c of counts) map[c.studentId] = c.count;
       this.pendingSkips.set(map);
+    });
+  }
+
+  private loadAvgDuration(): void {
+    this.api.getCoachAvgDuration().subscribe(r => {
+      const map: Record<string, number> = {};
+      for (const b of r.byStudent) map[b.studentId] = b.avgSeconds;
+      this.avgByStudent.set(map);
     });
   }
 

@@ -5,6 +5,7 @@ import {
   Student, TrainingPlan, Session, Exercise, WorkoutLog,
   ExerciseLibraryItem, Payment, PaymentSummary, SkipReason, SkipDecision,
   Movement, PersonalRecord, AppNotification,
+  WorkoutSessionRecord, SessionTimeSummary, SessionTimeDetail, CoachAvgDuration,
 } from '../models';
 import { environment } from '../../../environments/environment';
 
@@ -364,12 +365,35 @@ export class ApiService {
 
   // ── Workout Logs ──────────────────────────────────────────────────────────
 
-  logExercise(exerciseId: string, setsCompleted: number, notes?: string): Observable<WorkoutLog> {
+  logExercise(exerciseId: string, setsCompleted: number, notes?: string, durationSeconds?: number): Observable<WorkoutLog> {
     return this.http.post<WorkoutLog>(`${this.base}/workout-logs`, {
       exerciseId,
       setsCompleted,
       notes,
+      durationSeconds,
     });
+  }
+
+  // ── Workout Sessions (tempo de execução) ─────────────────────────────────
+
+  checkoutWorkoutSession(sessionId: string, startedAt: string, finishedAt: string): Observable<WorkoutSessionRecord> {
+    return this.http.post<WorkoutSessionRecord>(`${this.base}/workout-sessions`, { sessionId, startedAt, finishedAt });
+  }
+
+  getMyWorkoutSessions(): Observable<WorkoutSessionRecord[]> {
+    return this.http.get<WorkoutSessionRecord[]>(`${this.base}/workout-sessions/me`);
+  }
+
+  getStudentSessionSummary(studentId: string): Observable<SessionTimeSummary> {
+    return this.http.get<SessionTimeSummary>(`${this.base}/workout-sessions/student/${studentId}/summary`);
+  }
+
+  getStudentSessionDetail(studentId: string, sessionId: string): Observable<SessionTimeDetail> {
+    return this.http.get<SessionTimeDetail>(`${this.base}/workout-sessions/student/${studentId}/session/${sessionId}`);
+  }
+
+  getCoachAvgDuration(): Observable<CoachAvgDuration> {
+    return this.http.get<CoachAvgDuration>(`${this.base}/workout-sessions/coach/avg-duration`);
   }
 
   // ── Messages ──────────────────────────────────────────────────────────────

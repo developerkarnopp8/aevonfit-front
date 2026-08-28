@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Student } from '../../../core/models';
+import { formatDurationShort } from '../../../shared/utils/format-duration';
 
 @Component({
   selector: 'app-dashboard',
@@ -26,6 +27,10 @@ export class DashboardComponent implements OnInit {
   weeklyCompletion = signal<number[]>([0, 0, 0, 0, 0, 0, 0]);
   readonly todayDayIndex = new Date().getDay();
 
+  /** Tempo médio de treino (em segundos) entre os alunos do coach — últimos 30 dias */
+  avgDuration = signal<number>(0);
+  fmtDuration = formatDurationShort;
+
   constructor(private api: ApiService, public auth: AuthService) {}
 
   ngOnInit(): void {
@@ -37,6 +42,7 @@ export class DashboardComponent implements OnInit {
       for (const d of days) byIndex[d.dayIndex] = d.percent;
       this.weeklyCompletion.set(byIndex);
     });
+    this.api.getCoachAvgDuration().subscribe(r => this.avgDuration.set(r.overallAvgSeconds));
   }
 
   getInitials(name: string): string {
