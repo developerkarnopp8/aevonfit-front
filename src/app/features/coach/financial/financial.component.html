@@ -1,10 +1,10 @@
 <div class="flex flex-col h-full overflow-hidden animate-fade-in">
 
   <!-- Header -->
-  <header class="px-8 py-6 flex items-center justify-between flex-shrink-0">
+  <header class="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between flex-shrink-0 gap-3 flex-wrap">
     <div>
       <p class="text-outline text-[10px] font-headline uppercase tracking-widest mb-1">Coach</p>
-      <h2 class="font-headline font-black text-3xl text-on-surface tracking-tighter leading-none">FINANCEIRO</h2>
+      <h2 class="font-headline font-black text-2xl md:text-3xl text-on-surface tracking-tighter leading-none">FINANCEIRO</h2>
       <p class="text-on-surface-variant text-sm mt-1">Gerencie as cobranças dos seus atletas.</p>
     </div>
     <button type="button" (click)="openModal()"
@@ -16,7 +16,7 @@
 
   <!-- Summary cards -->
   @if (summary()) {
-    <div class="px-8 mb-6 grid grid-cols-2 lg:grid-cols-4 gap-3 flex-shrink-0">
+    <div class="px-4 md:px-8 mb-6 grid grid-cols-2 lg:grid-cols-4 gap-3 flex-shrink-0">
       <div class="bg-surface-container-low rounded-md p-4">
         <p class="text-outline text-[9px] font-headline uppercase tracking-widest mb-1">Recebido</p>
         <p class="text-green-400 font-headline font-black text-xl">{{ formatCurrency(summary()!.totalReceived) }}</p>
@@ -41,10 +41,10 @@
   }
 
   <!-- Filter tabs -->
-  <div class="px-8 mb-4 flex gap-2 flex-shrink-0">
+  <div class="px-4 md:px-8 mb-4 flex gap-2 flex-shrink-0 overflow-x-auto">
     @for (f of [['all','Todos'], ['pending','Pendentes'], ['paid','Pagos'], ['overdue','Atrasados']]; track f[0]) {
       <button type="button" (click)="statusFilter.set($any(f[0]))"
-        class="px-3 py-1.5 rounded-sm text-[10px] font-headline font-bold uppercase tracking-wider transition-all"
+        class="px-3 py-1.5 rounded-sm text-[10px] font-headline font-bold uppercase tracking-wider transition-all flex-shrink-0 whitespace-nowrap"
         [class.bg-primary-fixed]="statusFilter() === f[0]"
         [class.text-on-primary-fixed]="statusFilter() === f[0]"
         [class.bg-surface-container]="statusFilter() !== f[0]"
@@ -55,7 +55,7 @@
   </div>
 
   <!-- Table -->
-  <div class="flex-1 px-8 pb-8 overflow-y-auto">
+  <div class="flex-1 px-4 md:px-8 pb-8 overflow-y-auto">
 
     @if (loading()) {
       <div class="flex items-center justify-center h-40">
