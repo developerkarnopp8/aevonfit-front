@@ -1,14 +1,14 @@
 <div class="flex flex-col h-full overflow-hidden animate-fade-in">
 
   <!-- Header -->
-  <header class="px-8 py-6 flex-shrink-0">
+  <header class="px-4 md:px-8 py-4 md:py-6 flex-shrink-0">
     <p class="text-outline text-[10px] font-headline uppercase tracking-widest mb-1">Coach Dashboard</p>
-    <h2 class="font-headline font-black text-3xl text-on-surface tracking-tighter leading-none">PLANOS DE TREINO</h2>
+    <h2 class="font-headline font-black text-2xl md:text-3xl text-on-surface tracking-tighter leading-none">PLANOS DE TREINO</h2>
     <p class="text-on-surface-variant text-sm mt-1">Selecione um atleta para editar ou visualizar o plano.</p>
   </header>
 
   <!-- Content -->
-  <div class="flex-1 px-8 pb-8 overflow-y-auto">
+  <div class="flex-1 px-4 md:px-8 pb-8 overflow-y-auto">
 
     @if (loading()) {
       <div class="flex items-center justify-center h-40">

@@ -1,7 +1,8 @@
 <div class="flex h-full animate-fade-in overflow-hidden">
 
   <!-- Sidebar: conversations list -->
-  <div class="w-72 flex-shrink-0 border-r border-outline-variant/10 flex flex-col">
+  <div class="w-full md:w-72 flex-shrink-0 border-r border-outline-variant/10 flex flex-col md:!flex"
+       [class.hidden]="mobileView() === 'chat'">
     <div class="px-5 py-4 border-b border-outline-variant/10 flex-shrink-0">
       <p class="text-outline text-[10px] font-headline uppercase tracking-widest mb-0.5">Mensagens</p>
       <p class="text-on-surface font-headline font-bold text-base">Conversas</p>
@@ -45,11 +46,15 @@
 
   <!-- Chat area -->
   @if (selectedId()) {
-    <div class="flex-1 flex flex-col overflow-hidden">
+    <div class="flex-1 flex flex-col overflow-hidden md:!flex" [class.hidden]="mobileView() === 'list'">
 
       <!-- Chat header -->
       <div class="px-5 pt-4 pb-3 flex-shrink-0 border-b border-outline-variant/10 flex justify-center">
         <div class="w-full max-w-2xl flex items-center gap-3">
+          <button type="button" (click)="backToList()" aria-label="Voltar para conversas"
+            class="md:hidden w-8 h-8 -ml-1 flex items-center justify-center text-on-surface-variant hover:text-on-surface flex-shrink-0">
+            <span class="material-symbols-outlined text-[22px]">arrow_back</span>
+          </button>
           <div class="w-9 h-9 rounded-full bg-primary-fixed/20 flex items-center justify-center text-sm font-headline font-black text-primary-fixed flex-shrink-0">
             {{ selectedName().charAt(0).toUpperCase() }}
           </div>
@@ -128,7 +133,7 @@
 
     </div>
   } @else {
-    <div class="flex-1 flex flex-col items-center justify-center gap-3 text-center px-12">
+    <div class="hidden md:flex flex-1 flex-col items-center justify-center gap-3 text-center px-12">
       <span class="material-symbols-outlined text-outline text-[56px]">forum</span>
       <p class="text-on-surface font-headline font-bold">Selecione uma conversa</p>
       <p class="text-on-surface-variant text-sm">Escolha um atleta na lista para ver as mensagens.</p>

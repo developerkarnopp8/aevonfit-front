@@ -1,7 +1,7 @@
 <div class="flex flex-col h-full overflow-hidden animate-fade-in">
 
   <!-- Header -->
-  <header class="px-8 py-5 flex items-center justify-between flex-shrink-0">
+  <header class="px-4 md:px-8 py-4 md:py-5 flex items-center justify-between flex-shrink-0 gap-3 flex-wrap">
     <div class="flex items-center gap-4">
       <div>
         <p class="text-outline text-[10px] font-headline uppercase tracking-widest mb-0.5">Plano de Treino</p>
@@ -19,7 +19,7 @@
         </button>
       }
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 flex-wrap md:flex-nowrap">
       @if (plan()?.published) {
         <span class="flex items-center gap-1.5 text-green-400 font-headline text-xs uppercase tracking-wider">
           <span class="material-symbols-outlined text-[14px]">check_circle</span>
@@ -49,7 +49,7 @@
 
   <!-- Hidratação / Calorias (14 dias) — recolhido por padrão -->
   @if (intakeHistory().length > 0) {
-    <div class="px-8 pb-4 flex-shrink-0">
+    <div class="px-4 md:px-8 pb-4 flex-shrink-0">
       <div class="bg-surface-container-low rounded-md">
         <button type="button" (click)="showIntakeChart.set(!showIntakeChart())"
           class="w-full flex items-center justify-between px-4 py-3 group">
@@ -87,7 +87,7 @@
   }
 
   <!-- Recordes de Força -->
-  <div class="px-8 pb-4 flex-shrink-0">
+  <div class="px-4 md:px-8 pb-4 flex-shrink-0">
     <div class="bg-surface-container-low rounded-md">
       <div class="w-full flex items-center justify-between px-4 py-3">
         <button type="button" (click)="showPRSection.set(!showPRSection())"
@@ -176,7 +176,7 @@
   </div>
 
   <!-- Tempo de execução -->
-  <div class="px-8 pb-4 flex-shrink-0">
+  <div class="px-4 md:px-8 pb-4 flex-shrink-0">
     <div class="bg-surface-container-low rounded-md">
       <div class="w-full flex items-center justify-between px-4 py-3">
         <button type="button" (click)="showTimeSection.set(!showTimeSection())"
@@ -270,19 +270,19 @@
     </div>
   } @else {
 
-  <div class="flex-1 flex overflow-hidden min-h-0">
+  <div class="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
 
     <!-- Week Tabs sidebar -->
-    <aside class="w-40 border-r border-outline-variant/10 flex-shrink-0 py-4 px-2 overflow-y-auto">
+    <aside class="w-full md:w-40 flex md:flex-col gap-2 md:gap-0 border-b md:border-b-0 md:border-r border-outline-variant/10 flex-shrink-0 py-3 md:py-4 px-3 md:px-2 overflow-x-auto md:overflow-y-auto">
       <button type="button" (click)="exportCurrentWeekPdf()"
-        class="w-full flex items-center gap-1.5 px-4 py-2 mb-2 text-outline hover:text-on-surface font-headline text-[10px] uppercase tracking-wider transition-colors">
+        class="w-auto md:w-full flex items-center gap-1.5 px-4 py-2 mb-0 md:mb-2 flex-shrink-0 whitespace-nowrap text-outline hover:text-on-surface font-headline text-[10px] uppercase tracking-wider transition-colors">
         <span class="material-symbols-outlined text-[14px]">picture_as_pdf</span>
-        Exportar Semana
+        <span class="hidden md:inline">Exportar Semana</span>
       </button>
       @for (week of plan()!.weeks; track week.id; let i = $index) {
         <button type="button"
           (click)="selectedWeek.set(i)"
-          class="w-full text-left px-4 py-2.5 mb-1 rounded-sm text-xs font-headline font-bold uppercase tracking-wider transition-all"
+          class="w-auto md:w-full text-center md:text-left px-4 py-2.5 mb-0 md:mb-1 flex-shrink-0 whitespace-nowrap rounded-sm text-xs font-headline font-bold uppercase tracking-wider transition-all"
           [class.bg-primary-fixed]="selectedWeek() === i"
           [class.text-on-primary-fixed]="selectedWeek() === i"
           [class.text-outline]="selectedWeek() !== i"
@@ -294,7 +294,7 @@
     </aside>
 
     <!-- Days — vertical timeline -->
-    <div class="flex-1 overflow-y-auto px-6 py-4">
+    <div class="flex-1 overflow-y-auto px-4 md:px-6 py-4">
       @for (day of currentWeek()?.days ?? []; track day.id) {
 
         <!-- Day anchor -->

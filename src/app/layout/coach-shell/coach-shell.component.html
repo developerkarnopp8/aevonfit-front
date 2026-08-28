@@ -8,6 +8,82 @@
   </div>
 }
 
+<!-- Header fixo (mobile, <768px) -->
+<header class="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3 bg-background border-b border-outline-variant/10">
+  <button type="button" (click)="toggleMobileMenu()" aria-label="Abrir menu"
+    class="w-9 h-9 flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors">
+    <span class="material-symbols-outlined text-[24px]">menu</span>
+  </button>
+  <h1 class="text-base font-bold text-on-surface font-headline">Coach <span class="text-primary-fixed">PulseRx</span></h1>
+  <app-notifications-bell />
+</header>
+
+<!-- Drawer (mobile, <768px) -->
+@if (mobileMenuOpen()) {
+  <div class="md:hidden fixed inset-0 z-50 flex animate-fade-in">
+    <div class="absolute inset-0 bg-black/80" (click)="closeMobileMenu()"></div>
+    <div class="relative w-64 h-full bg-background border-r border-outline-variant/10 flex flex-col py-8 animate-slide-up overflow-y-auto">
+
+      <!-- Brand -->
+      <div class="px-6 mb-8">
+        <h1 class="text-xl font-bold text-on-surface font-headline">Coach Premium</h1>
+        <p class="text-[10px] text-primary-fixed tracking-widest uppercase font-headline mt-0.5">Nível Elite</p>
+      </div>
+
+      <!-- Nav -->
+      <nav class="flex-1 px-4 space-y-1">
+        @for (item of navItems; track item.label) {
+          @if (item.soon) {
+            <span class="flex items-center gap-3 px-4 py-3 font-headline text-outline/40 cursor-not-allowed select-none">
+              <span class="material-symbols-outlined text-[22px]">{{ item.icon }}</span>
+              <span class="flex-1">{{ item.label }}</span>
+              <span class="text-[9px] font-headline uppercase tracking-widest bg-surface-container px-1.5 py-0.5 rounded-sm">em breve</span>
+            </span>
+          } @else {
+            <a [routerLink]="item.route" (click)="closeMobileMenu()"
+               class="flex items-center gap-3 px-4 py-3 transition-all duration-200 font-headline hover:bg-surface-container/50 hover:text-on-surface"
+               [class.bg-surface-container-high]="isNavActive(item.route)"
+               [class.text-primary-fixed]="isNavActive(item.route)"
+               [class.font-bold]="isNavActive(item.route)"
+               [class.rounded-r-full]="isNavActive(item.route)"
+               [class.text-outline]="!isNavActive(item.route)">
+              <span class="material-symbols-outlined text-[22px]">{{ item.icon }}</span>
+              <span>{{ item.label }}</span>
+            </a>
+          }
+        }
+      </nav>
+
+      <!-- Novo Treino CTA -->
+      <div class="px-6 pt-6">
+        <button type="button" (click)="closeMobileMenu(); openModal()"
+                class="w-full bg-primary-fixed hover:bg-primary-dim text-on-primary-fixed font-headline font-black py-4 rounded-md uppercase tracking-tighter transition-all flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-[20px]">add</span>
+          Novo Treino
+        </button>
+      </div>
+
+      <!-- User + Logout -->
+      <div class="px-6 pt-4 pb-2 border-t border-outline-variant/10 mt-4">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-8 h-8 rounded-sm bg-primary-fixed/20 text-primary-fixed flex items-center justify-center text-xs font-headline font-black flex-shrink-0">
+            {{ auth.currentUser()?.name?.charAt(0)?.toUpperCase() ?? 'C' }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-on-surface text-xs font-headline font-bold truncate">{{ auth.currentUser()?.name ?? 'Coach' }}</p>
+            <p class="text-outline text-[10px] truncate">{{ auth.currentUser()?.email }}</p>
+          </div>
+        </div>
+        <button type="button" (click)="logout()"
+          class="w-full flex items-center gap-2 px-3 py-2 rounded-sm text-outline hover:text-error hover:bg-error/10 font-headline text-xs uppercase tracking-wider transition-all">
+          <span class="material-symbols-outlined text-[18px]">logout</span>
+          Sair
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
 <div class="flex mx-auto max-w-[1440px] h-screen bg-background overflow-hidden">
 
   <!-- Sidebar -->
@@ -74,7 +150,7 @@
   </aside>
 
   <!-- Main -->
-  <main class="flex-1 flex flex-col overflow-hidden">
+  <main class="flex-1 flex flex-col overflow-hidden pt-16 md:pt-0">
     <app-notification-permission-banner />
     <router-outlet />
   </main>

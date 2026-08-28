@@ -43,3 +43,6 @@ __screenshots__/
 .DS_Store
 Thumbs.db
 .worktrees/
+
+# SDD workspace (superpowers)
+.superpowers/
