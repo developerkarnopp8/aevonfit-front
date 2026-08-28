@@ -77,9 +77,9 @@
     } @else if (filtered().length === 0) {
       <p class="text-outline text-sm font-headline text-center py-12">Nenhum resultado para este filtro.</p>
     } @else {
-      <div class="bg-surface-container-low rounded-md overflow-hidden">
+      <div class="bg-surface-container-low rounded-md overflow-x-auto md:overflow-hidden">
         <!-- Table header -->
-        <div class="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-outline-variant/10">
+        <div class="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-outline-variant/10 min-w-[560px] md:min-w-0">
           <span class="text-outline text-[9px] font-headline uppercase tracking-widest">Atleta / Descrição</span>
           <span class="text-outline text-[9px] font-headline uppercase tracking-widest">Valor</span>
           <span class="text-outline text-[9px] font-headline uppercase tracking-widest">Vencimento</span>
@@ -88,7 +88,7 @@
         </div>
 
         @for (payment of filtered(); track payment.id) {
-          <div class="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-5 py-4 border-b border-outline-variant/10 last:border-0 items-center hover:bg-surface-container transition-colors">
+          <div class="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-5 py-4 border-b border-outline-variant/10 last:border-0 items-center hover:bg-surface-container transition-colors min-w-[560px] md:min-w-0">
 
             <!-- Atleta + descrição -->
             <div>
