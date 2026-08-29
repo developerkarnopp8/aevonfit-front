@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -26,6 +26,16 @@ export class NotificationsBellComponent implements OnInit, OnDestroy {
   notifications = signal<AppNotification[]>([]);
   unreadCount = signal(0);
   showPanel = signal(false);
+
+  /**
+   * Lado a partir do qual o painel abre:
+   * - `'end'` (padrão): painel ancorado à direita do sino, cresce pra esquerda —
+   *   certo quando o sino fica no canto direito de um header de largura total.
+   * - `'start'`: painel ancorado à esquerda do sino, cresce pra direita —
+   *   necessário quando o sino fica numa sidebar estreita colada na borda
+   *   esquerda da tela (senão o painel de 320px vaza pra fora da viewport).
+   */
+  @Input() align: 'start' | 'end' = 'end';
 
   private destroy$ = new Subject<void>();
 
