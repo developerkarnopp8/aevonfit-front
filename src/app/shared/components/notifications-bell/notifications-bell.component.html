@@ -11,7 +11,10 @@
 
   @if (showPanel()) {
     <div class="fixed inset-0 z-[55]" (click)="showPanel.set(false)"></div>
-    <div class="absolute top-11 right-0 w-80 max-w-[90vw] bg-surface-container-low border border-outline-variant/20 rounded-md shadow-xl z-[60] animate-fade-in max-h-96 overflow-y-auto">
+    <div
+      class="absolute top-11 w-80 max-w-[90vw] bg-surface-container-low border border-outline-variant/20 rounded-md shadow-xl z-[60] animate-fade-in max-h-96 overflow-y-auto"
+      [class.right-0]="align === 'end'"
+      [class.left-0]="align === 'start'">
       <div class="flex items-center justify-between px-4 py-3 border-b border-outline-variant/10">
         <p class="text-on-surface text-xs font-headline font-bold uppercase tracking-widest">Notificações</p>
         <button type="button" (click)="markAllRead()" class="text-primary-fixed text-[10px] font-headline uppercase">Marcar todas como lidas</button>
